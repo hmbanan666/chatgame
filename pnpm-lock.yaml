@@ -61,8 +61,8 @@ catalogs:
       specifier: ^4.1.12
       version: 4.1.12
     '@telegram-apps/init-data-node':
-      specifier: ^1.2.2
-      version: 1.2.2
+      specifier: ^2.0.10
+      version: 2.0.10
     '@telegram-apps/sdk-vue':
       specifier: ^1.0.15
       version: 1.0.15
@@ -383,7 +383,7 @@ importers:
         version: 6.2.1(prisma@6.2.1)
       '@telegram-apps/init-data-node':
         specifier: 'catalog:'
-        version: 1.2.2
+        version: 2.0.10(typescript@5.8.3)
       '@twurple/api':
         specifier: 'catalog:'
         version: 7.4.0(@twurple/auth@7.4.0)
@@ -2615,9 +2615,11 @@ packages:
 
   '@telegram-apps/bridge@1.9.2':
     resolution: {integrity: sha512-SJLcNWLXhbbZr9MiqFH/g2ceuitSJKMxUIZysK4zUNyTUNuonrQG80Q/yrO+XiNbKUj8WdDNM86NBARhuyyinQ==}
+    deprecated: This package is not supported anymore. Use @tma.js/bridge instead
 
-  '@telegram-apps/init-data-node@1.2.2':
-    resolution: {integrity: sha512-/nazt+7Xa+/niezRMnGMILy280SH/XqdwuGLIc/aAfblzR3j98Ze9DUdheOOPozjYKPujEEANjRG4bCtkOvoAA==}
+  '@telegram-apps/init-data-node@2.0.10':
+    resolution: {integrity: sha512-hyJ0Qbc1Rqmog4OMS1neZo0PTBKDpOrXzy4EtEyXu8nAA8IK2iYJXnt3wRcvbYn6Qnkyh0wPEkIJmY8Hj3awPw==}
+    deprecated: This package is not supported anymore. Use @tma.js/init-data-node instead
 
   '@telegram-apps/navigation@1.0.13':
     resolution: {integrity: sha512-TsUueB5LQp77GQHoMa93nq26Uw7GJjrFCPbyseMVU7aBBxAc+8CV2IYytRwcVp5sv/q7ThK5X4JaKn2V1yBHDQ==}
@@ -2636,11 +2638,24 @@ packages:
   '@telegram-apps/toolkit@1.1.1':
     resolution: {integrity: sha512-+vhKx6ngfvjyTE6Xagl3z1TPVbfx5s7xAkcYzCdHYUo6T60jLIqLgyZMcI1UPoIAMuMu1pHoO+p8QNCj/+tFmw==}
 
+  '@telegram-apps/toolkit@2.1.3':
+    resolution: {integrity: sha512-LPUBL7hxQTOr+Dowyk9a1O82nQS4ja4+OYiYWtvqq5nNUHC6Gbbus0zGWCbFcj9CLnIzaeb5HWOg5iSnhoRcyg==}
+
   '@telegram-apps/transformers@1.2.2':
     resolution: {integrity: sha512-vvMwXckd1D7Ozc0h66PSUwF5QLrRV9HlGJFFeBuUex8QEk5mSPtsJkLiqB8aBbwuFDa91+TUSM/CxqPZO/e9YQ==}
+    deprecated: This package is not supported anymore. Use @tma.js/transfomers instead
+
+  '@telegram-apps/transformers@2.2.6':
+    resolution: {integrity: sha512-MMBRs3demeBT9Cd614KKZmak7eEyNdEbfu99a0SwEEJe2oIODjJLrUxrhUcAOc5wvTRfrKka27VXVgruauLhdg==}
+    deprecated: This package is not supported anymore. Use @tma.js/transfomers instead
 
   '@telegram-apps/types@1.2.1':
     resolution: {integrity: sha512-so4HLh7clur0YyMthi9KVIgWoGpZdXlFOuQjk3+Q5NAvJZ11nAheBSwPlGw/Ko92+zwvrSBE/lQyN2+p17RP+w==}
+    deprecated: This package is not supported anymore. Use @tma.js/types instead
+
+  '@telegram-apps/types@2.0.3':
+    resolution: {integrity: sha512-pXh9BdnLZF3e2BGc4WL+RTRMAUpqKpaSP3Rs8rB4WyRwIoRSGWFKE4gtT/9m42LGixB8YVwdo/pJ+9XO765XEA==}
+    deprecated: This package is not supported anymore. Use @tma.js/types instead
 
   '@testing-library/dom@10.4.0':
     resolution: {integrity: sha512-pemlzrSESWbdAloYml3bAJMEfNh1Z7EduzqPKprCH5S341frlpYnUEW0H72dLxa6IsYr+mPno20GiSm+h9dEdQ==}
@@ -4182,6 +4197,9 @@ packages:
 
   error-ex@1.3.2:
     resolution: {integrity: sha512-7dFHNmqeFSEt2ZBsCriorKnn3Z2pj+fd9kmI6QoWw4//DL+icEBfc0U7qJCisqrTsKTjw4fNFy2pW9OqStD84g==}
+
+  error-kid@0.0.7:
+    resolution: {integrity: sha512-8mFs7ZaDWlBFgjOy4lHLMCe2+KZfZXGx5GOgh2VQ/M1CCIvSWzbl2OMl+5fdZgrgoUfhTeF+NPhmqfEvUhN8yw==}
 
   error-stack-parser-es@1.0.5:
     resolution: {integrity: sha512-5qucVt2XcuGMcEGgWI7i+yZpmpByQ8J1lHhcL7PwqCwu9FPP3VUXzT4ltHe5i2z9dePwEHcDVOAfSnHsOlCXRA==}
@@ -7127,6 +7145,14 @@ packages:
     resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
     hasBin: true
 
+  valibot@1.0.0-beta.14:
+    resolution: {integrity: sha512-tLyV2rE5QL6U29MFy3xt4AqMrn+/HErcp2ZThASnQvPMwfSozjV1uBGKIGiegtZIGjinJqn0SlBdannf18wENA==}
+    peerDependencies:
+      typescript: '>=5'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
   validate-npm-package-license@3.0.4:
     resolution: {integrity: sha512-DpKm2Ui/xN7/HQKCtpZxoRWBhZ9Z0kqtygG8XCgNQ8ZlDnxuQmWhj566j8fN4Cu3/JmbhsDo7fcAJq4s9h27Ew==}
 
@@ -9783,11 +9809,13 @@ snapshots:
       '@telegram-apps/transformers': 1.2.2
       '@telegram-apps/types': 1.2.1
 
-  '@telegram-apps/init-data-node@1.2.2':
+  '@telegram-apps/init-data-node@2.0.10(typescript@5.8.3)':
     dependencies:
-      '@telegram-apps/toolkit': 1.1.1
-      '@telegram-apps/transformers': 1.2.2
-      '@telegram-apps/types': 1.2.1
+      '@telegram-apps/transformers': 2.2.6(typescript@5.8.3)
+      '@telegram-apps/types': 2.0.3
+      error-kid: 0.0.7
+    transitivePeerDependencies:
+      - typescript
 
   '@telegram-apps/navigation@1.0.13':
     dependencies:
@@ -9812,12 +9840,24 @@ snapshots:
 
   '@telegram-apps/toolkit@1.1.1': {}
 
+  '@telegram-apps/toolkit@2.1.3': {}
+
   '@telegram-apps/transformers@1.2.2':
     dependencies:
       '@telegram-apps/toolkit': 1.1.1
       '@telegram-apps/types': 1.2.1
 
+  '@telegram-apps/transformers@2.2.6(typescript@5.8.3)':
+    dependencies:
+      '@telegram-apps/toolkit': 2.1.3
+      '@telegram-apps/types': 2.0.3
+      valibot: 1.0.0-beta.14(typescript@5.8.3)
+    transitivePeerDependencies:
+      - typescript
+
   '@telegram-apps/types@1.2.1': {}
+
+  '@telegram-apps/types@2.0.3': {}
 
   '@testing-library/dom@10.4.0':
     dependencies:
@@ -11704,6 +11744,8 @@ snapshots:
   error-ex@1.3.2:
     dependencies:
       is-arrayish: 0.2.1
+
+  error-kid@0.0.7: {}
 
   error-stack-parser-es@1.0.5: {}
 
@@ -15217,6 +15259,10 @@ snapshots:
   util-deprecate@1.0.2: {}
 
   uuid@11.1.0: {}
+
+  valibot@1.0.0-beta.14(typescript@5.8.3):
+    optionalDependencies:
+      typescript: 5.8.3
 
   validate-npm-package-license@3.0.4:
     dependencies:
