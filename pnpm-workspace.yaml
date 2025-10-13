@@ -22,7 +22,7 @@ catalog:
   '@prisma/client': ^6.2.1
   '@tailwindcss/vite': ^4.1.12
   '@telegram-apps/init-data-node': ^1.2.2
-  '@telegram-apps/sdk-vue': ^1.0.15
+  '@telegram-apps/sdk-vue': ^2.0.31
   '@tsconfig/node22': ^22.0.2
   '@tsparticles/engine': ^3.9.1
   '@tsparticles/slim': ^3.9.1
