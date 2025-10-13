@@ -25,7 +25,7 @@ const localePath = useLocalePath()
 const links = [
   {
     title: 'GitHub',
-    url: 'https://github.com/chat-game/space',
+    url: 'https://github.com/hmbanan666/chatgame',
     isOnNewTab: true,
   },
   {

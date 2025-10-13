@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       release:
-        description: "ex: @chat-game/website-v1.0.0"
+        description: "ex: @chatgame/website-v1.0.0"
         type: string
         required: true
       ref:
@@ -28,12 +28,12 @@ jobs:
         id: regex-match
         with:
           text: ${{ github.event.inputs.release || github.ref_name }}
-          regex: '@chat-game\/([a-z-]+)-(v[0-9]+.[0-9]+.[0-9]+)'
+          regex: '@chatgame\/([a-z-]+)-(v[0-9]+.[0-9]+.[0-9]+)'
 
       - name: Set package in env
         id: set-package
         run: |
-          APPS=("website" "telegram-game")
+          APPS=("website")
           MATCH="${{ steps.regex-match.outputs.match }}"
 
           if [ -z "$MATCH" ]; then

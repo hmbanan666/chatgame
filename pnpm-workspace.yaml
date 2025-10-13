@@ -3,9 +3,9 @@ packages:
   - packages/*
 catalog:
   '@antfu/eslint-config': ^5.4.1
-  '@chatgame/stream-journey': ^0.0.1
-  '@commitlint/cli': ^19.8.1
-  '@commitlint/config-conventional': ^19.8.1
+  '@chatgame/stream-journey': ^0.0.3
+  '@commitlint/cli': ^20.1.0
+  '@commitlint/config-conventional': ^20.0.0
   '@d-fischer/typed-event-emitter': ^3.3.3
   '@donation-alerts/api': ^4.0.0
   '@donation-alerts/auth': ^4.0.0

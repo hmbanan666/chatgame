@@ -1,5 +1,5 @@
 {
-  "name": "@chat-game/website",
+  "name": "@chatgame/website",
   "type": "module",
   "private": true,
   "scripts": {
@@ -51,7 +51,6 @@
     "nuxt": "catalog:",
     "nuxt-auth-utils": "catalog:",
     "prisma": "catalog:",
-    "tailwindcss": "catalog:",
     "vue-tsc": "catalog:"
   }
 }
