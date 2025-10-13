@@ -21,7 +21,7 @@
     "chatgame"
   ],
   "engines": {
-    "node": ">=22.18.0",
+    "node": ">=22.20.0",
     "pnpm": ">=10.18.2"
   },
   "scripts": {
@@ -55,7 +55,7 @@
     "vitest-browser-vue": "catalog:"
   },
   "resolutions": {
-    "unimport": "4.1.1"
+    "unimport": "4.2.0"
   },
   "lint-staged": {
     "*.{js,ts,tsx,vue,md,json}": [
