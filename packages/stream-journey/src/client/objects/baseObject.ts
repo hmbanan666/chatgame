@@ -19,6 +19,7 @@ export class BaseObject extends Container implements GameObject {
   health!: GameObject['health']
   speedPerSecond!: GameObject['speedPerSecond']
   size!: GameObject['size']
+  maxSize!: GameObject['maxSize']
   script: GameObject['script']
   isObstacleForWagon: GameObject['isObstacleForWagon']
   minDistance: GameObject['minDistance']
@@ -44,6 +45,7 @@ export class BaseObject extends Container implements GameObject {
   }
 
   private init() {
+    this.game.app.stage.addChild(this)
     this.game.addChild(this)
   }
 

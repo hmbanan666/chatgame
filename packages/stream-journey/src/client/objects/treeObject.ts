@@ -17,9 +17,7 @@ interface TreeObjectOptions {
 export class TreeObject extends BaseObject implements GameObjectTree {
   variant: GameObjectTree['variant']
   treeType: GameObjectTree['treeType']
-  isAnObstacleToWagon = false
   minSizeToChop = 75
-  maxSize: number
   growSpeedPerSecond = getRandInteger(2, 4)
   animationAngle = getRandInteger(-1, 1)
   animationSlowSpeed = 0.04
@@ -34,7 +32,7 @@ export class TreeObject extends BaseObject implements GameObjectTree {
     this.variant = variant ?? 'GREEN'
     this.treeType = treeType ?? this.getNewType()
     this.zIndex = zIndex ?? getRandInteger(-10, 1)
-    this.isAnObstacleToWagon = this.zIndex >= -5
+    this.isObstacleForWagon = this.zIndex >= -5
 
     this.initVisual()
   }
@@ -80,7 +78,7 @@ export class TreeObject extends BaseObject implements GameObjectTree {
     }
   }
 
-  shakeAnimation() {
+  private shakeAnimation() {
     if (Math.abs(this.animationAngle) >= 3.5) {
       this.animationHighSpeed *= -1
     }
@@ -88,7 +86,7 @@ export class TreeObject extends BaseObject implements GameObjectTree {
     this.angle = this.animationAngle
   }
 
-  shakeOnWind() {
+  private shakeOnWind() {
     if (Math.abs(this.animationAngle) >= 1.5) {
       this.animationSlowSpeed *= -1
     }
@@ -96,7 +94,7 @@ export class TreeObject extends BaseObject implements GameObjectTree {
     this.angle = this.animationAngle
   }
 
-  handleChoppingState() {
+  private handleChoppingState() {
     const random = getRandInteger(1, 20)
     if (random <= 1) {
       this.state = 'IDLE'
@@ -104,13 +102,13 @@ export class TreeObject extends BaseObject implements GameObjectTree {
     }
   }
 
-  getNewType(): GameObjectTree['treeType'] {
+  private getNewType(): GameObjectTree['treeType'] {
     const items = ['1', '2', '3', '4', '5'] as const
     const index = getRandInteger(0, items.length - 1)
     return items[index] as GameObjectTree['treeType']
   }
 
-  getSpriteByType() {
+  private getSpriteByType() {
     if (this.variant === 'GREEN') {
       return `TREE_${this.treeType}_GREEN`
     }

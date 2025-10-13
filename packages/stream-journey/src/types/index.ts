@@ -14,7 +14,7 @@ export interface Game extends Container {
   init: () => Promise<void>
 }
 
-type GameObjectType = 'PLAYER' | 'RAIDER' | 'FLAG' | 'TREE' | 'WAGON'
+export type GameObjectType = 'PLAYER' | 'RAIDER' | 'FLAG' | 'TREE' | 'WAGON'
 
 export type GameObjectState
   = | 'MOVING'
@@ -49,6 +49,7 @@ export interface GameObject extends Container {
   health: number
   speedPerSecond: number
   size: number
+  maxSize: number
   isObstacleForWagon: boolean
   minDistance: number
   game: Game
@@ -66,7 +67,6 @@ export interface GameObjectWagon extends GameObject {
 export interface GameObjectTree extends GameObject {
   variant: 'GREEN' | 'VIOLET' | 'STONE' | 'TEAL' | 'TOXIC' | 'BLUE'
   treeType: '1' | '2' | '3' | '4' | '5'
-  maxSize: number
 }
 
 export interface GameObjectFlag extends GameObject {
@@ -109,10 +109,11 @@ export interface EventService {
 
 export interface WagonService {
   wagon: GameObjectWagon | null
-  init: () => void
-  updateCameraPosition: () => void
   randomNearFlag: GameObjectFlag
   randomOutFlag: GameObjectFlag
+  init: () => void
+  updateCameraPosition: () => void
+  getNearestObstacle: () => GameObject | undefined
 }
 
 export interface PlayerService {
@@ -126,7 +127,6 @@ export interface PlayerService {
 }
 
 export interface TreeService {
-  create: (data: { id: string, x: number, zIndex: number, treeType: GameObjectTree['treeType'], variant: GameObjectTree['variant'], size: number, maxSize: number }) => void
+  create: (data: { id: string, x: number, zIndex: number, treeType: GameObjectTree['treeType'], variant: GameObjectTree['variant'], size: number, maxSize: number }) => GameObjectTree
   update: () => void
-  getNearestObstacle: (x: number) => GameObjectTree | undefined
 }

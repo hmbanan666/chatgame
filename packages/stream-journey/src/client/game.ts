@@ -75,10 +75,8 @@ export class StreamJourneyGame extends Container implements Game {
       return
     }
 
-    const index = this.children.indexOf(obj)
-    this.children.splice(index, 1)
-
     this.removeChild(obj)
+    obj.destroy()
   }
 
   override destroy() {

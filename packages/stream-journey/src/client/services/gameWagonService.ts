@@ -1,4 +1,5 @@
-import type { Game, GameObjectWagon, WagonService } from '../../types'
+import type { Game, GameObject, GameObjectWagon, WagonService } from '../../types'
+import type { TreeObject } from '../objects/treeObject'
 import { FlagObject } from '../objects/flagObject'
 import { WagonObject } from '../objects/wagonObject'
 import { getRandInteger } from '../utils/random'
@@ -17,9 +18,11 @@ export class GameWagonService implements WagonService {
 
   init() {
     if (!this.wagon) {
-      this.wagon = new WagonObject({ game: this.game, x: 200, y: this.game.bottomY })
-      this.game.app.stage.addChild(this.wagon)
-      this.game.addChild(this.wagon)
+      this.wagon = new WagonObject({
+        game: this.game,
+        x: 200,
+        y: this.game.bottomY,
+      })
     }
 
     this.initOutFlags()
@@ -40,11 +43,26 @@ export class GameWagonService implements WagonService {
     this.cameraPerfectX = -this.cameraTarget.x + columnWidth * 2
 
     // If first load
-    if (Math.abs(-this.cameraTarget.x - this.cameraX) > 300) {
+    if (Math.abs(this.cameraPerfectX - this.cameraX) > 300) {
       this.cameraX = this.cameraPerfectX
     }
 
     this.moveCamera()
+  }
+
+  getNearestObstacle(): GameObject | undefined {
+    if (!this.wagon?.x) {
+      return
+    }
+
+    const x = this.wagon.x
+
+    // Only on right side
+    const trees = this.game.children
+      .filter((obj) => obj.type === 'TREE' && obj.x >= x) as TreeObject[]
+
+    return trees.filter((obj) => obj.isObstacleForWagon)
+      .sort((a, b) => a.x - b.x)[0]
   }
 
   private moveCamera() {

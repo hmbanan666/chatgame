@@ -14,7 +14,7 @@ export class GameTreeService implements TreeService {
     variant: GameObjectTree['variant']
     size: number
     maxSize: number
-  }) {
+  }): TreeObject {
     return new TreeObject({
       ...data,
       y: this.game.bottomY + 2,
@@ -23,13 +23,4 @@ export class GameTreeService implements TreeService {
   }
 
   update() {}
-
-  getNearestObstacle(x: number): TreeObject | undefined {
-    // Only on right side + isObstacle
-    const trees = this.game.children
-      .filter((obj) => obj.type === 'TREE' && obj.x > x) as TreeObject[]
-
-    return trees.filter((obj) => obj.isAnObstacleToWagon)
-      .sort((a, b) => a.x - b.x)[0]
-  }
 }
