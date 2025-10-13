@@ -1,0 +1,31 @@
+{
+  "name": "@chatgame/stream-journey",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "unbuild",
+    "prepack": "pnpm run build",
+    "clean": "rm -rf dist",
+    "clean:modules": "rm -rf node_modules",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@paralleldrive/cuid2": "catalog:",
+    "pixi.js": "catalog:"
+  },
+  "devDependencies": {
+    "unbuild": "catalog:"
+  }
+}

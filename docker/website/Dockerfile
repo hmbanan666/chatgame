@@ -4,7 +4,7 @@ FROM node:22.18.0-alpine AS base
 FROM base AS builder
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY ./prisma ./prisma
 COPY ./packages ./packages
 COPY ./apps/website ./apps/website
