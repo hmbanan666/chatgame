@@ -1,0 +1,40 @@
+{
+  "name": "@chatgame/stream-journey",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "Interactive game for Twitch Stream viewers",
+  "license": "MIT",
+  "homepage": "https://chatgame.space",
+  "keywords": [
+    "chatgame",
+    "game",
+    "chat",
+    "twitch",
+    "stream"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "unbuild",
+    "prepack": "pnpm run build",
+    "clean": "rm -rf dist",
+    "clean:modules": "rm -rf node_modules",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@paralleldrive/cuid2": "2.2.2",
+    "pixi.js": "8.14.0"
+  },
+  "devDependencies": {
+    "unbuild": "catalog:"
+  }
+}

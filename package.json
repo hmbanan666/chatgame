@@ -1,7 +1,7 @@
 {
-  "name": "@chat-game/space",
+  "name": "@chatgame/monorepo",
   "private": true,
-  "packageManager": "pnpm@10.14.0",
+  "packageManager": "pnpm@10.18.2",
   "description": "Chat Game for Twitch",
   "author": "Nick Kosarev <hmbanan666@hotmail.com>",
   "license": "MIT",
@@ -17,17 +17,17 @@
     "game",
     "online",
     "twitch",
-    "telegram"
+    "stream",
+    "chatgame"
   ],
   "engines": {
     "node": ">=22.18.0",
-    "pnpm": ">=10.14.0"
+    "pnpm": ">=10.18.2"
   },
   "scripts": {
-    "release": "changelogen-monorepo --release --push",
+    "release": "bumpp --execute=\"npm run release:prepare\" --recursive",
+    "release:prepare": "npm run build:types",
     "build": "pnpm -r run build",
-    "dev:website": "pnpm -r --filter @chat-game/website dev",
-    "dev:telegram": "pnpm -r --filter @chat-game/telegram-game dev",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "clean": "pnpm -r run clean",
@@ -46,7 +46,7 @@
     "@commitlint/config-conventional": "catalog:",
     "@vitest/browser": "catalog:",
     "@vitest/coverage-v8": "catalog:",
-    "changelogen-monorepo": "catalog:",
+    "bumpp": "catalog:",
     "eslint": "catalog:",
     "husky": "catalog:",
     "lint-staged": "catalog:",
@@ -58,7 +58,9 @@
     "unimport": "4.1.1"
   },
   "lint-staged": {
-    "*.ts": "pnpm run lint"
+    "*.{js,ts,tsx,vue,md,json}": [
+      "eslint --cache --fix"
+    ]
   },
   "commitlint": {
     "extends": [

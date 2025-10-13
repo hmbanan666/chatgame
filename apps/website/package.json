@@ -17,6 +17,7 @@
     "@chat-game/game-addon": "workspace:*",
     "@chat-game/locale": "workspace:*",
     "@chat-game/types": "workspace:*",
+    "@chatgame/stream-journey": "catalog:",
     "@donation-alerts/api": "catalog:",
     "@donation-alerts/auth": "catalog:",
     "@donation-alerts/events": "catalog:",
