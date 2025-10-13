@@ -19,7 +19,8 @@
     "prepack": "pnpm run build",
     "clean": "rm -rf dist",
     "clean:modules": "rm -rf node_modules",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "postinstall": "pnpm run build"
   },
   "dependencies": {
     "@paralleldrive/cuid2": "catalog:",
