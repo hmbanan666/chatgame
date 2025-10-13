@@ -1,10 +1,15 @@
 {
   "name": "@chatgame/stream-journey",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "Interactive game for Twitch Stream viewers",
   "license": "MIT",
   "homepage": "https://chatgame.space",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hmbanan666/chatgame.git",
+    "directory": "packages/stream-journey"
+  },
   "keywords": [
     "chatgame",
     "game",

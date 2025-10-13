@@ -8,10 +8,7 @@
   "homepage": "https://chatgame.space",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/chat-game/space.git"
-  },
-  "bugs": {
-    "url": "https://github.com/chat-game/space/issues"
+    "url": "git+https://github.com/hmbanan666/chatgame.git"
   },
   "keywords": [
     "game",
@@ -27,6 +24,7 @@
   "scripts": {
     "release": "bumpp --execute=\"npm run release:prepare\" --recursive",
     "release:prepare": "npm run build:types",
+    "dev:generate-cert": "mkdir -p .cert && mkcert -key-file ./.cert/localhost-key.pem -cert-file ./.cert/localhost.pem 'app.local'",
     "build": "pnpm -r run build",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
@@ -37,8 +35,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "check:full": "pnpm run lint:fix && pnpm run typecheck && pnpm vitest run",
-    "prepare": "husky",
-    "generate:cert": "mkdir -p .cert && mkcert -key-file ./.cert/localhost-key.pem -cert-file ./.cert/localhost.pem 'app.local'"
+    "prepare": "husky"
   },
   "devDependencies": {
     "@antfu/eslint-config": "catalog:",

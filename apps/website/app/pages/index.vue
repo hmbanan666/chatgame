@@ -20,26 +20,18 @@
     </div>
 
     <div
-      class="max-w-160 mx-auto flex flex-col md:flex-row gap-4 items-center justify-center"
+      class="max-w-sm mx-auto flex flex-col md:flex-row gap-4 items-center justify-center"
     >
       <a
-        href="https://t.me/WoodlandsGameBot"
+        href="https://github.com/hmbanan666/chatgame"
         target="_blank"
-        class="px-6 py-3 md:py-4 w-full bg-emerald-500 border-b-6 border-emerald-600 text-white text-lg md:text-xl font-semibold tracking-wide rounded-lg cursor-pointer hover:opacity-85 active:scale-95 duration-200 flex flex-row justify-center items-center gap-3"
-      >
-        <Icon name="simple-icons:telegram" size="32" />
-        <p>Открыть игру</p>
-      </a>
-      <a
-        href="https://github.com/chat-game/space"
-        target="_blank"
-        class="px-6 py-3 md:py-4 w-full bg-orange-900/75 border-b-6 border-orange-900/75 text-white text-lg md:text-xl font-semibold tracking-wide rounded-lg cursor-pointer hover:opacity-85 active:scale-95 duration-200 flex flex-row justify-center items-center gap-3"
+        class="px-8 py-3 md:py-4 w-fit bg-orange-900/75 border-b-6 border-orange-900/75 text-white text-lg md:text-xl font-semibold tracking-wide rounded-lg cursor-pointer hover:opacity-85 active:scale-95 duration-200 flex flex-row justify-center items-center gap-3"
       >
         <Icon name="simple-icons:github" size="32" />
         <p>GitHub</p>
         <div class="flex flex-row items-center gap-1">
-          <Icon name="lucide:star" class="!size-5" />
-          <p>26</p>
+          <Icon name="lucide:star" class="size-5" />
+          <p>27</p>
         </div>
       </a>
     </div>

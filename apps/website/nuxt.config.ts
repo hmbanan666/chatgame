@@ -1,7 +1,12 @@
-import tailwindcss from '@tailwindcss/vite'
 import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
+  modules: [
+    '@vueuse/nuxt',
+    'nuxt-auth-utils',
+    '@nuxtjs/i18n',
+    '@nuxt/ui',
+  ],
   app: {
     head: {
       link: [
@@ -20,6 +25,9 @@ export default defineNuxtConfig({
     '/donate': {
       static: true,
     },
+    '/static/**': {
+      cors: true,
+    },
     '/addon': {
       ssr: false,
       cors: true,
@@ -30,8 +38,12 @@ export default defineNuxtConfig({
   },
   devtools: { enabled: true },
   devServer: {
-    host: '0.0.0.0',
-    port: 4200,
+    port: 4300,
+    host: 'app.local',
+    https: {
+      key: '../../.cert/localhost-key.pem',
+      cert: '../../.cert/localhost.pem',
+    },
   },
   fonts: {
     provider: 'google',
@@ -90,11 +102,6 @@ export default defineNuxtConfig({
       alwaysRedirect: true,
     },
   },
-  vite: {
-    plugins: [
-      tailwindcss(),
-    ],
-  },
   nitro: {
     experimental: {
       websocket: true,
@@ -105,11 +112,5 @@ export default defineNuxtConfig({
       '*/2 * * * *': ['payment:status'],
     },
   },
-  modules: [
-    '@vueuse/nuxt',
-    'nuxt-auth-utils',
-    '@nuxtjs/i18n',
-    '@nuxt/ui',
-  ],
   compatibilityDate: '2024-08-18',
 })
