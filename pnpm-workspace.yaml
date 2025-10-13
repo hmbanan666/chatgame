@@ -3,6 +3,7 @@ packages:
   - packages/*
 catalog:
   '@antfu/eslint-config': ^5.4.1
+  '@chatgame/stream-journey': ^0.0.1
   '@commitlint/cli': ^19.8.1
   '@commitlint/config-conventional': ^19.8.1
   '@d-fischer/typed-event-emitter': ^3.3.3
@@ -40,7 +41,7 @@ catalog:
   '@vueuse/components': ^13.6.0
   '@vueuse/core': ^13.6.0
   '@vueuse/nuxt': ^13.6.0
-  changelogen-monorepo: ^0.5.0
+  bumpp: ^10.3.1
   eruda: ^3.4.3
   eslint: ^9.33.0
   grammy: ^1.38.1

@@ -1,7 +1,17 @@
 {
-  "name": "@chat-game/stream-journey",
+  "name": "@chatgame/stream-journey",
   "type": "module",
-  "private": true,
+  "version": "0.0.1",
+  "description": "Interactive game for Twitch Stream viewers",
+  "license": "MIT",
+  "homepage": "https://chatgame.space",
+  "keywords": [
+    "chatgame",
+    "game",
+    "chat",
+    "twitch",
+    "stream"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -18,12 +28,11 @@
     "prepack": "pnpm run build",
     "clean": "rm -rf dist",
     "clean:modules": "rm -rf node_modules",
-    "typecheck": "tsc --noEmit",
-    "postinstall": "pnpm run build"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@paralleldrive/cuid2": "catalog:",
-    "pixi.js": "catalog:"
+    "@paralleldrive/cuid2": "2.2.2",
+    "pixi.js": "8.14.0"
   },
   "devDependencies": {
     "unbuild": "catalog:"

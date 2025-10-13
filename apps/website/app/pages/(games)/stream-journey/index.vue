@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { StreamJourneyGame } from '@chat-game/stream-journey'
+import { StreamJourneyGame } from '@chatgame/stream-journey'
 
 definePageMeta({
   layout: 'game',
@@ -20,9 +20,17 @@ const stage = ref<HTMLElement>()
 const game = ref<StreamJourneyGame>()
 
 onMounted(async () => {
-  game.value = new StreamJourneyGame({ eventsUrl: '' })
-  await game.value.init()
-  stage.value?.appendChild(game.value.app.canvas)
+  try {
+    game.value = new StreamJourneyGame({ eventsUrl: '' })
+    await game.value.init()
+
+    if (stage.value) {
+      stage.value.appendChild(game.value.app.canvas)
+    }
+  } catch (error) {
+    console.error(error)
+    // Show user-friendly error message?
+  }
 })
 
 onUnmounted(() => {
