@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { StreamJourneyGame } from '@chatgame/stream-journey'
+import { StreamJourneyGame } from '@chat-game/stream-journey'
 
 definePageMeta({
   layout: 'game',

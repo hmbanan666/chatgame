@@ -1,5 +1,5 @@
 {
-  "name": "@chatgame/stream-journey",
+  "name": "@chat-game/stream-journey",
   "type": "module",
   "private": true,
   "exports": {
