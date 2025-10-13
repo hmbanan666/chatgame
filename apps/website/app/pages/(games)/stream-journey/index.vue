@@ -23,8 +23,10 @@ onMounted(async () => {
   game.value = new StreamJourneyGame({ eventsUrl: '' })
   await game.value.init()
   stage.value?.appendChild(game.value.app.canvas)
+})
 
-  return () => game.value?.destroy()
+onUnmounted(() => {
+  game.value?.destroy()
 })
 </script>
 
