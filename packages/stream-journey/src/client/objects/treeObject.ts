@@ -106,7 +106,8 @@ export class TreeObject extends BaseObject implements GameObjectTree {
 
   getNewType(): GameObjectTree['treeType'] {
     const items = ['1', '2', '3', '4', '5'] as const
-    return items[Math.floor(Math.random() * items.length)] as GameObjectTree['treeType']
+    const index = getRandInteger(0, items.length - 1)
+    return items[index] as GameObjectTree['treeType']
   }
 
   getSpriteByType() {

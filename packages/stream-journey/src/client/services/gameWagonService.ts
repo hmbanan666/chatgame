@@ -63,12 +63,12 @@ export class GameWagonService implements WagonService {
   }
 
   get randomOutFlag(): FlagObject {
-    const randomIndex = Math.floor(Math.random() * this.outFlags.length)
+    const randomIndex = getRandInteger(0, this.outFlags.length - 1)
     return this.outFlags[randomIndex] as FlagObject
   }
 
   get randomNearFlag(): FlagObject {
-    const randomIndex = Math.floor(Math.random() * this.nearFlags.length)
+    const randomIndex = getRandInteger(0, this.nearFlags.length - 1)
     return this.nearFlags[randomIndex] as FlagObject
   }
 
