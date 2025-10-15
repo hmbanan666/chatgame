@@ -67,11 +67,8 @@ export default defineNuxtConfig({
     },
   },
   ui: {
-    colorMode: true,
+    colorMode: false,
     fonts: true,
-  },
-  colorMode: {
-    storageKey: 'color-mode',
   },
   css: ['~/assets/css/styles.css'],
   runtimeConfig: {
