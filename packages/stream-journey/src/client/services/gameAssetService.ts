@@ -1,5 +1,5 @@
-import type { AssetService, Game } from '../../types'
-import { Assets, Sprite } from 'pixi.js'
+import type { AssetService, Game, GameUnitAnimationAlias } from '../../types'
+import { AnimatedSprite, Assets, Sprite } from 'pixi.js'
 
 export class GameAssetService implements AssetService {
   private baseUrl = 'https://chatgame.space/static/stream-journey/assets'
@@ -48,14 +48,52 @@ export class GameAssetService implements AssetService {
     { alias: 'WAGON_ENGINE_CLOUD_4', src: `${this.baseUrl}/objects/wagon/clouds/4.png` },
   ]
 
-  constructor(protected game: Game) {}
+  private units: Map<GameUnitAnimationAlias, { alias: GameUnitAnimationAlias, src: string }>
 
-  sprite(alias: string) {
+  constructor(protected game: Game) {
+    this.units = new Map()
+
+    this.units.set('twitchy.unit.idle', {
+      alias: 'twitchy.unit.idle',
+      src: `${this.baseUrl}/units/twitchy/idle.json`,
+    })
+
+    this.units.set('twitchy.unit.moving', {
+      alias: 'twitchy.unit.moving',
+      src: `${this.baseUrl}/units/twitchy/moving.json`,
+    })
+  }
+
+  getSprite(alias: string) {
     return Sprite.from(alias)
+  }
+
+  async getAnimatedSprite(alias: GameUnitAnimationAlias): Promise<AnimatedSprite> {
+    const sheet = this.units.get(alias) as { alias: GameUnitAnimationAlias, src: string }
+
+    return this.loadAnimation(sheet)
   }
 
   async load() {
     await Assets.load(this.trees)
     await Assets.load(this.wagon)
+  }
+
+  private async loadAnimation(sheet: { alias: GameUnitAnimationAlias, src: string }) {
+    await Assets.load({
+      alias: sheet.alias,
+      src: sheet.src,
+      parser: 'json',
+    })
+
+    const asset = Assets.cache.get(sheet.alias)
+    const animations = asset.data.animations
+
+    const sprite = AnimatedSprite.fromFrames(animations[sheet.alias])
+    sprite.texture.source.scaleMode = 'nearest'
+    sprite.anchor.set(0.5, 1)
+    sprite.scale.set(4)
+
+    return sprite
   }
 }

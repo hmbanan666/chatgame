@@ -1,6 +1,6 @@
 import type { Game, GameObject } from './../types'
 import { createId } from '@paralleldrive/cuid2'
-import { Application, Container, TextureStyle } from 'pixi.js'
+import { Application, Container } from 'pixi.js'
 import { GameAssetService, GameEventService, GamePlayerService, GameTreeService, GameWagonService } from './services'
 
 interface StreamJourneyGameOptions {
@@ -10,7 +10,7 @@ interface StreamJourneyGameOptions {
 export class StreamJourneyGame extends Container implements Game {
   id: Game['id']
   tick: Game['tick'] = 0
-  bottomY: Game['bottomY'] = 0
+  bottomY: Game['bottomY'] = 300
 
   app: Application
   override children: GameObject[] = []
@@ -34,39 +34,36 @@ export class StreamJourneyGame extends Container implements Game {
     this.treeService = new GameTreeService(this)
   }
 
-  async init() {
+  async init({ width }: { width: number }) {
     await this.app.init({
       backgroundAlpha: 0,
       antialias: false,
       roundPixels: false,
       resolution: 1,
-      resizeTo: window,
+      width,
+      height: this.bottomY,
     })
 
     await this.assetService.load()
 
-    TextureStyle.defaultOptions.scaleMode = 'nearest'
     this.app.ticker.maxFPS = 60
-    this.bottomY = this.app.screen.height - 100
 
-    // this.app.screen.width = window.innerWidth
-    // this.app.screen.height = window.innerHeight
+    // this.app.canvas.height = this.bottomY
+    // this.app.canvas.width = width
 
     this.wagonService.init()
 
     this.app.stage.addChild(this)
-
     this.app.ticker.add(this.baseTicker, 'baseTicker')
   }
 
   private baseTicker = () => {
     this.tick = this.app.ticker.FPS
 
+    this.wagonService.update()
     this.playerService.update()
     this.treeService.update()
     this.updateObjects()
-
-    this.wagonService.updateCameraPosition()
   }
 
   removeObject(id: string) {

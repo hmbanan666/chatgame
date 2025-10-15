@@ -1,5 +1,4 @@
 import type { Game, GameObjectPlayer } from './../../../types'
-import { MoveToFlagScript } from '../../scripts/moveToFlagScript'
 import { UnitObject } from './unitObject'
 
 interface PlayerObjectOptions {
@@ -19,7 +18,7 @@ export class PlayerObject extends UnitObject implements GameObjectPlayer {
     this.lastActionAt = new Date()
   }
 
-  async initName(name: string) {
+  initName(name: string) {
     this.name = name
     this.drawUserName(name)
   }
@@ -27,11 +26,8 @@ export class PlayerObject extends UnitObject implements GameObjectPlayer {
   override async live() {
     super.live()
 
-    if (this.target && this.target.type === 'FLAG') {
-      this.script = new MoveToFlagScript({
-        object: this,
-        target: this.target,
-      })
+    if (this.script) {
+      return this.script.live()
     }
   }
 

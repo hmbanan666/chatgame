@@ -26,6 +26,9 @@ export class WagonObject extends BaseObject implements GameObjectWagon {
     this.speedPerSecond = 20
     this.minDistance = 35
 
+    this.zIndex = -5
+    this.y = this.game.bottomY - this.bottomOffset
+
     this.initVisual()
   }
 
@@ -44,9 +47,6 @@ export class WagonObject extends BaseObject implements GameObjectWagon {
   override animate() {
     super.animate()
 
-    this.zIndex = -5
-    this.y = this.game.bottomY - this.bottomOffset
-
     this.drawWheels()
     this.drawEngineClouds()
   }
@@ -60,15 +60,11 @@ export class WagonObject extends BaseObject implements GameObjectWagon {
   }
 
   initVisual() {
-    const spriteSide = this.game.assetService.sprite('WAGON_BASE_1')
+    const spriteSide = this.game.assetService.getSprite('WAGON_BASE_1')
     spriteSide.anchor.set(0.5, 1)
     spriteSide.scale = 0.75
 
-    // const spriteBase = this.addon.assetService.sprite('WAGON_BASE_2')
-    // spriteBase.anchor.set(0.5, 1)
-    // spriteBase.scale = 0.75
-
-    const engine = this.game.assetService.sprite('WAGON_ENGINE')
+    const engine = this.game.assetService.getSprite('WAGON_ENGINE')
     engine.anchor.set(0.5, 1)
     engine.scale = 0.75
     engine.x = -50
@@ -79,17 +75,16 @@ export class WagonObject extends BaseObject implements GameObjectWagon {
     this.engineClouds.x = -60
     this.engineClouds.y = -100
 
-    this.wheel1 = this.game.assetService.sprite('WAGON_WHEEL')
+    this.wheel1 = this.game.assetService.getSprite('WAGON_WHEEL')
     this.wheel1.anchor.set(0.5, 0.5)
 
-    this.wheel2 = this.game.assetService.sprite('WAGON_WHEEL')
+    this.wheel2 = this.game.assetService.getSprite('WAGON_WHEEL')
     this.wheel2.anchor.set(0.5, 0.5)
 
     this.wheel1.scale = 0.75
     this.wheel2.scale = 0.75
 
     this.addChild(
-      // spriteBase,
       engine,
       spriteSide,
       this.wheel1,
@@ -98,7 +93,7 @@ export class WagonObject extends BaseObject implements GameObjectWagon {
     )
   }
 
-  drawWheels() {
+  private drawWheels() {
     const speed = this.state !== 'MOVING' ? 0 : this.speedPerSecond
     const wheelRotation = this.direction === 'LEFT' ? -1 : 1
 
@@ -118,7 +113,7 @@ export class WagonObject extends BaseObject implements GameObjectWagon {
     }
   }
 
-  drawEngineClouds() {
+  private drawEngineClouds() {
     const speed = this.state !== 'MOVING' ? 0 : this.speedPerSecond
     this.engineCloudsOffset -= speed / this.game.tick + 15
 
@@ -144,7 +139,7 @@ export class WagonObject extends BaseObject implements GameObjectWagon {
     }
   }
 
-  getRandomEngineCloudSpriteIndex() {
+  private getRandomEngineCloudSpriteIndex() {
     const random = getRandInteger(1, 1000)
     if (random <= 500) {
       return 'WAGON_ENGINE_CLOUD_1'
@@ -158,8 +153,8 @@ export class WagonObject extends BaseObject implements GameObjectWagon {
     return 'WAGON_ENGINE_CLOUD_4'
   }
 
-  createRandomEngineCloud() {
-    const sprite = this.game.assetService.sprite(this.getRandomEngineCloudSpriteIndex())
+  private createRandomEngineCloud() {
+    const sprite = this.game.assetService.getSprite(this.getRandomEngineCloudSpriteIndex())
     sprite.anchor.set(0.5, 1)
     sprite.scale = 0.75
     sprite.visible = false

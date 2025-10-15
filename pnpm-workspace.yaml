@@ -2,8 +2,8 @@ packages:
   - apps/*
   - packages/*
 catalog:
-  '@antfu/eslint-config': ^5.4.1
-  '@chatgame/stream-journey': ^0.0.3
+  '@antfu/eslint-config': ^6.0.0
+  '@chatgame/stream-journey': ^0.1.0
   '@commitlint/cli': ^20.1.0
   '@commitlint/config-conventional': ^20.0.0
   '@d-fischer/typed-event-emitter': ^3.3.3
@@ -51,7 +51,7 @@ catalog:
   lint-staged: ^16.1.5
   nuxt: ^4.0.3
   nuxt-auth-utils: ^0.5.23
-  pixi.js: ^8.12.0
+  pixi.js: ^8.14.0
   playwright: ^1.54.2
   prisma: ^6.2.1
   tailwindcss: ^4.1.12

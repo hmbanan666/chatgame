@@ -34,6 +34,7 @@ export class BaseObject extends Container implements GameObject {
     this._id = id ?? createId()
     this.x = x ?? 0
     this.y = y ?? 0
+    this.zIndex = Math.round(this.y)
     this.type = type
     this.direction = 'RIGHT'
     this.state = 'IDLE'
@@ -52,7 +53,7 @@ export class BaseObject extends Container implements GameObject {
   live() {}
 
   animate(): void {
-    this.zIndex = Math.round(this.y)
+    // this.zIndex = Math.round(this.y)
   }
 
   move(): boolean {
@@ -75,7 +76,7 @@ export class BaseObject extends Container implements GameObject {
     const finalSpeed = distanceToX > 0 && distanceToY > 0 ? speed * 0.75 : speed
 
     this.moveX(finalSpeed > distanceToX ? distanceToX : finalSpeed)
-    this.moveY(finalSpeed > distanceToY ? distanceToY : finalSpeed)
+    // this.moveY(finalSpeed > distanceToY ? distanceToY : finalSpeed)
     return true
   }
 

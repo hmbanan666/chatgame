@@ -20,7 +20,7 @@ export class GameWagonService implements WagonService {
     if (!this.wagon) {
       this.wagon = new WagonObject({
         game: this.game,
-        x: 200,
+        x: 250,
         y: this.game.bottomY,
       })
     }
@@ -31,7 +31,10 @@ export class GameWagonService implements WagonService {
     this.cameraTarget = this.wagon
   }
 
-  update() {}
+  update() {
+    this.updateCameraPosition()
+    this.updateFlagsPosition()
+  }
 
   updateCameraPosition() {
     if (!this.cameraTarget) {
@@ -40,14 +43,25 @@ export class GameWagonService implements WagonService {
 
     const columnWidth = this.game.app.screen.width / 8
 
-    this.cameraPerfectX = -this.cameraTarget.x + columnWidth * 2
+    this.cameraPerfectX = -this.cameraTarget.x + columnWidth * 3
 
     // If first load
     if (Math.abs(this.cameraPerfectX - this.cameraX) > 300) {
       this.cameraX = this.cameraPerfectX
     }
 
-    this.moveCamera()
+    const cameraMaxSpeed = 20
+    const bufferX = Math.abs(this.cameraPerfectX - this.cameraX)
+    const moduleX = this.cameraPerfectX - this.cameraX > 0 ? 1 : -1
+    const addToX = bufferX > cameraMaxSpeed ? cameraMaxSpeed : bufferX
+
+    if (this.cameraX !== this.cameraPerfectX) {
+      this.cameraX += addToX * moduleX
+    }
+
+    if (this.game.parent !== null) {
+      this.game.parent.x = this.cameraX
+    }
   }
 
   getNearestObstacle(): GameObject | undefined {
@@ -63,21 +77,6 @@ export class GameWagonService implements WagonService {
 
     return trees.filter((obj) => obj.isObstacleForWagon)
       .sort((a, b) => a.x - b.x)[0]
-  }
-
-  private moveCamera() {
-    const cameraMaxSpeed = 20
-    const bufferX = Math.abs(this.cameraPerfectX - this.cameraX)
-    const moduleX = this.cameraPerfectX - this.cameraX > 0 ? 1 : -1
-    const addToX = bufferX > cameraMaxSpeed ? cameraMaxSpeed : bufferX
-
-    if (this.cameraX !== this.cameraPerfectX) {
-      this.cameraX += addToX * moduleX
-    }
-
-    if (this.game.parent) {
-      this.game.parent.x = this.cameraX
-    }
   }
 
   get randomOutFlag(): FlagObject {
@@ -102,29 +101,39 @@ export class GameWagonService implements WagonService {
     }
   }
 
+  private updateFlagsPosition() {
+    for (const flag of this.outFlags) {
+      flag.x = flag.offsetX - this.cameraX
+    }
+
+    for (const flag of this.nearFlags) {
+      flag.x = flag.offsetX - this.cameraX
+    }
+  }
+
   private generateRandomOutFlag() {
     const offsetX = -240
-    const offsetY = 200
 
     const flag = new FlagObject({
       game: this.game as Game,
       variant: 'OUT_OF_SCREEN',
+      offsetX,
       x: offsetX,
-      y: offsetY,
+      y: this.game.bottomY,
     })
 
     return flag
   }
 
   private generateRandomNearFlag() {
-    const offsetX = getRandInteger(0, this.game.app.screen.width)
-    const offsetY = 200
+    const offsetX = getRandInteger(500, this.game.app.screen.width)
 
     const flag = new FlagObject({
       game: this.game as Game,
       variant: 'MOVEMENT',
+      offsetX,
       x: offsetX,
-      y: offsetY,
+      y: this.game.bottomY,
     })
 
     return flag

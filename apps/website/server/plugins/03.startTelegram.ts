@@ -1,13 +1,15 @@
-import process from 'node:process'
 import { useCreateGameBot } from '../core/telegram/bot'
 import { useCreateBot } from '../core/telegram/oldBot'
 
 export default defineNitroPlugin(() => {
-  if (process.env.NODE_ENV !== 'production') {
+  const logger = useLogger('plugin-start-telegram')
+
+  // Only run in production
+  if (import.meta.dev) {
+    logger.info('Telegram server not started in dev mode')
     return
   }
 
-  const logger = useLogger('plugin-start-telegram')
   const { telegramBotToken, telegramGameBotToken } = useRuntimeConfig()
 
   if (!telegramBotToken || !telegramGameBotToken) {

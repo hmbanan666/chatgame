@@ -38,8 +38,8 @@ export class TreeObject extends BaseObject implements GameObjectTree {
   }
 
   initVisual() {
-    const alias = this.getSpriteByType()
-    const sprite = this.game.assetService.sprite(alias)
+    const alias = this.getSpriteAliasByType()
+    const sprite = this.game.assetService.getSprite(alias)
     sprite.anchor.set(0.5, 1)
 
     this.addChild(sprite)
@@ -108,7 +108,7 @@ export class TreeObject extends BaseObject implements GameObjectTree {
     return items[index] as GameObjectTree['treeType']
   }
 
-  private getSpriteByType() {
+  private getSpriteAliasByType() {
     if (this.variant === 'GREEN') {
       return `TREE_${this.treeType}_GREEN`
     }
