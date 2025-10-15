@@ -5,7 +5,7 @@ import { BaseObject } from './baseObject'
 interface TreeObjectOptions {
   game: Game
   x: number
-  y: number
+  y?: number
   id?: string
   zIndex?: number
   size?: number
@@ -24,7 +24,7 @@ export class TreeObject extends BaseObject implements GameObjectTree {
   animationHighSpeed = 0.5
 
   constructor({ game, x, y, size, maxSize, id, zIndex, treeType, variant }: TreeObjectOptions) {
-    super({ id, game, x, y, type: 'TREE' })
+    super({ id, game, x, y: y ?? game.bottomY + 2, type: 'TREE' })
 
     this.health = 100
     this.size = size ?? 100
@@ -62,6 +62,8 @@ export class TreeObject extends BaseObject implements GameObjectTree {
     if (this.state === 'CHOPPING') {
       this.handleChoppingState()
     }
+
+    this.grow()
   }
 
   override animate() {
@@ -75,6 +77,12 @@ export class TreeObject extends BaseObject implements GameObjectTree {
 
     if (this.state === 'CHOPPING') {
       this.shakeAnimation()
+    }
+  }
+
+  private grow() {
+    if (this.size < this.maxSize) {
+      this.size += this.growSpeedPerSecond / this.game.tick
     }
   }
 

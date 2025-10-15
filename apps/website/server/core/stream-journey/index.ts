@@ -9,7 +9,7 @@ rooms.set('12345', new StreamJourneyRoom({ id: '12345' }))
 const room = rooms.get('12345')
 
 setInterval(() => {
-  room?.eventService.send({
+  room?.send({
     event: 'newPlayerMessage',
     data: {
       text: `Привет всем!`,
@@ -23,13 +23,13 @@ setInterval(() => {
 }, 8000)
 
 setInterval(() => {
-  room?.eventService.send({
+  room?.send({
     event: 'newPlayerMessage',
     data: {
       text: `Ого-го!!! Вот это да`,
       player: {
-        id: 'hmbanan777',
-        name: 'hmbanan777',
+        id: 'unknown',
+        name: 'unknown',
         codename: 'twitchy',
       },
     },
