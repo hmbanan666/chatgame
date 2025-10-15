@@ -13,6 +13,10 @@ body {
   scroll-padding-top: 80px;
 }
 
+body {
+  background-color: transparent;
+}
+
 .bg-paper {
   background-image: url(~/assets/img/background-paper.webp);
   background-repeat: no-repeat;
