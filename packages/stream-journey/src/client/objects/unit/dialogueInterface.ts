@@ -28,12 +28,12 @@ export class DialogueInterface extends Container {
       text: formattedText,
       style: {
         fontFamily: 'Noto Serif',
-        fontSize: 18,
+        fontSize: 25,
         fontWeight: '600',
         fill: '#ffffff',
         stroke: {
           color: '#2e222f',
-          width: 5,
+          width: 6,
           alignment: 0,
         },
         align: 'center',
@@ -45,7 +45,7 @@ export class DialogueInterface extends Container {
     container.addChild(basicText)
 
     container.x = -container.width / 2 + 10
-    container.y = -container.height - 86
+    container.y = -container.height - 105
 
     this.addChild(container)
   }

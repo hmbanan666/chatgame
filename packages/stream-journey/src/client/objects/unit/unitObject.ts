@@ -153,7 +153,7 @@ export class UnitObject extends BaseObject implements GameObjectUnit {
       text: formattedText,
       style: {
         fontFamily: 'Noto Serif',
-        fontSize: 20,
+        fontSize: 26,
         fontWeight: '600',
         fill: '#ffffff',
         stroke: {
@@ -169,7 +169,7 @@ export class UnitObject extends BaseObject implements GameObjectUnit {
 
     const containerHalfWidth = container.width / 2 - 8
     container.x = -containerHalfWidth
-    container.y = -120
+    container.y = -140
 
     this.addChild(container)
   }

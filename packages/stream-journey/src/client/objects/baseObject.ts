@@ -33,7 +33,7 @@ export class BaseObject extends Container implements GameObject {
 
     this._id = id ?? createId()
     this.x = x ?? 0
-    this.y = y ?? 0
+    this.y = y ?? this.game.bottomY
     this.zIndex = Math.round(this.y)
     this.type = type
     this.direction = 'RIGHT'

@@ -1,4 +1,3 @@
-import { createId } from '@paralleldrive/cuid2'
 import { rooms } from '~~/server/core/stream-journey'
 
 const logger = useLogger('stream-journey:sse')
@@ -18,17 +17,16 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const streamId = createId()
   const eventStream = createEventStream(event)
 
-  logger.success(`New connection to room ${id}, stream id ${streamId}. Connections now: ${streamJourneyRoom.eventService.streams.size}`)
+  const streamId = streamJourneyRoom.addStream(eventStream)
 
-  streamJourneyRoom.eventService.streams.set(streamId, eventStream)
+  logger.success(`New connection to room ${id}, stream id ${streamId}.`)
 
   eventStream.onClosed(async () => {
-    streamJourneyRoom.eventService.streams.delete(streamId)
-    logger.log(`Connection stream id ${streamId} closed`)
+    streamJourneyRoom.removeStream(streamId)
     await eventStream.close()
+    logger.log(`Connection stream id ${streamId} closed`)
   })
 
   return eventStream.send()

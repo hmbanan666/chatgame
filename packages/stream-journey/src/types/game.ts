@@ -117,6 +117,7 @@ export interface WagonService {
   init: () => void
   updateCameraPosition: () => void
   getNearestObstacle: () => GameObject | undefined
+  getNearestTrees: () => GameObject[]
 }
 
 export interface PlayerService {
@@ -129,7 +130,17 @@ export interface PlayerService {
   ) => Promise<GameObjectPlayer>
 }
 
+export interface TreeServiceCreateOptions {
+  id: string
+  x: number
+  zIndex?: number
+  treeType?: GameObjectTree['treeType']
+  variant?: GameObjectTree['variant']
+  size: number
+  maxSize: number
+}
+
 export interface TreeService {
-  create: (data: { id: string, x: number, zIndex: number, treeType: GameObjectTree['treeType'], variant: GameObjectTree['variant'], size: number, maxSize: number }) => GameObjectTree
+  create: (options: TreeServiceCreateOptions) => GameObjectTree
   update: () => void
 }

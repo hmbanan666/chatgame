@@ -29,9 +29,9 @@ export class StreamJourneyGame extends Container implements Game {
 
     this.eventService = new GameEventService(this, eventsUrl)
     this.assetService = new GameAssetService(this)
+    this.treeService = new GameTreeService(this)
     this.wagonService = new GameWagonService(this)
     this.playerService = new GamePlayerService(this)
-    this.treeService = new GameTreeService(this)
   }
 
   async init({ width }: { width: number }) {
@@ -47,9 +47,6 @@ export class StreamJourneyGame extends Container implements Game {
     await this.assetService.load()
 
     this.app.ticker.maxFPS = 60
-
-    // this.app.canvas.height = this.bottomY
-    // this.app.canvas.width = width
 
     this.wagonService.init()
 

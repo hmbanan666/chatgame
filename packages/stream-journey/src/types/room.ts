@@ -2,7 +2,9 @@ import type { EventMessage } from './events'
 
 export interface Room {
   id: string
-  eventService: ServerEventService
+  addStream: (stream: EventStream) => string
+  removeStream: (id: string) => void
+  send: (event: EventMessage) => Promise<void>
 }
 
 export interface ServerEventService {

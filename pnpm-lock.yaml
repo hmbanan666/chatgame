@@ -10,8 +10,8 @@ catalogs:
       specifier: ^6.0.0
       version: 6.0.0
     '@chatgame/stream-journey':
-      specifier: ^0.1.0
-      version: 0.1.0
+      specifier: ^0.1.1
+      version: 0.1.1
     '@commitlint/cli':
       specifier: ^20.1.0
       version: 20.1.0
@@ -368,7 +368,7 @@ importers:
         version: link:../../packages/types
       '@chatgame/stream-journey':
         specifier: 'catalog:'
-        version: 0.1.0
+        version: 0.1.1
       '@donation-alerts/api':
         specifier: 'catalog:'
         version: 4.0.0(@donation-alerts/auth@4.0.0)
@@ -767,8 +767,8 @@ packages:
   '@capsizecss/unpack@2.4.0':
     resolution: {integrity: sha512-GrSU71meACqcmIUxPYOJvGKF0yryjN/L1aCuE9DViCTJI7bfkjgYDPD1zbNDcINJwSSP6UaBZY9GAbYDO7re0Q==}
 
-  '@chatgame/stream-journey@0.1.0':
-    resolution: {integrity: sha512-jAmssC00UMwvCYiAdrrDoFMP+zisMnhyTWGszq6u5RsJdjuLUmq6oH/hi6pE/s0mnuBoTnLkvTma9MU4qGqYFw==}
+  '@chatgame/stream-journey@0.1.1':
+    resolution: {integrity: sha512-nYa8VMKNJksbENamY/mfl8kM5oZ9edkNi0ipVRrj2fz71iJtlMU/K1Yc5ALIcIeJU5l2qPuCFrTDp/Iz0iXt5w==}
 
   '@clack/core@0.5.0':
     resolution: {integrity: sha512-p3y0FIOwaYRUPRcMO7+dlmLh8PSRcrjuTndsiA0WAFbWES0mLZlrjVoBRZ9DzkPFJZG6KGkJmoEAY0ZcVWTkow==}
@@ -7894,7 +7894,7 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  '@chatgame/stream-journey@0.1.0':
+  '@chatgame/stream-journey@0.1.1':
     dependencies:
       '@paralleldrive/cuid2': 2.2.2
       pixi.js: 8.14.0

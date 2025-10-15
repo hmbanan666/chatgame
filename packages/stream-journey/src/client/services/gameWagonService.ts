@@ -79,6 +79,13 @@ export class GameWagonService implements WagonService {
       .sort((a, b) => a.x - b.x)[0]
   }
 
+  getNearestTrees(): GameObject[] {
+    const x = this.wagon?.x || 0
+    const inArea = (objX: number) => objX > x - 400 && objX < x + 1000
+
+    return this.game.children.filter((obj) => obj.type === 'TREE' && inArea(obj.x))
+  }
+
   get randomOutFlag(): FlagObject {
     const randomIndex = getRandInteger(0, this.outFlags.length - 1)
     return this.outFlags[randomIndex] as FlagObject
@@ -126,7 +133,7 @@ export class GameWagonService implements WagonService {
   }
 
   private generateRandomNearFlag() {
-    const offsetX = getRandInteger(500, this.game.app.screen.width)
+    const offsetX = getRandInteger(300, this.game.app.screen.width)
 
     const flag = new FlagObject({
       game: this.game as Game,

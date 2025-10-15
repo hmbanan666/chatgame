@@ -9,6 +9,12 @@ export default defineTask({
     description: 'Recalculate members positions on all Leaderboards',
   },
   async run() {
+    // Only run in production
+    if (import.meta.dev) {
+      logger.info('Storage not connected in dev mode')
+      return { result: true }
+    }
+
     try {
       await createAndUpdateMembersInWoodlandsLeaderboard()
 
