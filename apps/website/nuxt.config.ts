@@ -32,6 +32,10 @@ export default defineNuxtConfig({
       ssr: false,
       cors: true,
     },
+    '/stream-journey': {
+      ssr: false,
+      cors: true,
+    },
     '/api/**': {
       cors: true,
     },

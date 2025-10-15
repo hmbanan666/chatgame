@@ -7,6 +7,12 @@ const customRoomId = '123456'
 export default defineNitroPlugin(async () => {
   const logger = useLogger('plugin-start-wagon-room')
 
+  // Only run in production
+  if (import.meta.dev) {
+    logger.info('Wagon server not started in dev mode')
+    return
+  }
+
   // Generate rooms
   const wagonRoom = await useStorage('redis').getItem(`room:${wagonRoomId}:chunks`)
   if (!wagonRoom) {

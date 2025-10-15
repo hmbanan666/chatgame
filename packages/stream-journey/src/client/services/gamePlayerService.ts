@@ -14,7 +14,6 @@ export class GamePlayerService implements PlayerService {
   async init(id: string, name: string, codename?: string | null) {
     const player = await this.findOrCreatePlayer(id, name, codename)
 
-    this.game.addChild(player)
     player.updateLastActionAt()
 
     const target = this.game.wagonService.randomNearFlag

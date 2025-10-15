@@ -1,5 +1,5 @@
 import type { GameObjectUnit } from './../../../types'
-import { Container, Graphics, Text } from 'pixi.js'
+import { Container, Text } from 'pixi.js'
 
 export class DialogueInterface extends Container {
   messages: { id: string, text: string, isShowed: boolean }[]
@@ -14,45 +14,43 @@ export class DialogueInterface extends Container {
 
     this.x = 0
     this.y = -36
+
+    this.zIndex = 0
+    this.visible = true
   }
 
   create(message: { id: string, text: string }) {
     const container = new Container()
 
+    const formattedText = message.text.trim().slice(0, 500)
+
     const basicText = new Text({
-      text: message.text,
+      text: formattedText,
       style: {
         fontFamily: 'Noto Serif',
-        fontSize: 16,
-        fontWeight: '500',
-        fill: 0x451A03,
-        align: 'left',
+        fontSize: 18,
+        fontWeight: '600',
+        fill: '#ffffff',
+        stroke: {
+          color: '#2e222f',
+          width: 5,
+          alignment: 0,
+        },
+        align: 'center',
         wordWrap: true,
-        wordWrapWidth: 350,
+        wordWrapWidth: 400,
       },
     })
 
-    const rectOffsetX = 8
-    const rectOffsetY = 4
-    const rectWidth = basicText.width + rectOffsetX * 2
-    const rectHeight = basicText.height + rectOffsetY * 2
+    container.addChild(basicText)
 
-    const graphics = new Graphics()
-    graphics.rect(-rectOffsetX, -rectOffsetY, rectWidth, rectHeight)
-    graphics.fill(0xFEF3C7)
-
-    container.addChild(graphics, basicText)
-
-    container.x = -container.width / 2 + 12
-    container.y = -container.height - 82
+    container.x = -container.width / 2 + 10
+    container.y = -container.height - 86
 
     this.addChild(container)
   }
 
   animate() {
-    this.visible = true
-    this.zIndex = 0
-
     // Add new messages to show
     if (this.unit?.dialogue?.messages) {
       for (const message of this.unit.dialogue.messages) {
@@ -79,8 +77,9 @@ export class DialogueInterface extends Container {
       container.visible = true
       container.zIndex = 0
       container.alpha -= this.showingSpeed
+      container.y -= this.showingSpeed * 150
 
-      if (container.alpha <= 0.8) {
+      if (container.alpha <= 0.85) {
         this.remove(container)
       }
     }
@@ -90,7 +89,13 @@ export class DialogueInterface extends Container {
     return this.removeChild(container)
   }
 
-  private getShowingSpeed(messageLength: number) {
-    return (0.05 - (messageLength * 4) / 10000) / this.unit.game.tick
+  private getShowingSpeed(_messageLength: number) {
+    // const baseDuration = 2
+    // const lengthFactor = 0.05
+
+    // const calculated = (baseDuration + messageLength * lengthFactor) / 10000
+
+    // It should be around 0.0005
+    return 0.0005
   }
 }

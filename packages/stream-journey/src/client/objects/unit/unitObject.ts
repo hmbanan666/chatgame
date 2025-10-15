@@ -1,10 +1,12 @@
+import type { AnimatedSprite } from 'pixi.js'
 import type {
   Game,
   GameObject,
   GameObjectUnit,
+  GameUnitAnimationAlias,
 } from './../../../types'
 import { createId } from '@paralleldrive/cuid2'
-import { AnimatedSprite, Assets, Container, Graphics, Text } from 'pixi.js'
+import { Container, Text } from 'pixi.js'
 import { BaseObject } from '../baseObject'
 import { getRandInteger } from './../../utils/random'
 import { DialogueInterface } from './dialogueInterface'
@@ -33,6 +35,8 @@ export class UnitObject extends BaseObject implements GameObjectUnit {
     this.coins = 0
     this.state = 'IDLE'
 
+    this.zIndex = Math.round(this.y + 1)
+
     this.dialogue = {
       messages: [],
     }
@@ -59,22 +63,14 @@ export class UnitObject extends BaseObject implements GameObjectUnit {
     }
 
     try {
-      const idle = await Assets.load(`https://storage.yandexcloud.net/chatgame-assets/units/${codename}/idle.json`)
-      const idleSprite = new AnimatedSprite(idle.animations.main)
-      idleSprite.anchor.set(0.5, 1)
-      idleSprite.scale.set(4)
-      this.animationIdle = idleSprite
+      this.animationIdle = await this.game.assetService.getAnimatedSprite(`${codename}.unit.idle` as GameUnitAnimationAlias)
       this.addChild(this.animationIdle)
     } catch (error) {
       console.error('Error loading idle animation:', error)
     }
 
     try {
-      const moving = await Assets.load(`https://storage.yandexcloud.net/chatgame-assets/units/${codename}/moving.json`)
-      const movingSprite = new AnimatedSprite(moving.animations.main)
-      movingSprite.anchor.set(0.5, 1)
-      movingSprite.scale.set(4)
-      this.animationMoving = movingSprite
+      this.animationMoving = await this.game.assetService.getAnimatedSprite(`${codename}.unit.moving` as GameUnitAnimationAlias)
       this.addChild(this.animationMoving)
     } catch (error) {
       console.error('Error loading moving animation:', error)
@@ -101,8 +97,6 @@ export class UnitObject extends BaseObject implements GameObjectUnit {
     }
 
     super.animate()
-
-    this.zIndex = Math.round(this.y + 1)
 
     if (this.state === 'MOVING') {
       this.animationIdle.visible = false
@@ -151,27 +145,30 @@ export class UnitObject extends BaseObject implements GameObjectUnit {
       return
     }
 
+    const formattedText = name.trim().slice(0, 18)
+
     const container = new Container()
 
     const basicText = new Text({
-      text: name,
+      text: formattedText,
       style: {
         fontFamily: 'Noto Serif',
-        fontSize: 15,
+        fontSize: 20,
         fontWeight: '600',
-        fill: 0x451A03,
+        fill: '#ffffff',
+        stroke: {
+          color: '#2e222f',
+          width: 6,
+          alignment: 0,
+        },
         align: 'center',
       },
     })
 
-    const graphics = new Graphics()
-    graphics.rect(-6, -2, basicText.width + 12, basicText.height + 4)
-    graphics.fill(0xFEF3C7)
+    container.addChild(basicText)
 
-    container.addChild(graphics, basicText)
-
-    const containerWidth = container.width / 2 - 12
-    container.x = -containerWidth
+    const containerHalfWidth = container.width / 2 - 8
+    container.x = -containerHalfWidth
     container.y = -120
 
     this.addChild(container)

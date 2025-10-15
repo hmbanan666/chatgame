@@ -1,14 +1,16 @@
-import process from 'node:process'
 import { twitchAddonController } from '../utils/twitch/twitch.addon.controller'
 import { twitchController } from '../utils/twitch/twitch.controller'
 import { twitchProvider } from '../utils/twitch/twitch.provider'
 
 export default defineNitroPlugin(() => {
-  if (process.env.NODE_ENV !== 'production') {
+  const logger = useLogger('plugin-start-twitch')
+
+  // Only run in production
+  if (import.meta.dev) {
+    logger.info('Twitch server not started in dev mode')
     return
   }
 
-  const logger = useLogger('plugin-start-twitch')
   const { twitchChannelId } = useRuntimeConfig()
 
   if (!twitchChannelId) {
