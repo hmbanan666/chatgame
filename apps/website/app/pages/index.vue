@@ -244,44 +244,16 @@
     </p>
   </div>
 
-  <Modal
+  <UModal
+    v-model:open="isCharacterOpened"
     :title="`&laquo;${selectedCharacter?.nickname}&raquo; ${selectedCharacter?.name}`"
-    :is-opened="isCharacterOpened"
-    @close="isCharacterOpened = false"
   >
-    <p class="tg-hint text-sm leading-tight">
-      {{ selectedCharacter?.description ?? "" }}
-    </p>
-
-    <div v-if="selectedCharacter?.levels.length">
-      <h3 class="mb-1 text-lg md:text-xl font-medium leading-tight">
-        Награды за прокачку
-      </h3>
-      <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2">
-        <ActiveCard
-          v-for="reward in selectedCharacter?.levels"
-          :key="reward.id"
-          class="px-4 py-4 flex flex-col gap-2 items-center justify-center"
-        >
-          <p class="font-semibold">
-            {{ reward.level }} уровень
-          </p>
-
-          <div v-if="reward.inventoryItemId" class="mb-1 relative text-center">
-            <Image
-              :src="`/items/${reward.inventoryItemId}/128.png`"
-              class="p-2 h-16 w-16 bg-orange-800/10 rounded-lg"
-            />
-            <p
-              class="absolute -bottom-2 -right-1 px-3 py-1 bg-orange-100 rounded-2xl text-sm leading-tight"
-            >
-              <span class="text-xs">x</span>{{ reward.awardAmount }}
-            </p>
-          </div>
-        </ActiveCard>
-      </div>
-    </div>
-  </Modal>
+    <template #body>
+      <p v-if="selectedCharacter?.description" class="text-base/5">
+        {{ selectedCharacter.description }}
+      </p>
+    </template>
+  </UModal>
 </template>
 
 <script setup lang="ts">
