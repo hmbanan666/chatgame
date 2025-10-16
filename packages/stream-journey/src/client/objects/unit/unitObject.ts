@@ -3,7 +3,7 @@ import type {
   Game,
   GameObject,
   GameObjectUnit,
-  GameUnitAnimationAlias,
+  GameUnitCodename,
 } from './../../../types'
 import { createId } from '@paralleldrive/cuid2'
 import { Container, Text } from 'pixi.js'
@@ -52,7 +52,7 @@ export class UnitObject extends BaseObject implements GameObjectUnit {
     }
   }
 
-  async initVisual(codename: string | undefined | null = 'twitchy'): Promise<void> {
+  async initVisual(codename: string | undefined | null): Promise<void> {
     if (this.animationIdle) {
       this.removeChild(this.animationIdle)
       this.animationIdle = undefined
@@ -62,15 +62,19 @@ export class UnitObject extends BaseObject implements GameObjectUnit {
       this.animationMoving = undefined
     }
 
+    if (!codename) {
+      codename = 'twitchy'
+    }
+
     try {
-      this.animationIdle = await this.game.assetService.getAnimatedSprite(`units.${codename}.idle` as GameUnitAnimationAlias)
+      this.animationIdle = await this.game.assetService.getAnimatedSprite(codename as GameUnitCodename, 'idle')
       this.addChild(this.animationIdle)
     } catch (error) {
       console.error('Error loading idle animation:', error)
     }
 
     try {
-      this.animationMoving = await this.game.assetService.getAnimatedSprite(`units.${codename}.moving` as GameUnitAnimationAlias)
+      this.animationMoving = await this.game.assetService.getAnimatedSprite(codename as GameUnitCodename, 'moving')
       this.addChild(this.animationMoving)
     } catch (error) {
       console.error('Error loading moving animation:', error)
