@@ -12,6 +12,7 @@ export interface Game extends Container {
   playerService: PlayerService
   treeService: TreeService
   init: (window: { width: number }) => Promise<void>
+  removeObject: (id: string) => void
 }
 
 export type GameObjectType = 'PLAYER' | 'RAIDER' | 'FLAG' | 'TREE' | 'WAGON'
@@ -26,7 +27,7 @@ export type GameObjectState
 
 export type GameObjectDirection = 'LEFT' | 'RIGHT'
 
-export type GameUnitAnimationAlias = 'twitchy.unit.idle' | 'twitchy.unit.moving'
+export type GameUnitAnimationAlias = 'units.twitchy.idle' | 'units.twitchy.moving'
 
 export interface GameScript {
   id: string

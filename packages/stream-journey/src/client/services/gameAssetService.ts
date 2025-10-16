@@ -53,13 +53,13 @@ export class GameAssetService implements AssetService {
   constructor(protected game: Game) {
     this.units = new Map()
 
-    this.units.set('twitchy.unit.idle', {
-      alias: 'twitchy.unit.idle',
+    this.units.set('units.twitchy.idle', {
+      alias: 'units.twitchy.idle',
       src: `${this.baseUrl}/units/twitchy/idle.json`,
     })
 
-    this.units.set('twitchy.unit.moving', {
-      alias: 'twitchy.unit.moving',
+    this.units.set('units.twitchy.moving', {
+      alias: 'units.twitchy.moving',
       src: `${this.baseUrl}/units/twitchy/moving.json`,
     })
   }
@@ -74,9 +74,11 @@ export class GameAssetService implements AssetService {
     return this.loadAnimation(sheet)
   }
 
-  async load() {
-    await Assets.load(this.trees)
-    await Assets.load(this.wagon)
+  async init() {
+    await Promise.all([
+      Assets.load(this.trees),
+      Assets.load(this.wagon),
+    ])
   }
 
   private async loadAnimation(sheet: { alias: GameUnitAnimationAlias, src: string }) {

@@ -5,7 +5,7 @@
   >
     <div class="mb-8 space-y-4">
       <h1 class="text-3xl md:text-3xl lg:text-4xl">
-        Woodlands: онлайн-игра в Telegram
+        Интерактивная онлайн-игра
       </h1>
       <p class="text-base md:text-lg lg:text-xl">
         Группа игроков сопровождает Машину из точки А в точку Б. По пути
@@ -114,19 +114,22 @@
             {{ product.coins }} Монет
           </div>
 
-          <div class="">
-            <form method="POST" action="/api/payment">
-              <input
-                type="hidden"
-                name="productId"
-                :value="product.id"
-              >
-              <button
-                class="px-6 py-3 w-full bg-teal-500 border-b-4 border-teal-600 text-white text-xl tracking-wide rounded-lg cursor-pointer hover:opacity-85 active:scale-95 duration-200 flex flex-row justify-center items-center gap-3"
-              >
-                {{ product.price }} ₽
-              </button>
-            </form>
+          <div>
+            <button
+              v-if="loggedIn"
+              :disabled="isLoading"
+              class="px-6 py-3 w-full bg-teal-500 border-b-4 border-teal-600 text-white text-xl tracking-wide rounded-lg cursor-pointer hover:opacity-85 active:scale-95 duration-200 flex flex-row justify-center items-center gap-3"
+              @click="buyProduct(product.id)"
+            >
+              <UIcon
+                v-if="isLoading"
+                name="i-lucide:loader-circle"
+                class="animate-spin"
+              />
+              <span v-else>{{ product.price }} ₽</span>
+            </button>
+
+            <LoginButton v-else />
           </div>
         </div>
       </ActiveCard>
@@ -285,7 +288,7 @@
 import { vElementVisibility } from '@vueuse/components'
 
 useHead({
-  title: 'Интерактивная онлайн-игра в Telegram',
+  title: 'Интерактивная онлайн-игра',
   meta: [
     {
       name: 'description',
@@ -353,6 +356,25 @@ const shopProducts = [
     coins: 650,
   },
 ]
+
+const isLoading = ref(false)
+
+async function buyProduct(productId: string) {
+  try {
+    isLoading.value = true
+    const data = await $fetch('/api/payment', {
+      method: 'POST',
+      body: { productId },
+    })
+    if (data?.result) {
+      await navigateTo(data.result, { external: true })
+    }
+  } catch (e) {
+    console.error(e)
+  } finally {
+    isLoading.value = false
+  }
+}
 </script>
 
 <style scoped>

@@ -43,7 +43,7 @@ export class GameWagonService implements WagonService {
 
     const columnWidth = this.game.app.screen.width / 8
 
-    this.cameraPerfectX = -this.cameraTarget.x + columnWidth * 3
+    this.cameraPerfectX = -this.cameraTarget.x + columnWidth * 2
 
     // If first load
     if (Math.abs(this.cameraPerfectX - this.cameraX) > 300) {
@@ -81,7 +81,7 @@ export class GameWagonService implements WagonService {
 
   getNearestTrees(): GameObject[] {
     const x = this.wagon?.x || 0
-    const inArea = (objX: number) => objX > x - 400 && objX < x + 1000
+    const inArea = (objX: number) => objX > x - 200 && objX < x + 1000
 
     return this.game.children.filter((obj) => obj.type === 'TREE' && inArea(obj.x))
   }
