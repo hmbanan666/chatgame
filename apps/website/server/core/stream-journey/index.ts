@@ -30,7 +30,7 @@ setInterval(() => {
       player: {
         id: 'unknown',
         name: 'unknown',
-        codename: 'twitchy',
+        codename: 'telegramo',
       },
     },
   })

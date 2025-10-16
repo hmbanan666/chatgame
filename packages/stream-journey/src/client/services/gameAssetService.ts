@@ -1,4 +1,4 @@
-import type { AssetService, Game, GameUnitAnimationAlias } from '../../types'
+import type { AssetService, Game, GameUnitAnimationAlias, GameUnitAnimations, GameUnitAnimationType, GameUnitCodename } from '../../types'
 import { AnimatedSprite, Assets, Sprite } from 'pixi.js'
 
 export class GameAssetService implements AssetService {
@@ -48,30 +48,23 @@ export class GameAssetService implements AssetService {
     { alias: 'WAGON_ENGINE_CLOUD_4', src: `${this.baseUrl}/objects/wagon/clouds/4.png` },
   ]
 
-  private units: Map<GameUnitAnimationAlias, { alias: GameUnitAnimationAlias, src: string }>
+  private units: Map<GameUnitCodename, GameUnitAnimations>
 
   constructor(protected game: Game) {
     this.units = new Map()
 
-    this.units.set('units.twitchy.idle', {
-      alias: 'units.twitchy.idle',
-      src: `${this.baseUrl}/units/twitchy/idle.json`,
-    })
-
-    this.units.set('units.twitchy.moving', {
-      alias: 'units.twitchy.moving',
-      src: `${this.baseUrl}/units/twitchy/moving.json`,
-    })
+    this.addUnit('twitchy')
+    this.addUnit('telegramo')
   }
 
   getSprite(alias: string) {
     return Sprite.from(alias)
   }
 
-  async getAnimatedSprite(alias: GameUnitAnimationAlias): Promise<AnimatedSprite> {
-    const sheet = this.units.get(alias) as { alias: GameUnitAnimationAlias, src: string }
+  async getAnimatedSprite(codename: GameUnitCodename, type: GameUnitAnimationType): Promise<AnimatedSprite> {
+    const unit = this.units.get(codename) as GameUnitAnimations
 
-    return this.loadAnimation(sheet)
+    return this.loadAnimation(unit[type])
   }
 
   async init() {
@@ -79,6 +72,19 @@ export class GameAssetService implements AssetService {
       Assets.load(this.trees),
       Assets.load(this.wagon),
     ])
+  }
+
+  private addUnit(codename: GameUnitCodename) {
+    this.units.set(codename, {
+      idle: {
+        alias: `units.${codename}.idle`,
+        src: `${this.baseUrl}/units/${codename}/idle.json`,
+      },
+      moving: {
+        alias: `units.${codename}.moving`,
+        src: `${this.baseUrl}/units/${codename}/moving.json`,
+      },
+    })
   }
 
   private async loadAnimation(sheet: { alias: GameUnitAnimationAlias, src: string }) {

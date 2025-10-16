@@ -27,7 +27,20 @@ export type GameObjectState
 
 export type GameObjectDirection = 'LEFT' | 'RIGHT'
 
-export type GameUnitAnimationAlias = 'units.twitchy.idle' | 'units.twitchy.moving'
+export type GameUnitCodename = 'twitchy' | 'telegramo'
+
+export type GameUnitAnimations = {
+  idle: { alias: GameUnitAnimationAlias, src: string }
+  moving: { alias: GameUnitAnimationAlias, src: string }
+}
+
+export type GameUnitAnimationType = keyof GameUnitAnimations
+
+export type GameUnitAnimationAlias
+  = | 'units.twitchy.idle'
+    | 'units.twitchy.moving'
+    | 'units.telegramo.idle'
+    | 'units.telegramo.moving'
 
 export interface GameScript {
   id: string
@@ -104,7 +117,7 @@ export interface GameObjectPlayer extends GameObjectUnit {
 
 export interface AssetService {
   getSprite: (alias: string) => Sprite
-  getAnimatedSprite: (alias: GameUnitAnimationAlias) => Promise<AnimatedSprite>
+  getAnimatedSprite: (codename: GameUnitCodename, type: GameUnitAnimationType) => Promise<AnimatedSprite>
 }
 
 export interface EventService {
