@@ -4,7 +4,7 @@ import { TreeObject } from '../objects/treeObject'
 import { getRandInteger } from '../utils/random'
 
 export class GameTreeService implements TreeService {
-  private treesPerfectAmount = 50
+  private treesPerfectAmount = 30
 
   constructor(readonly game: Game) {
     this.generateTrees()
@@ -19,6 +19,7 @@ export class GameTreeService implements TreeService {
 
   update() {
     this.regenerateTrees()
+    this.removeInactiveTrees()
   }
 
   private generateTrees() {
@@ -54,6 +55,20 @@ export class GameTreeService implements TreeService {
         size: 5,
         maxSize: getRandInteger(80, 125),
       })
+    }
+  }
+
+  private removeInactiveTrees() {
+    if (!this.game.wagonService.wagon?.x) {
+      return
+    }
+
+    const x = this.game.wagonService.wagon.x
+    const distance = 1000
+
+    const treesToRemove = this.game.children.filter((obj) => obj.type === 'TREE' && obj.x < x - distance)
+    for (const tree of treesToRemove) {
+      this.game.removeObject(tree.id)
     }
   }
 }

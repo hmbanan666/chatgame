@@ -1,80 +1,80 @@
 {
   "frames": {
-    "twitchy-moving1": {
+    "telegramo-moving1": {
       "frame": { "x": 0, "y": 0, "w": 32, "h": 32 },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
       "sourceSize": { "w": 32, "h": 32 },
-      "duration": 100
+      "duration": 450
     },
-    "twitchy-moving2": {
+    "telegramo-moving2": {
       "frame": { "x": 32, "y": 0, "w": 32, "h": 32 },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
       "sourceSize": { "w": 32, "h": 32 },
-      "duration": 100
+      "duration": 450
     },
-    "twitchy-moving3": {
+    "telegramo-moving3": {
       "frame": { "x": 64, "y": 0, "w": 32, "h": 32 },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
       "sourceSize": { "w": 32, "h": 32 },
-      "duration": 100
+      "duration": 450
     },
-    "twitchy-moving4": {
+    "telegramo-moving4": {
       "frame": { "x": 96, "y": 0, "w": 32, "h": 32 },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
       "sourceSize": { "w": 32, "h": 32 },
-      "duration": 100
+      "duration": 450
     },
-    "twitchy-moving5": {
+    "telegramo-moving5": {
       "frame": { "x": 128, "y": 0, "w": 32, "h": 32 },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
       "sourceSize": { "w": 32, "h": 32 },
-      "duration": 100
+      "duration": 450
     },
-    "twitchy-moving6": {
+    "telegramo-moving6": {
       "frame": { "x": 160, "y": 0, "w": 32, "h": 32 },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
       "sourceSize": { "w": 32, "h": 32 },
-      "duration": 100
+      "duration": 450
     },
-    "twitchy-moving7": {
+    "telegramo-moving7": {
       "frame": { "x": 192, "y": 0, "w": 32, "h": 32 },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
       "sourceSize": { "w": 32, "h": 32 },
-      "duration": 100
+      "duration": 450
     },
-    "twitchy-moving8": {
+    "telegramo-moving8": {
       "frame": { "x": 224, "y": 0, "w": 32, "h": 32 },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
       "sourceSize": { "w": 32, "h": 32 },
-      "duration": 100
+      "duration": 450
     }
   },
   "animations": {
-    "units.twitchy.moving": [
-      "twitchy-moving1",
-      "twitchy-moving2",
-      "twitchy-moving3",
-      "twitchy-moving4",
-      "twitchy-moving5",
-      "twitchy-moving6",
-      "twitchy-moving7",
-      "twitchy-moving8"
+    "units.telegramo.moving": [
+      "telegramo-moving1",
+      "telegramo-moving2",
+      "telegramo-moving3",
+      "telegramo-moving4",
+      "telegramo-moving5",
+      "telegramo-moving6",
+      "telegramo-moving7",
+      "telegramo-moving8"
     ]
   },
   "meta": {

@@ -1,13 +1,11 @@
 <template>
-  <ActiveStreamBanner />
-  <MainHeader />
+  <div class="bg-orange-50 min-h-dvh">
+    <ActiveStreamBanner />
+    <MainHeader />
 
-  <main class="pt-18">
-    <slot />
-  </main>
-  <MainFooter />
+    <main class="pt-18">
+      <slot />
+    </main>
+    <MainFooter />
+  </div>
 </template>
-
-<script setup lang="ts">
-import '~/assets/css/website.css'
-</script>

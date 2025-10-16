@@ -1,18 +1,18 @@
 import { createId } from '@paralleldrive/cuid2'
 
-export default defineEventHandler(
-  async (event) => {
-    const formData = await readFormData(event)
+export default defineEventHandler(async (event) => {
+  try {
     const session = await getUserSession(event)
 
-    if (!session?.user || !formData.has('productId')) {
+    const data = await readBody(event)
+    const productId = data?.productId
+
+    if (!session?.user || !productId) {
       throw createError({
         statusCode: 400,
         message: 'Invalid data',
       })
     }
-
-    const productId = formData.get('productId') as string
 
     const profile = await prisma.profile.findFirst({
       where: { id: session.user.id },
@@ -65,7 +65,7 @@ export default defineEventHandler(
     const paymentOnProvider = await res.json()
     if (!paymentOnProvider?.id || !paymentOnProvider?.confirmation) {
       throw createError({
-        status: 400,
+        status: 500,
         message: 'Payment creation error',
       })
     }
@@ -85,6 +85,11 @@ export default defineEventHandler(
       },
     })
 
-    return sendRedirect(event, redirectUrl)
-  },
-)
+    return {
+      ok: true,
+      result: redirectUrl,
+    }
+  } catch (error) {
+    throw errorResolver(error)
+  }
+})

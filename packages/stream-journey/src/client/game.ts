@@ -44,10 +44,9 @@ export class StreamJourneyGame extends Container implements Game {
       height: this.bottomY,
     })
 
-    await this.assetService.load()
-
     this.app.ticker.maxFPS = 60
 
+    await this.assetService.init()
     this.wagonService.init()
 
     this.app.stage.addChild(this)

@@ -1,5 +1,5 @@
 <template>
-  <footer>
+  <footer class="py-8">
     <ul>
       <li v-for="link in links" :key="link.url">
         <NuxtLink :to="localePath(link.url)" :target="link.isOnNewTab ? '_blank' : ''">
@@ -56,15 +56,7 @@ const links = [
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 1em;
     margin-top: 4em;
-    margin-bottom: 2em;
-
-    @media (min-width: 480px) {
-      & {
-        padding: 0.5em 0;
-      }
-    }
   }
 
   a {

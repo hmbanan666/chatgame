@@ -63,14 +63,14 @@ export class UnitObject extends BaseObject implements GameObjectUnit {
     }
 
     try {
-      this.animationIdle = await this.game.assetService.getAnimatedSprite(`${codename}.unit.idle` as GameUnitAnimationAlias)
+      this.animationIdle = await this.game.assetService.getAnimatedSprite(`units.${codename}.idle` as GameUnitAnimationAlias)
       this.addChild(this.animationIdle)
     } catch (error) {
       console.error('Error loading idle animation:', error)
     }
 
     try {
-      this.animationMoving = await this.game.assetService.getAnimatedSprite(`${codename}.unit.moving` as GameUnitAnimationAlias)
+      this.animationMoving = await this.game.assetService.getAnimatedSprite(`units.${codename}.moving` as GameUnitAnimationAlias)
       this.addChild(this.animationMoving)
     } catch (error) {
       console.error('Error loading moving animation:', error)

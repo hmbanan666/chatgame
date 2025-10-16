@@ -1,44 +1,44 @@
 {
   "frames": {
-    "twitchy-idle1": {
+    "telegramo-idle1": {
       "frame": { "x": 0, "y": 0, "w": 32, "h": 32 },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
       "sourceSize": { "w": 32, "h": 32 },
-      "duration": 100
+      "duration": 450
     },
-    "twitchy-idle2": {
+    "telegramo-idle2": {
       "frame": { "x": 32, "y": 0, "w": 32, "h": 32 },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
       "sourceSize": { "w": 32, "h": 32 },
-      "duration": 100
+      "duration": 450
     },
-    "twitchy-idle3": {
+    "telegramo-idle3": {
       "frame": { "x": 64, "y": 0, "w": 32, "h": 32 },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
       "sourceSize": { "w": 32, "h": 32 },
-      "duration": 100
+      "duration": 450
     },
-    "twitchy-idle4": {
+    "telegramo-idle4": {
       "frame": { "x": 96, "y": 0, "w": 32, "h": 32 },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
       "sourceSize": { "w": 32, "h": 32 },
-      "duration": 100
+      "duration": 450
     }
   },
   "animations": {
-    "units.twitchy.idle": [
-      "twitchy-idle1",
-      "twitchy-idle2",
-      "twitchy-idle3",
-      "twitchy-idle4"
+    "units.telegramo.idle": [
+      "telegramo-idle1",
+      "telegramo-idle2",
+      "telegramo-idle3",
+      "telegramo-idle4"
     ]
   },
   "meta": {
