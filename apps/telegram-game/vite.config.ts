@@ -1,4 +1,3 @@
-import process from 'node:process'
 import { fileURLToPath, URL } from 'node:url'
 
 import tailwindcss from '@tailwindcss/vite'
@@ -8,7 +7,6 @@ import IconsResolver from 'unplugin-icons/resolver'
 import Icons from 'unplugin-icons/vite'
 import Components from 'unplugin-vue-components/vite'
 import { defineConfig } from 'vite'
-import Terminal from 'vite-plugin-terminal'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
@@ -41,10 +39,6 @@ export default defineConfig({
     }),
     Icons(),
     tailwindcss(),
-    Terminal({
-      output: 'terminal',
-      console: process.env.NODE_ENV === 'development' ? 'terminal' : undefined,
-    }),
   ],
   server: {
     port: 4300,

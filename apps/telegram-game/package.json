@@ -40,7 +40,6 @@
     "unplugin-icons": "catalog:",
     "unplugin-vue-components": "catalog:",
     "vite": "catalog:",
-    "vite-plugin-terminal": "catalog:",
     "vite-plugin-vue-devtools": "catalog:",
     "vue-tsc": "catalog:"
   }
