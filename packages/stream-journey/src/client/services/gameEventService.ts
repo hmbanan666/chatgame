@@ -2,9 +2,13 @@ import type { EventService, Game } from '../../types'
 import type { EventMessage, NewPlayerMessage } from '../../types/events'
 
 export class GameEventService implements EventService {
-  stream!: EventSource
+  private stream: EventSource | undefined
 
   constructor(readonly game: Game, readonly eventsUrl: string) {
+    this.connect()
+  }
+
+  private connect() {
     this.stream = new EventSource(this.eventsUrl)
 
     this.stream.onmessage = (event) => {
@@ -14,6 +18,13 @@ export class GameEventService implements EventService {
       }
 
       this.handleMessage(message)
+    }
+
+    this.stream.onerror = () => {
+      this.stream?.close()
+      this.stream = undefined
+
+      this.connect()
     }
   }
 

@@ -6,9 +6,7 @@ import { getRandInteger } from '../utils/random'
 export class GameTreeService implements TreeService {
   private treesPerfectAmount = 25
 
-  constructor(readonly game: Game) {
-    this.generateTrees()
-  }
+  constructor(readonly game: Game) {}
 
   create(data: TreeServiceCreateOptions): TreeObject {
     return new TreeObject({

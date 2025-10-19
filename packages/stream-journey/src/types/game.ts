@@ -120,7 +120,6 @@ export interface AssetService {
 }
 
 export interface EventService {
-  stream: EventSource
 }
 
 export interface WagonService {
