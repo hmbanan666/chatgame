@@ -1,10 +1,8 @@
 import type { Sprite } from 'pixi.js'
 import type { Game, GameObjectWagon } from '../../types'
 import { Container } from 'pixi.js'
-import { MoveToFlagScript } from '../scripts/moveToFlagScript'
 import { getRandInteger } from '../utils/random'
 import { BaseObject } from './baseObject'
-import { FlagObject } from './flagObject'
 
 interface WagonObjectOptions {
   game: Game
@@ -49,14 +47,6 @@ export class WagonObject extends BaseObject implements GameObjectWagon {
 
     this.drawWheels()
     this.drawEngineClouds()
-  }
-
-  createFlagAndMove(x: number) {
-    this.target = new FlagObject({ game: this.game, x, y: this.y, variant: 'MOVEMENT' })
-    this.script = new MoveToFlagScript({
-      object: this,
-      target: this.target,
-    })
   }
 
   initVisual() {

@@ -31,10 +31,6 @@ export class GameEventService implements EventService {
     playerObj.addMessage(data.text)
     playerObj.updateLastActionAt()
 
-    if (!this.game.wagonService.wagon?.script) {
-      this.game.wagonService.wagon?.createFlagAndMove(this.game.wagonService.wagon.x + 400)
-    }
-
     return true
   }
 

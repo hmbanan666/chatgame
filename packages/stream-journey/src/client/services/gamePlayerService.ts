@@ -1,7 +1,8 @@
 import type { Game, GameObjectPlayer, PlayerService } from '../../types'
 import { PlayerObject } from '../objects/unit/playerObject'
 import { MoveOffScreenAndSelfDestroyScript } from '../scripts/moveOffScreenAndSelfDestroyScript'
-import { MoveToTargetScript } from '../scripts/moveToTargetScript'
+import { MoveToFlagScript } from '../scripts/moveToFlagScript'
+import { MoveToTreeAndChopScript } from '../scripts/moveToTreeAndChopScript'
 import { getDateMinusMinutes } from './../utils/date'
 
 export class GamePlayerService implements PlayerService {
@@ -16,11 +17,27 @@ export class GamePlayerService implements PlayerService {
 
     player.updateLastActionAt()
 
-    const target = this.game.wagonService.randomNearFlag
+    const tree = this.game.wagonService.getNearestObstacle()
+    if (!tree) {
+      const flag = this.game.wagonService.randomNearFlag
 
-    player.script = new MoveToTargetScript({
+      player.script = new MoveToFlagScript({
+        object: player,
+        target: flag,
+      })
+
+      return player
+    }
+
+    const chopFunc = () => {
+      tree.state = 'CHOPPING'
+      return true
+    }
+
+    player.script = new MoveToTreeAndChopScript({
       object: player,
-      target,
+      target: tree,
+      chopFunc,
     })
 
     return player

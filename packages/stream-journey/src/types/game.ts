@@ -77,7 +77,6 @@ export interface GameObject extends Container {
 }
 
 export interface GameObjectWagon extends GameObject {
-  createFlagAndMove: (x: number) => void
 }
 
 export interface GameObjectTree extends GameObject {
