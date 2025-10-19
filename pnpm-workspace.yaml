@@ -3,7 +3,7 @@ packages:
   - packages/*
 catalog:
   '@antfu/eslint-config': ^6.0.0
-  '@chatgame/stream-journey': ^0.1.5
+  '@chatgame/stream-journey': ^0.1.6
   '@commitlint/cli': ^20.1.0
   '@commitlint/config-conventional': ^20.0.0
   '@d-fischer/typed-event-emitter': ^3.3.3

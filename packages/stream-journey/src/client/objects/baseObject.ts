@@ -50,7 +50,11 @@ export class BaseObject extends Container implements GameObject {
     this.game.addChild(this)
   }
 
-  live() {}
+  live() {
+    if (this.state === 'DESTROYED') {
+      this.destroy()
+    }
+  }
 
   animate(): void {
     // this.zIndex = Math.round(this.y)
@@ -76,7 +80,6 @@ export class BaseObject extends Container implements GameObject {
     const finalSpeed = distanceToX > 0 && distanceToY > 0 ? speed * 0.75 : speed
 
     this.moveX(finalSpeed > distanceToX ? distanceToX : finalSpeed)
-    // this.moveY(finalSpeed > distanceToY ? distanceToY : finalSpeed)
     return true
   }
 
@@ -112,19 +115,6 @@ export class BaseObject extends Container implements GameObject {
     if (this.x > this.target.x) {
       this.x -= speed
       this.direction = 'LEFT'
-    }
-  }
-
-  private moveY(speed: number) {
-    if (!this.target?.y || this.target.y === this.y) {
-      return
-    }
-
-    if (this.y < this.target.y) {
-      this.y += speed
-    }
-    if (this.y > this.target.y) {
-      this.y -= speed
     }
   }
 

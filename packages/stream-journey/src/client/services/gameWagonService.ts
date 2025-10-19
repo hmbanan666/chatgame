@@ -173,7 +173,8 @@ export class GameWagonService implements WagonService {
     // Find nearest obstacle
     const obstacle = this.getNearestObstacle()
     if (obstacle) {
-      const flag = this.createFlagAndMove(obstacle.x)
+      const wagonOffset = this.wagon.width / 2 + 10
+      const flag = this.createFlagAndMove(obstacle.x - wagonOffset)
       if (flag) {
         flag.target = obstacle
       }

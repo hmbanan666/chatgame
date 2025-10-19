@@ -45,6 +45,8 @@ export class UnitObject extends BaseObject implements GameObjectUnit {
   }
 
   override live() {
+    super.live()
+
     this.handleMessages()
 
     if (this.script) {

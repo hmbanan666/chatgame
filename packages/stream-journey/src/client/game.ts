@@ -94,10 +94,6 @@ export class StreamJourneyGame extends Container implements Game {
 
   private updateObjects() {
     for (const object of this.children) {
-      if (object.state === 'DESTROYED') {
-        this.removeObject(object.id)
-      }
-
       object.animate()
       object.live()
     }
