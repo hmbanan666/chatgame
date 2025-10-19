@@ -4,7 +4,7 @@ import { TreeObject } from '../objects/treeObject'
 import { getRandInteger } from '../utils/random'
 
 export class GameTreeService implements TreeService {
-  private treesPerfectAmount = 30
+  private treesPerfectAmount = 25
 
   constructor(readonly game: Game) {
     this.generateTrees()
@@ -26,7 +26,7 @@ export class GameTreeService implements TreeService {
     const amount = Math.round(this.treesPerfectAmount)
 
     for (let i = 0; i < amount; i++) {
-      const x = getRandInteger(0, 7000)
+      const x = getRandInteger(0, 6000)
 
       this.create({
         id: createId(),
@@ -46,7 +46,7 @@ export class GameTreeService implements TreeService {
     // Check if we have enough trees near Wagon
     const isEnoughTrees = this.game.wagonService.getNearestTrees().length >= this.treesPerfectAmount
     if (!isEnoughTrees) {
-      const x = getRandInteger(this.game.wagonService.wagon.x + 200, this.game.wagonService.wagon.x + 2400)
+      const x = getRandInteger(this.game.wagonService.wagon.x + 1000, this.game.wagonService.wagon.x + 3000)
 
       this.create({
         id: createId(),

@@ -2,6 +2,7 @@ import type { Game, GameObject, GameObjectWagon, WagonService } from '../../type
 import type { TreeObject } from '../objects/treeObject'
 import { FlagObject } from '../objects/flagObject'
 import { WagonObject } from '../objects/wagonObject'
+import { MoveToFlagAndCheckScript } from '../scripts/moveToFlagAndCheckScript'
 import { getRandInteger } from '../utils/random'
 
 export class GameWagonService implements WagonService {
@@ -34,6 +35,7 @@ export class GameWagonService implements WagonService {
   update() {
     this.updateCameraPosition()
     this.updateFlagsPosition()
+    this.updateWagonTarget()
   }
 
   updateCameraPosition() {
@@ -64,6 +66,21 @@ export class GameWagonService implements WagonService {
     }
   }
 
+  createFlagAndMove(x: number): GameObject | undefined {
+    if (!this.wagon) {
+      return
+    }
+
+    this.wagon.target = new FlagObject({ game: this.game, x, y: this.wagon.y, variant: 'MOVEMENT' })
+    this.wagon.script = new MoveToFlagAndCheckScript({
+      object: this.wagon,
+      target: this.wagon.target,
+      checkFunc: () => this.wagon?.target?.target === undefined,
+    })
+
+    return this.wagon.target
+  }
+
   getNearestObstacle(): GameObject | undefined {
     if (!this.wagon?.x) {
       return
@@ -71,17 +88,15 @@ export class GameWagonService implements WagonService {
 
     const x = this.wagon.x
 
-    // Only on right side
-    const trees = this.game.children
-      .filter((obj) => obj.type === 'TREE' && obj.x >= x) as TreeObject[]
+    const filterObstaclesToRight = (obj: GameObject) => obj.type === 'TREE' && obj.x >= x && obj.isObstacleForWagon
+    const trees = this.game.children.filter(filterObstaclesToRight) as TreeObject[]
 
-    return trees.filter((obj) => obj.isObstacleForWagon)
-      .sort((a, b) => a.x - b.x)[0]
+    return trees.sort((a, b) => a.x - b.x)[0]
   }
 
   getNearestTrees(): GameObject[] {
     const x = this.wagon?.x || 0
-    const inArea = (objX: number) => objX > x - 200 && objX < x + 1000
+    const inArea = (objX: number) => objX > x + 1000 && objX < x + 3000
 
     return this.game.children.filter((obj) => obj.type === 'TREE' && inArea(obj.x))
   }
@@ -144,5 +159,24 @@ export class GameWagonService implements WagonService {
     })
 
     return flag
+  }
+
+  private updateWagonTarget() {
+    if (!this.wagon) {
+      return
+    }
+
+    if (this.wagon.script || this.wagon.target) {
+      return
+    }
+
+    // Find nearest obstacle
+    const obstacle = this.getNearestObstacle()
+    if (obstacle) {
+      const flag = this.createFlagAndMove(obstacle.x)
+      if (flag) {
+        flag.target = obstacle
+      }
+    }
   }
 }

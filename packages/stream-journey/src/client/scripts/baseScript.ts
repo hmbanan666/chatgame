@@ -95,4 +95,18 @@ export class BaseScript implements GameScript {
       },
     }
   }
+
+  destroyTarget(): GameScriptTask {
+    return {
+      id: createId(),
+      status: 'IDLE',
+      live: () => {
+        if (this.object.target) {
+          this.object.target.state = 'DESTROYED'
+          this.object.target = undefined
+          this.markTaskAsDone()
+        }
+      },
+    }
+  }
 }

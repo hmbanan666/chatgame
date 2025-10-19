@@ -44,7 +44,7 @@ export class DialogueInterface extends Container {
 
     container.addChild(basicText)
 
-    container.x = -container.width / 2 + 10
+    container.x = -container.width / 2 + 12
     container.y = -container.height - 105
 
     this.addChild(container)
@@ -79,7 +79,7 @@ export class DialogueInterface extends Container {
       container.alpha -= this.showingSpeed
       container.y -= this.showingSpeed * 150
 
-      if (container.alpha <= 0.85) {
+      if (container.alpha <= 0.8) {
         this.remove(container)
       }
     }
@@ -95,7 +95,7 @@ export class DialogueInterface extends Container {
 
     // const calculated = (baseDuration + messageLength * lengthFactor) / 10000
 
-    // It should be around 0.0005
-    return 0.0005
+    // It should be around 0.0003
+    return 0.0003
   }
 }

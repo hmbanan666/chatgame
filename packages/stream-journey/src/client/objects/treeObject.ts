@@ -24,7 +24,7 @@ export class TreeObject extends BaseObject implements GameObjectTree {
   animationHighSpeed = 0.5
 
   constructor({ game, x, y, size, maxSize, id, zIndex, treeType, variant }: TreeObjectOptions) {
-    super({ id, game, x, y: y ?? game.bottomY + 2, type: 'TREE' })
+    super({ id, game, x, y: y ?? game.bottomY, type: 'TREE' })
 
     this.health = 100
     this.size = size ?? 100
@@ -69,7 +69,9 @@ export class TreeObject extends BaseObject implements GameObjectTree {
   override animate() {
     super.animate()
 
-    this.scale = this.size / 100
+    if (this?.scale) {
+      this.scale = this.size / 100
+    }
 
     if (this.state === 'IDLE') {
       this.shakeOnWind()
