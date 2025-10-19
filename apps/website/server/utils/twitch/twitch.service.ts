@@ -1,3 +1,4 @@
+import { rooms } from '~~/server/core/stream-journey'
 import { QuestService } from '../quest'
 import { DBRepository } from '../repository'
 
@@ -32,6 +33,22 @@ export class TwitchService {
     }
 
     const player = await this.#repository.findOrCreatePlayer({ profileId: profile.id, userName })
+
+    // Stream Journey
+    const room = rooms.get('12345')
+    if (room) {
+      room.send({
+        event: 'newPlayerMessage',
+        data: {
+          text,
+          player: {
+            id: userId,
+            name: userName,
+            codename: 'twitchy',
+          },
+        },
+      })
+    }
 
     if (firstChar === '!' && possibleCommand) {
       if (possibleCommand === 'купон' || possibleCommand === 'coupon') {
