@@ -13,10 +13,6 @@ export default defineNitroPlugin(async () => {
     return
   }
 
-  // Generate rooms
-  await WagonRoom.generate({ chunksCount: 6, roomId: wagonRoomId })
-  await WagonRoom.generate({ chunksCount: 2, roomId: customRoomId })
-
   if (!activeRooms.find((room) => room.id === wagonRoomId)) {
     rebootRoom()
 
@@ -29,7 +25,9 @@ export default defineNitroPlugin(async () => {
   }
 
   if (!activeRooms.find((room) => room.id === customRoomId)) {
-    activeRooms.push(new WagonRoom({ id: customRoomId }))
+    const customRoom = new WagonRoom({ id: customRoomId })
+    customRoom.generate({ chunksCount: 2 })
+    activeRooms.push(customRoom)
   }
 
   logger.success('Wagon rooms created')
@@ -40,7 +38,7 @@ async function rebootRoom() {
     activeRooms.splice(activeRooms.findIndex((room) => room.id === wagonRoomId), 1)
   }
 
-  await WagonRoom.generate({ chunksCount: 6, roomId: wagonRoomId })
-
-  activeRooms.push(new WagonRoom({ id: wagonRoomId }))
+  const wagonRoom = new WagonRoom({ id: wagonRoomId })
+  wagonRoom.generate({ chunksCount: 6 })
+  activeRooms.push(wagonRoom)
 }
