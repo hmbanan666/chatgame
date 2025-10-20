@@ -2,10 +2,7 @@
   "compilerOptions": {
     "target": "ESNext",
     "lib": [
-      "ESNext",
-      "dom",
-      "dom.iterable",
-      "webworker"
+      "ESNext"
     ],
     "moduleDetection": "force",
     "useDefineForClassFields": true,

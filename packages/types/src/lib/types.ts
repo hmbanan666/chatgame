@@ -85,7 +85,7 @@ export interface TwitchToken {
   updatedAt: Date
   onlineAt: Date
   status: 'ACTIVE' | 'INACTIVE'
-  type: 'ADDON' | 'AI_VIEW' | 'WOODLAND'
+  type: 'ADDON' | 'AI_VIEW'
   points: number
   language: 'ru' | 'en'
   profileId: string

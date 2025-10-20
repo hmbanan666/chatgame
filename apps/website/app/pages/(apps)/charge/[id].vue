@@ -115,7 +115,7 @@ definePageMeta({
 
 const { params } = useRoute('charge-id')
 if (!params.id) {
-  await navigateTo('/')
+  throw createError({ statusCode: 404 })
 }
 
 const energy = ref(0)
