@@ -1,5 +1,4 @@
 import type { CharacterEditionWithCharacter, GameObject, GameObjectTree, GameObjectWagon } from '@chat-game/types'
-import type { Chunk } from './types'
 import { createId } from '@paralleldrive/cuid2'
 import { sendMessage } from '~~/server/api/websocket'
 import { getRandomInRange } from '~/utils/random'
@@ -10,7 +9,6 @@ import { VillageChunk } from './chunk/villageChunk'
 const logger = useLogger('wagon:room')
 
 interface GenerateWagonRoomOptions {
-  roomId: string
   chunksCount: number
 }
 
@@ -39,8 +37,7 @@ export class WagonRoom extends BaseRoom {
   }
 
   async init() {
-    await this.initChunks()
-    await this.initWagon()
+    this.initWagon(200)
 
     setInterval(() => {
       this.update()
@@ -51,29 +48,19 @@ export class WagonRoom extends BaseRoom {
     }, 60 * 60 * 1000)
   }
 
-  async initWagon() {
-    const wagonInStorage = await this.getWagonFromStorage()
-    if (!wagonInStorage) {
-      return
-    }
+  initWagon(x: number) {
+    this.wagon = {
+      type: 'WAGON',
+      id: createId(),
+      x,
+      state: 'IDLE',
+      health: 100,
+      speedPerSecond: 20,
+      size: 100,
+      zIndex: -5,
+    } as GameObject & GameObjectWagon
 
-    this.wagon = wagonInStorage
     this.objects.push(this.wagon)
-  }
-
-  static async updateWagonInStorage(roomId: string, wagon: GameObject & GameObjectWagon) {
-    const wagonKey = `room:${roomId}:wagon`
-    useStorage('redis').setItem(wagonKey, wagon)
-  }
-
-  async getWagonFromStorage() {
-    const wagonKey = `room:${this.id}:wagon`
-    const wagon = await useStorage<GameObject & GameObjectWagon>('redis').getItem(wagonKey)
-    if (!wagon) {
-      return null
-    }
-
-    return wagon
   }
 
   async reboot() {
@@ -113,8 +100,6 @@ export class WagonRoom extends BaseRoom {
     const newForest = new ForestChunk({ startX, endX })
     this.chunks.push(newForest)
     this.objects.push(...newForest.objects)
-
-    BaseRoom.updateChunksInStorage(this.id, this.chunks)
   }
 
   initNextChunk() {
@@ -132,8 +117,6 @@ export class WagonRoom extends BaseRoom {
         sendMessage({ type: 'NEW_TREE', data: { ...obj } }, this.id)
       }
     }
-
-    BaseRoom.updateChunksInStorage(this.id, this.chunks)
   }
 
   addPlayer(data: { id: string, telegramId: string, x: number, character: CharacterEditionWithCharacter }) {
@@ -186,7 +169,6 @@ export class WagonRoom extends BaseRoom {
     for (const chunk of this.chunks) {
       chunk.objects = chunk.objects.filter((o) => o.id !== id)
     }
-    BaseRoom.updateChunksInStorage(this.id, this.chunks)
   }
 
   createNewChunks() {
@@ -215,8 +197,6 @@ export class WagonRoom extends BaseRoom {
     // if is close - wagon need to wait
     if (Math.abs(this.wagon.x - availableTree.x) < this.wagonViewNearDistance + 50) {
       this.wagon.state = 'IDLE'
-
-      WagonRoom.updateWagonInStorage(this.id, this.wagon)
     }
   }
 
@@ -238,8 +218,6 @@ export class WagonRoom extends BaseRoom {
     this.wagonObstacle = availableTree
     this.wagon.x = targetX
     this.wagon.state = 'MOVING'
-
-    WagonRoom.updateWagonInStorage(this.id, this.wagon)
   }
 
   getNearestObstacle(x: number): GameObject | undefined {
@@ -265,8 +243,6 @@ export class WagonRoom extends BaseRoom {
       }
 
       this.chunks = this.chunks.filter((c) => c !== chunk)
-
-      BaseRoom.updateChunksInStorage(this.id, this.chunks)
     }
   }
 
@@ -274,23 +250,23 @@ export class WagonRoom extends BaseRoom {
     return this.objects.filter((obj) => obj.type === 'TREE' && obj.x > x && obj.x < x + offset).length
   }
 
-  static async generate(options: GenerateWagonRoomOptions) {
+  generate(options: GenerateWagonRoomOptions) {
     if (options.chunksCount <= 0) {
       return
     }
 
+    this.chunks = []
     const startX = 1000
-    const chunks: Chunk[] = []
 
     const firstChunk = new VillageChunk({
       startX,
       endX: startX + 1000,
       id: createId(),
     })
-    chunks.push(firstChunk)
+    this.chunks.push(firstChunk)
 
     for (let i = 0; i < options.chunksCount; i++) {
-      const previousChunk = chunks[chunks.length - 1]
+      const previousChunk = this.chunks[this.chunks.length - 1]
       if (!previousChunk) {
         continue
       }
@@ -302,10 +278,10 @@ export class WagonRoom extends BaseRoom {
         endX: startX + getRandomInRange(2000, 2500),
         id: createId(),
       })
-      chunks.push(forestChunk)
+      this.chunks.push(forestChunk)
     }
 
-    const previousChunk = chunks[chunks.length - 1]
+    const previousChunk = this.chunks[this.chunks.length - 1]
     if (!previousChunk) {
       return
     }
@@ -315,21 +291,6 @@ export class WagonRoom extends BaseRoom {
       endX: previousChunk.endX + 1000,
       id: createId(),
     })
-    chunks.push(finalChunk)
-
-    // Wagon
-    const wagon = {
-      type: 'WAGON',
-      id: createId(),
-      x: firstChunk.startX + 200,
-      state: 'IDLE',
-      health: 100,
-      speedPerSecond: 20,
-      size: 100,
-      zIndex: -5,
-    } as GameObject & GameObjectWagon
-
-    WagonRoom.updateWagonInStorage(options.roomId, wagon)
-    BaseRoom.updateChunksInStorage(options.roomId, chunks)
+    this.chunks.push(finalChunk)
   }
 }

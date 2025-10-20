@@ -10,7 +10,7 @@ export default defineTask({
   async run() {
     // Only run in production
     if (import.meta.dev) {
-      logger.info('Storage not connected in dev mode')
+      logger.info('Task not run in dev mode')
       return { result: true }
     }
 
