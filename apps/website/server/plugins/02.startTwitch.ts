@@ -1,4 +1,3 @@
-import { twitchAddonController } from '../utils/twitch/twitch.addon.controller'
 import { twitchController } from '../utils/twitch/twitch.controller'
 import { twitchProvider } from '../utils/twitch/twitch.provider'
 
@@ -20,7 +19,6 @@ export default defineNitroPlugin(() => {
 
   twitchController.serve()
   twitchController.serveStreamOnline()
-  twitchAddonController.serve()
 
   setTimeout(checkIfStreamingNow, 8000)
 

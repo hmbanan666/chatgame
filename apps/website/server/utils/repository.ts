@@ -394,39 +394,6 @@ export class DBRepository {
     return player
   }
 
-  async findOrCreateWoodlandPlayer({
-    name,
-    profileId,
-    woodlandId,
-  }: {
-    name: string
-    profileId: string
-    woodlandId: string
-  }) {
-    let player = await prisma.woodlandPlayer.findFirst({
-      where: { profileId },
-    })
-    if (!player) {
-      // Create new one
-      player = await prisma.woodlandPlayer.create({
-        data: {
-          id: createId(),
-          name,
-          profileId,
-          woodlandId,
-        },
-      })
-    }
-
-    return player
-  }
-
-  findActiveWoodland(tokenId: string) {
-    return prisma.woodland.findFirst({
-      where: { tokenId, status: { in: ['CREATED', 'STARTED'] } },
-    })
-  }
-
   async getPlaceInTopByCoupons(profileId: string) {
     const topProfiles = await prisma.profile.findMany({
       orderBy: { coupons: 'desc' },

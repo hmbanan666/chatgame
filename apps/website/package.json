@@ -12,11 +12,10 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@chat-game/addon": "workspace:*",
     "@chat-game/game": "workspace:*",
-    "@chat-game/game-addon": "workspace:*",
     "@chat-game/locale": "workspace:*",
     "@chat-game/types": "workspace:*",
+    "@chatgame/database": "workspace:*",
     "@chatgame/stream-journey": "catalog:",
     "@donation-alerts/api": "catalog:",
     "@donation-alerts/auth": "catalog:",
