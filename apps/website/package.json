@@ -32,7 +32,6 @@
     "@twurple/eventsub-ws": "catalog:",
     "grammy": "catalog:",
     "howler": "catalog:",
-    "ioredis": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
@@ -41,7 +40,6 @@
     "@iconify-json/simple-icons": "catalog:",
     "@nuxt/devtools": "catalog:",
     "@nuxtjs/i18n": "catalog:",
-    "@tailwindcss/vite": "catalog:",
     "@types/howler": "catalog:",
     "@types/node": "catalog:",
     "@vueuse/components": "catalog:",

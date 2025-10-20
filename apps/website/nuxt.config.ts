@@ -28,7 +28,11 @@ export default defineNuxtConfig({
     '/static/**': {
       cors: true,
     },
-    '/addon': {
+    '/charge': {
+      ssr: false,
+      cors: true,
+    },
+    '/play': {
       ssr: false,
       cors: true,
     },
@@ -72,7 +76,6 @@ export default defineNuxtConfig({
   },
   css: ['~/assets/css/styles.css'],
   runtimeConfig: {
-    redisUrl: '',
     websiteBearer: '',
     twitchChannelName: '',
     twitchChannelId: '',

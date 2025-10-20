@@ -14,15 +14,8 @@ export default defineNitroPlugin(async () => {
   }
 
   // Generate rooms
-  const wagonRoom = await useStorage('redis').getItem(`room:${wagonRoomId}:chunks`)
-  if (!wagonRoom) {
-    await WagonRoom.generate({ chunksCount: 6, roomId: wagonRoomId })
-  }
-
-  const customRoom = await useStorage('redis').getItem(`room:${customRoomId}:chunks`)
-  if (!customRoom) {
-    await WagonRoom.generate({ chunksCount: 2, roomId: customRoomId })
-  }
+  await WagonRoom.generate({ chunksCount: 6, roomId: wagonRoomId })
+  await WagonRoom.generate({ chunksCount: 2, roomId: customRoomId })
 
   if (!activeRooms.find((room) => room.id === wagonRoomId)) {
     rebootRoom()
