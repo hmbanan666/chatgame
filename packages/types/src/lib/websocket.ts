@@ -1,4 +1,4 @@
-import type { CharacterEditionWithCharacter, Player, Profile, WoodlandPlayer } from './types'
+import type { CharacterEditionWithCharacter, Player, Profile } from './types'
 
 export type GameObject = {
   id: string
@@ -43,8 +43,6 @@ export type WebSocketEvents
     | WebSocketEventCommand
     | WebSocketEventMessage
     | WebSocketEventLevelUp
-    | WebSocketWoodlandMessage
-    | WebSocketWoodlandCommand
     | WebSocketNewTree
     | WebSocketDestroyTree
     | WebSocketNewWagonTarget
@@ -94,28 +92,6 @@ export interface WebSocketEventLevelUp {
   data: {
     text: string
     playerId: string
-  }
-}
-
-export interface WebSocketWoodlandCommand {
-  type: 'WOODLAND_COMMAND'
-  data: {
-    command: string
-    params: string[]
-    player: WoodlandPlayer
-    profile: Profile
-    character: CharacterEditionWithCharacter
-    text: string
-  }
-}
-
-export interface WebSocketWoodlandMessage {
-  type: 'WOODLAND_MESSAGE'
-  data: {
-    player: WoodlandPlayer
-    profile: Profile
-    character: CharacterEditionWithCharacter
-    text: string
   }
 }
 

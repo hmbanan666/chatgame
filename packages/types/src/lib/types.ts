@@ -386,48 +386,6 @@ export interface TransactionWithProfile extends Transaction {
   profile: Profile
 }
 
-export interface Woodland {
-  id: string
-  createdAt: Date
-  updatedAt: Date
-  finishedAt: Date | null
-  profileId: string
-  tokenId: string
-  status: 'CREATED' | 'STARTED' | 'FINISHED'
-  players: WoodlandPlayer[]
-}
-
-export interface WoodlandPlayer {
-  id: string
-  createdAt: Date
-  updatedAt: Date
-  lastActionAt: Date
-  name: string
-  wood: number
-  woodlandId: string
-  profileId: string
-}
-
-export interface WoodlandCreateRequest {
-  data: {
-    profileId: string
-  }
-}
-
-export interface WoodlandCreateResponse {
-  ok: boolean
-  result: {
-    token: TwitchToken
-    woodland: Woodland
-  }
-}
-
-export interface WoodlandUpdatePlayerRequest {
-  data: {
-    wood: number
-  }
-}
-
 export interface Product {
   id: string
   createdAt: Date
