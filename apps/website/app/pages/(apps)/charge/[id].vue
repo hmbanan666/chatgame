@@ -113,8 +113,10 @@ definePageMeta({
   layout: 'game',
 })
 
-const route = useRoute()
-const id = route.query.id as string
+const { params } = useRoute('charge-id')
+if (!params.id) {
+  await navigateTo('/')
+}
 
 const energy = ref(0)
 const rate = ref(0)
@@ -169,10 +171,10 @@ const batteryIconName = computed(() => {
 let syncInterval: NodeJS.Timeout
 
 onMounted(() => {
-  update(id)
+  update(params.id as string)
 
   syncInterval = setInterval(() => {
-    update(id)
+    update(params.id as string)
   }, 3000)
 })
 

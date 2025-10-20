@@ -375,30 +375,3 @@ model Transaction {
 
   @@map("transaction")
 }
-
-model Woodland {
-  id         String           @id
-  createdAt  DateTime         @default(now()) @map("created_at")
-  updatedAt  DateTime         @default(now()) @map("updated_at")
-  finishedAt DateTime?        @map("finished_at")
-  status     String
-  profileId  String           @map("profile_id")
-  tokenId    String           @map("token_id")
-  players    WoodlandPlayer[]
-
-  @@map("woodland")
-}
-
-model WoodlandPlayer {
-  id           String   @id
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @default(now()) @map("updated_at")
-  lastActionAt DateTime @default(now()) @map("last_action_at")
-  name         String
-  wood         Int      @default(0)
-  profileId    String   @map("profile_id")
-  woodlandId   String   @map("woodland_id")
-  woodland     Woodland @relation(fields: [woodlandId], references: [id])
-
-  @@map("woodland_player")
-}

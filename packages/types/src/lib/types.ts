@@ -361,7 +361,7 @@ export interface InventoryItemEdition {
 }
 
 export interface TwitchServiceStatus {
-  service: 'HMBANAN666_TWITCH' | 'COUPON_GENERATOR' | 'WOODLAND'
+  service: 'HMBANAN666_TWITCH' | 'COUPON_GENERATOR'
   status: 'RUNNING' | 'STOPPED'
 }
 
