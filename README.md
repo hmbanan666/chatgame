@@ -1,17 +1,16 @@
-# 🌲 hmbanan666's Woodlands: Online Game
+# 🌲 hmbanan666's Chatgame
 
 - 📺 [Developing and playing it live](https://www.twitch.tv/hmbanan666)
-- 👾 [Telegram Mini App as Player controller](https://t.me/WoodlandsGameBot)
 - 🏠 [Project Website](https://chatgame.space)
 
 ![Screen](https://raw.githubusercontent.com/hmbanan666/chatgame/main/.github/static/wagon-room-screen-2.jpg)
 
 🤔 Imagine procedurally generated world where players can:
 
-- 💬 **Use Telegram Mini App as input** to see characters performing actions in real time
+- 💬 **Use Twitch chat as input** to see characters performing actions in real time
 - 🗺️ **Travel** with the Wagon
 - 🦄 **Complete** main and side quests from game characters
-- 💎 **Gather** a variety of materials in your Inventory
+- 💎 **Gather** a variety of materials in Inventory
 - 🏗️ **Construct** buildings
 - 🏆 **Earn** Trophies!
 
@@ -21,10 +20,12 @@ Let's build a similar world together! ⭐️ Become a Stargazer ⭐️
 
 - [PixiJS](https://pixijs.com/): The HTML5 Creation Engine.
 - [Twurple](https://twurple.js.org/): A set of libraries that aims to cover all existing Twitch APIs.
+- [Donation Alerts](https://donationalerts.com/): A platform for real-time donations and custom alerts.
 - [Vue](https://vuejs.org/): An approachable, performant and versatile framework for building web user interfaces.
 - [Nuxt](https://nuxt.com/): An open source framework that makes web development intuitive and powerful.
-- [Howler.js](https://howlerjs.com/): Audio library for the modern web.
+- [Drizzle](https://orm.drizzle.team/): A database toolkit for Node.js and TypeScript.
 - [TypeScript](https://www.typescriptlang.org/): A strongly typed programming language that builds on JavaScript, giving you better tooling at any scale.
+- [Zod](https://zod.dev/): A schema definition and validation library for TypeScript and JavaScript.
 - [ESLint](https://eslint.org/): Statically analyzes a code to quickly find problems.
 
 ## 🕹️ How to develop
