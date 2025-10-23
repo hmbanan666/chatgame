@@ -13,8 +13,8 @@
   },
   "dependencies": {
     "@chat-game/types": "workspace:*",
-    "@paralleldrive/cuid2": "catalog:",
-    "@vueuse/core": "catalog:",
-    "pixi.js": "catalog:"
+    "@paralleldrive/cuid2": "catalog:integrations",
+    "@vueuse/core": "catalog:integrations",
+    "pixi.js": "8.14.0"
   }
 }
