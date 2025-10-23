@@ -40,6 +40,6 @@
     "pixi.js": "8.14.0"
   },
   "devDependencies": {
-    "unbuild": "catalog:"
+    "unbuild": "catalog:dev"
   }
 }

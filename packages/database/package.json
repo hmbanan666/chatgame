@@ -15,15 +15,15 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "drizzle-cuid2": "catalog:",
-    "drizzle-orm": "catalog:",
-    "pg": "catalog:"
+    "drizzle-cuid2": "catalog:integrations",
+    "drizzle-orm": "catalog:integrations",
+    "pg": "catalog:integrations"
   },
   "devDependencies": {
-    "@types/node": "catalog:",
-    "@types/pg": "catalog:",
-    "dotenv": "catalog:",
-    "drizzle-kit": "catalog:",
-    "typescript": "catalog:"
+    "@types/node": "catalog:types",
+    "@types/pg": "catalog:types",
+    "dotenv": "catalog:dev",
+    "drizzle-kit": "catalog:dev",
+    "typescript": "catalog:dev"
   }
 }
