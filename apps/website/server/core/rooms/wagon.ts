@@ -8,12 +8,9 @@ import { VillageChunk } from './chunk/villageChunk'
 
 const logger = useLogger('wagon:room')
 
-interface GenerateWagonRoomOptions {
-  chunksCount: number
-}
-
 interface WagonRoomOptions {
   id: string
+  chunks: number
 }
 
 export class WagonRoom extends BaseRoom {
@@ -24,10 +21,11 @@ export class WagonRoom extends BaseRoom {
 
   status: 'ACTIVE' | 'FINISHED' = 'ACTIVE'
 
-  constructor({ id }: WagonRoomOptions) {
+  constructor({ id, chunks }: WagonRoomOptions) {
     super({ id, type: 'WAGON' })
 
     this.init()
+    this.generate(chunks)
   }
 
   update() {
@@ -250,8 +248,8 @@ export class WagonRoom extends BaseRoom {
     return this.objects.filter((obj) => obj.type === 'TREE' && obj.x > x && obj.x < x + offset).length
   }
 
-  generate(options: GenerateWagonRoomOptions) {
-    if (options.chunksCount <= 0) {
+  generate(chunksCount: number) {
+    if (chunksCount <= 0) {
       return
     }
 
@@ -264,8 +262,9 @@ export class WagonRoom extends BaseRoom {
       id: createId(),
     })
     this.chunks.push(firstChunk)
+    this.objects.push(...firstChunk.objects)
 
-    for (let i = 0; i < options.chunksCount; i++) {
+    for (let i = 0; i < chunksCount; i++) {
       const previousChunk = this.chunks[this.chunks.length - 1]
       if (!previousChunk) {
         continue
@@ -279,6 +278,7 @@ export class WagonRoom extends BaseRoom {
         id: createId(),
       })
       this.chunks.push(forestChunk)
+      this.objects.push(...forestChunk.objects)
     }
 
     const previousChunk = this.chunks[this.chunks.length - 1]
@@ -292,5 +292,6 @@ export class WagonRoom extends BaseRoom {
       id: createId(),
     })
     this.chunks.push(finalChunk)
+    this.objects.push(...finalChunk.objects)
   }
 }
