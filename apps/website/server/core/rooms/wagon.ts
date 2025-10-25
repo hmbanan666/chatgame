@@ -6,14 +6,9 @@ import { BaseRoom } from './base'
 import { ForestChunk } from './chunk/forestChunk'
 import { VillageChunk } from './chunk/villageChunk'
 
-const logger = useLogger('wagon:room')
-
-interface GenerateWagonRoomOptions {
-  chunksCount: number
-}
-
 interface WagonRoomOptions {
   id: string
+  chunks: number
 }
 
 export class WagonRoom extends BaseRoom {
@@ -24,10 +19,13 @@ export class WagonRoom extends BaseRoom {
 
   status: 'ACTIVE' | 'FINISHED' = 'ACTIVE'
 
-  constructor({ id }: WagonRoomOptions) {
+  updateTimer: NodeJS.Timeout | null = null
+
+  constructor({ id, chunks }: WagonRoomOptions) {
     super({ id, type: 'WAGON' })
 
     this.init()
+    this.generate(chunks)
   }
 
   update() {
@@ -36,23 +34,16 @@ export class WagonRoom extends BaseRoom {
     this.closeRoomOnFinish()
   }
 
-  async init() {
-    this.initWagon(200)
-
-    setInterval(() => {
-      this.update()
-    }, 250)
-
-    setInterval(() => {
-      logger.log(`Chunks on Wagon Room: ${this.chunks.length}`, `Objects on Wagon Room: ${this.objects.length}`)
-    }, 60 * 60 * 1000)
+  init() {
+    this.initWagon()
+    this.updateTimer = setInterval(() => this.update(), 250)
   }
 
-  initWagon(x: number) {
+  initWagon() {
     this.wagon = {
       type: 'WAGON',
       id: createId(),
-      x,
+      x: 200,
       state: 'IDLE',
       health: 100,
       speedPerSecond: 20,
@@ -70,6 +61,11 @@ export class WagonRoom extends BaseRoom {
 
     sendMessage({ type: 'ROOM_DESTROYED', data: { id: this.id } }, this.id)
     this.status = 'FINISHED'
+
+    if (this.updateTimer) {
+      clearInterval(this.updateTimer)
+      this.updateTimer = null
+    }
   }
 
   closeRoomOnFinish() {
@@ -250,8 +246,8 @@ export class WagonRoom extends BaseRoom {
     return this.objects.filter((obj) => obj.type === 'TREE' && obj.x > x && obj.x < x + offset).length
   }
 
-  generate(options: GenerateWagonRoomOptions) {
-    if (options.chunksCount <= 0) {
+  generate(chunksCount: number) {
+    if (chunksCount <= 0) {
       return
     }
 
@@ -264,8 +260,9 @@ export class WagonRoom extends BaseRoom {
       id: createId(),
     })
     this.chunks.push(firstChunk)
+    this.objects.push(...firstChunk.objects)
 
-    for (let i = 0; i < options.chunksCount; i++) {
+    for (let i = 0; i < chunksCount; i++) {
       const previousChunk = this.chunks[this.chunks.length - 1]
       if (!previousChunk) {
         continue
@@ -279,6 +276,7 @@ export class WagonRoom extends BaseRoom {
         id: createId(),
       })
       this.chunks.push(forestChunk)
+      this.objects.push(...forestChunk.objects)
     }
 
     const previousChunk = this.chunks[this.chunks.length - 1]
@@ -292,5 +290,6 @@ export class WagonRoom extends BaseRoom {
       id: createId(),
     })
     this.chunks.push(finalChunk)
+    this.objects.push(...finalChunk.objects)
   }
 }
