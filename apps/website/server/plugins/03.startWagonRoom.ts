@@ -27,8 +27,9 @@ export default defineNitroPlugin(async () => {
 })
 
 async function rebootRoom() {
-  if (activeRooms.find((room) => room.id === wagonRoomId)) {
-    activeRooms.splice(activeRooms.findIndex((room) => room.id === wagonRoomId), 1)
+  const idx = activeRooms.findIndex((room) => room.id === wagonRoomId)
+  if (idx !== -1) {
+    activeRooms.splice(idx, 1)
   }
 
   activeRooms.push(

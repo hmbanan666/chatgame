@@ -6,8 +6,6 @@ import { BaseRoom } from './base'
 import { ForestChunk } from './chunk/forestChunk'
 import { VillageChunk } from './chunk/villageChunk'
 
-const logger = useLogger('wagon:room')
-
 interface WagonRoomOptions {
   id: string
   chunks: number
@@ -20,6 +18,8 @@ export class WagonRoom extends BaseRoom {
   wagonViewNearDistance = 200
 
   status: 'ACTIVE' | 'FINISHED' = 'ACTIVE'
+
+  updateTimer: NodeJS.Timeout | null = null
 
   constructor({ id, chunks }: WagonRoomOptions) {
     super({ id, type: 'WAGON' })
@@ -34,23 +34,16 @@ export class WagonRoom extends BaseRoom {
     this.closeRoomOnFinish()
   }
 
-  async init() {
-    this.initWagon(200)
-
-    setInterval(() => {
-      this.update()
-    }, 250)
-
-    setInterval(() => {
-      logger.log(`Chunks on Wagon Room: ${this.chunks.length}`, `Objects on Wagon Room: ${this.objects.length}`)
-    }, 60 * 60 * 1000)
+  init() {
+    this.initWagon()
+    this.updateTimer = setInterval(() => this.update(), 250)
   }
 
-  initWagon(x: number) {
+  initWagon() {
     this.wagon = {
       type: 'WAGON',
       id: createId(),
-      x,
+      x: 200,
       state: 'IDLE',
       health: 100,
       speedPerSecond: 20,
@@ -68,6 +61,11 @@ export class WagonRoom extends BaseRoom {
 
     sendMessage({ type: 'ROOM_DESTROYED', data: { id: this.id } }, this.id)
     this.status = 'FINISHED'
+
+    if (this.updateTimer) {
+      clearInterval(this.updateTimer)
+      this.updateTimer = null
+    }
   }
 
   closeRoomOnFinish() {
