@@ -57,6 +57,9 @@ export class TwitchService {
       if (possibleCommand === 'инвентарь' || possibleCommand === 'inventory') {
         return this.handleInventoryCommand(player.profileId)
       }
+      if (possibleCommand === 'github') {
+        return this.handleGitHubCommand()
+      }
     }
   }
 
@@ -72,6 +75,13 @@ export class TwitchService {
     return {
       ok: true,
       message: `У тебя есть ${profile.coupons} купон(а/ов). Обменивай их на награды в игре.`,
+    }
+  }
+
+  async handleGitHubCommand() {
+    return {
+      ok: true,
+      message: '👨‍💻 https://github.com/hmbanan666\n ⭐ https://github.com/k39space/k39',
     }
   }
 
