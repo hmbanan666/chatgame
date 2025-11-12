@@ -51,14 +51,17 @@ export class TwitchService {
     }
 
     if (firstChar === '!' && possibleCommand) {
-      if (possibleCommand === 'купон' || possibleCommand === 'coupon') {
-        return this.handleCouponActivation(firstParam, player.profileId)
-      }
-      if (possibleCommand === 'инвентарь' || possibleCommand === 'inventory') {
-        return this.handleInventoryCommand(player.profileId)
-      }
-      if (possibleCommand === 'github' || possibleCommand === 'git' || possibleCommand === 'гитхаб') {
-        return this.handleGitHubCommand()
+      switch (possibleCommand) {
+        case 'купон':
+        case 'coupon':
+          return this.handleCouponActivation(firstParam, player.profileId)
+        case 'инвентарь':
+        case 'inventory':
+          return this.handleInventoryCommand(player.profileId)
+        case 'гитхаб':
+        case 'github':
+        case 'git':
+          return this.handleGitHubCommand()
       }
     }
   }
