@@ -51,9 +51,6 @@
     "vitest": "catalog:test",
     "vitest-browser-vue": "catalog:test"
   },
-  "resolutions": {
-    "unimport": "4.1.1"
-  },
   "lint-staged": {
     "*.{js,ts,tsx,vue,md,json}": [
       "eslint --cache --fix"
