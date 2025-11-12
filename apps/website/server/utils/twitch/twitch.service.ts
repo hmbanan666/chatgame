@@ -57,7 +57,7 @@ export class TwitchService {
       if (possibleCommand === 'инвентарь' || possibleCommand === 'inventory') {
         return this.handleInventoryCommand(player.profileId)
       }
-      if (possibleCommand === 'github') {
+      if (possibleCommand === 'github' || possibleCommand === 'git' || possibleCommand === 'гитхаб') {
         return this.handleGitHubCommand()
       }
     }
@@ -78,7 +78,7 @@ export class TwitchService {
     }
   }
 
-  async handleGitHubCommand() {
+  handleGitHubCommand() {
     return {
       ok: true,
       message: '👨‍💻 https://github.com/hmbanan666\n ⭐ https://github.com/k39space/k39',
