@@ -51,11 +51,17 @@ export class TwitchService {
     }
 
     if (firstChar === '!' && possibleCommand) {
-      if (possibleCommand === 'купон' || possibleCommand === 'coupon') {
-        return this.handleCouponActivation(firstParam, player.profileId)
-      }
-      if (possibleCommand === 'инвентарь' || possibleCommand === 'inventory') {
-        return this.handleInventoryCommand(player.profileId)
+      switch (possibleCommand) {
+        case 'купон':
+        case 'coupon':
+          return this.handleCouponActivation(firstParam, player.profileId)
+        case 'инвентарь':
+        case 'inventory':
+          return this.handleInventoryCommand(player.profileId)
+        case 'гитхаб':
+        case 'github':
+        case 'git':
+          return this.handleGitHubCommand()
       }
     }
   }
@@ -72,6 +78,13 @@ export class TwitchService {
     return {
       ok: true,
       message: `У тебя есть ${profile.coupons} купон(а/ов). Обменивай их на награды в игре.`,
+    }
+  }
+
+  handleGitHubCommand() {
+    return {
+      ok: true,
+      message: '👨‍💻 https://github.com/hmbanan666\n ⭐ https://github.com/k39space/k39',
     }
   }
 
