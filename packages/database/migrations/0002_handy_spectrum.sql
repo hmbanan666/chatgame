@@ -1,0 +1,1 @@
+ALTER TABLE "streamer" DROP COLUMN "profile_id";

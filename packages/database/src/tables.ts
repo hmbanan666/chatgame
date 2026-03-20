@@ -101,12 +101,7 @@ export const streamers = pgTable('streamer', {
   twitchChannelId: text('twitch_channel_id').notNull().unique(),
   twitchChannelName: text('twitch_channel_name').notNull(),
   donationAlertsUserId: text('donation_alerts_user_id'),
-  profileId: text('profile_id').notNull(),
 })
-
-export const streamersRelations = relations(streamers, ({ one }) => ({
-  profile: one(profiles, { fields: [streamers.profileId], references: [profiles.id] }),
-}))
 
 // ── Twitch ───────────────────────────────────────────────
 
