@@ -18,6 +18,7 @@ export async function initCharges() {
     const chargeInstance = new StreamCharge(
       {
         id: streamer.twitchChannelId,
+        streamerId: streamer.id,
         startedAt: new Date().toISOString(),
         energy: 100,
         baseRate: 10,

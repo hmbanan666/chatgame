@@ -9,6 +9,7 @@ import { EventService } from './event'
 
 interface StreamChargeOptions {
   id: string
+  streamerId: string
   startedAt: string
   energy: number
   baseRate: number
@@ -35,6 +36,7 @@ interface StreamChargeDonation {
 
 export class StreamCharge implements ChargeInstance {
   id: string
+  streamerId: string
   startedAt: string
   energy: number
   baseRate: number
@@ -70,6 +72,7 @@ export class StreamCharge implements ChargeInstance {
     readonly donate: DonateController | null,
   ) {
     this.id = data.id
+    this.streamerId = data.streamerId
     this.startedAt = data.startedAt
     this.energy = data.energy
     this.baseRate = data.baseRate
@@ -281,6 +284,18 @@ export class StreamCharge implements ChargeInstance {
       userName: event.username,
       message: event.message,
     })
+
+    if (event.message?.trim()) {
+      db.backlogItem.create({
+        text: event.message.trim(),
+        authorName: event.username,
+        source: 'donation',
+        amount: Math.round(event.amount),
+        streamerId: this.streamerId,
+      }).catch((err) => {
+        this.#logger.error('Failed to save backlog item', err)
+      })
+    }
   }
 
   convertDonationToEnergy(currency: string, amount: number): number {

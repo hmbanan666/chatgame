@@ -1,4 +1,5 @@
 import { useDatabase } from '../database'
+import { BacklogItemRepository } from './backlogItem'
 import { CharacterRepository } from './character'
 import { CharacterEditionRepository } from './characterEdition'
 import { CharacterLevelRepository } from './characterLevel'
@@ -21,6 +22,7 @@ import { TwitchAccessTokenRepository } from './twitchAccessToken'
 import { TwitchTokenRepository } from './twitchToken'
 
 class Repository {
+  readonly backlogItem = BacklogItemRepository
   readonly profile = Profile
   readonly character = CharacterRepository
   readonly characterEdition = CharacterEditionRepository

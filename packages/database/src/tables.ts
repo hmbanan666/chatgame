@@ -103,6 +103,24 @@ export const streamers = pgTable('streamer', {
   donationAlertsUserId: text('donation_alerts_user_id'),
 })
 
+// ── Backlog ─────────────────────────────────────────────
+
+export const backlogItems = pgTable('backlog_item', {
+  id: cuid2('id').defaultRandom().primaryKey(),
+  createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+  text: text('text').notNull(),
+  authorName: text('author_name').notNull(),
+  source: text('source').notNull().default('donation'),
+  status: text('status').notNull().default('new'),
+  amount: integer('amount'),
+  streamerId: text('streamer_id').notNull(),
+})
+
+export const backlogItemsRelations = relations(backlogItems, ({ one }) => ({
+  streamer: one(streamers, { fields: [backlogItems.streamerId], references: [streamers.id] }),
+}))
+
 // ── Twitch ───────────────────────────────────────────────
 
 export const twitchTokens = pgTable('twitch_token', {
