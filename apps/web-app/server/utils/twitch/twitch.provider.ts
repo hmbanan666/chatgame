@@ -2,10 +2,12 @@ import type { TwitchAccessTokenResponse } from '@chat-game/types'
 import type { AuthProvider } from '@twurple/auth'
 import { createId } from '@paralleldrive/cuid2'
 import { RefreshingAuthProvider } from '@twurple/auth'
-import { twitchController } from './twitch.controller'
+import { getTwitchController } from './twitch.controller'
+
+const logger = useLogger('twitch:provider')
 
 class TwitchProvider {
-  #authProvider!: AuthProvider
+  #authProvider: AuthProvider | null = null
   #isStreaming: boolean = false
   readonly #userId: string
   readonly #clientId: string
@@ -26,8 +28,6 @@ class TwitchProvider {
     this.#code = twitchOauthCode
     this.#clientId = oauthTwitchClientId
     this.#redirectUrl = publicEnv.signInRedirectUrl
-
-    void this.getAuthProvider()
   }
 
   get isStreaming() {
@@ -38,28 +38,22 @@ class TwitchProvider {
     this.#isStreaming = value
 
     if (value) {
-      twitchController.startCouponGenerator()
+      getTwitchController().startCouponGenerator()
     } else {
-      twitchController.stopCouponGenerator()
+      getTwitchController().stopCouponGenerator()
     }
   }
 
-  async getAuthProvider() {
+  async getAuthProvider(): Promise<AuthProvider> {
     if (this.#authProvider) {
       return this.#authProvider
     }
 
-    const provider = await this.#prepareAuthProvider()
-    if (!provider) {
-      return this.#createNewAccessToken()
-    }
-
-    this.#authProvider = provider
-
+    this.#authProvider = await this.#prepareAuthProvider()
     return this.#authProvider
   }
 
-  async #obtainTwitchAccessToken() {
+  async #obtainTwitchAccessToken(): Promise<TwitchAccessTokenResponse | null> {
     try {
       const response = await fetch(
         `https://id.twitch.tv/oauth2/token?client_id=${this.#clientId}&client_secret=${
@@ -71,7 +65,7 @@ class TwitchProvider {
       )
       return (await response.json()) as TwitchAccessTokenResponse
     } catch (err) {
-      console.error('obtainTwitchAccessToken', err)
+      logger.error('Failed to obtain Twitch access token', err)
       return null
     }
   }
@@ -89,6 +83,7 @@ class TwitchProvider {
         obtainmentTimestamp: Date.now().toString(),
       })
 
+      logger.success('Saved new Twitch access token. Restart server to use it.')
       throw new Error('Saved new access token. Restart server!')
     }
 
@@ -130,4 +125,11 @@ class TwitchProvider {
   }
 }
 
-export const twitchProvider = new TwitchProvider()
+let _twitchProvider: TwitchProvider | null = null
+
+export function getTwitchProvider(): TwitchProvider {
+  if (!_twitchProvider) {
+    _twitchProvider = new TwitchProvider()
+  }
+  return _twitchProvider
+}

@@ -1,7 +1,7 @@
-import { twitchController } from '../utils/twitch/twitch.controller'
-import { twitchProvider } from '../utils/twitch/twitch.provider'
+import { initStreamJourneyRoom } from '../core/stream-journey'
+import { getTwitchController } from '../utils/twitch/twitch.controller'
 
-export default defineNitroPlugin(() => {
+export default defineNitroPlugin(async () => {
   const logger = useLogger('plugin-start-twitch')
 
   // Only run in production
@@ -13,23 +13,14 @@ export default defineNitroPlugin(() => {
   const { twitchChannelId } = useRuntimeConfig()
 
   if (!twitchChannelId) {
-    // No config provided
     return
   }
 
-  twitchController.serve()
-  twitchController.serveStreamOnline()
+  initStreamJourneyRoom(twitchChannelId.toString())
 
-  setTimeout(checkIfStreamingNow, 8000)
+  const controller = getTwitchController()
+  await controller.serve()
+  await controller.serveStreamOnline()
 
   logger.success('Twitch server started')
 })
-
-async function checkIfStreamingNow() {
-  const res = await fetch('https://twitch.tv/hmbanan666')
-  const code = await res.text()
-
-  if (code.includes('isLiveBroadcast')) {
-    twitchProvider.isStreaming = true
-  }
-}

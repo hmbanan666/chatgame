@@ -1,8 +1,9 @@
 import type { ChargeEventService, ChargeInstance, ChargeModifier } from '#shared/types/charge'
 import type { CharacterEditionWithCharacter } from '@chat-game/types'
 import type { DonationAlertsDonationEvent } from '@donation-alerts/events'
-import type { TwitchChatController } from '~~/server/utils/twitch/chat.controller'
-import type { DonateController } from '../donate/controller'
+import type { TwitchChatController } from './chatClient'
+import type { DonateController } from './donateClient'
+import type { TwitchSubController } from './subClient'
 import { createId } from '@paralleldrive/cuid2'
 import { EventService } from './event'
 
@@ -12,8 +13,8 @@ interface StreamChargeOptions {
   energy: number
   baseRate: number
   difficulty: number
-  twitchStreamId: string
-  twitchStreamName: string
+  twitchChannelId: string
+  twitchChannelName: string
 }
 
 interface StreamChargeMessage {
@@ -38,8 +39,8 @@ export class StreamCharge implements ChargeInstance {
   energy: number
   baseRate: number
   difficulty: number
-  twitchStreamId: string
-  twitchStreamName: string
+  twitchChannelId: string
+  twitchChannelName: string
 
   messages: StreamChargeMessage[] = []
   donations: StreamChargeDonation[] = []
@@ -66,15 +67,15 @@ export class StreamCharge implements ChargeInstance {
     data: StreamChargeOptions,
     readonly chat: TwitchChatController,
     readonly sub: TwitchSubController,
-    readonly donate: DonateController,
+    readonly donate: DonateController | null,
   ) {
-    this.id = data.id ?? createId()
-    this.startedAt = data.startedAt ?? new Date().toISOString()
-    this.energy = data.energy ?? 0
-    this.baseRate = data.baseRate ?? 0
-    this.difficulty = data.difficulty ?? 0
-    this.twitchStreamId = data.twitchStreamId
-    this.twitchStreamName = data.twitchStreamName
+    this.id = data.id
+    this.startedAt = data.startedAt
+    this.energy = data.energy
+    this.baseRate = data.baseRate
+    this.difficulty = data.difficulty
+    this.twitchChannelId = data.twitchChannelId
+    this.twitchChannelName = data.twitchChannelName
 
     this.event = new EventService(this)
 
@@ -85,9 +86,10 @@ export class StreamCharge implements ChargeInstance {
 
     this.initChatClient()
     this.initSubClient()
-    this.initDonateClient()
 
-    this.#logger.success('Stream charge initialized', this.id)
+    if (this.donate) {
+      this.initDonateClient()
+    }
   }
 
   get energyPerTick() {
@@ -98,10 +100,8 @@ export class StreamCharge implements ChargeInstance {
     let negative = 0
     let positive = 0
 
-    // Difficulty
     negative += Math.abs(this.baseRate * this.difficulty)
 
-    // Modifiers: +2, +4
     for (const modifier of this.modifiers) {
       if (modifier.isExpired) {
         continue
@@ -113,7 +113,6 @@ export class StreamCharge implements ChargeInstance {
       if (modifier.code === 'positive2') {
         positive += 4
       }
-
       if (modifier.code === 'negative1') {
         negative += 2
       }
@@ -122,7 +121,6 @@ export class StreamCharge implements ChargeInstance {
       }
     }
 
-    // Modifiers: x1.5
     for (const modifier of this.modifiers) {
       if (modifier.isExpired) {
         continue
@@ -136,10 +134,8 @@ export class StreamCharge implements ChargeInstance {
       }
     }
 
-    // Messages: +1 each
     positive += this.messages.filter((message) => !message.isExpired).length
 
-    // Limit +3 or -3
     positive = Math.min(positive, 3)
     negative = Math.min(negative, 3)
 
@@ -177,7 +173,7 @@ export class StreamCharge implements ChargeInstance {
           continue
         }
 
-        const expiredIn = 30_000 // 30s
+        const expiredIn = 30_000
         if (now >= message.createdAt + expiredIn) {
           message.isExpired = true
         }
@@ -207,13 +203,13 @@ export class StreamCharge implements ChargeInstance {
 
   initSubClient() {
     this.sub.init().then(() => {
-      this.sub.client.onChannelRedemptionAdd(this.twitchStreamId, this.handleRedemption.bind(this))
+      this.sub.client.onChannelRedemptionAdd(this.twitchChannelId, this.handleRedemption.bind(this))
     })
   }
 
   initDonateClient() {
-    this.donate.init().then(() => {
-      this.donate.client.onDonation(this.handleDonation.bind(this))
+    this.donate!.init().then(() => {
+      this.donate!.client.onDonation(this.handleDonation.bind(this))
     })
   }
 
@@ -233,7 +229,6 @@ export class StreamCharge implements ChargeInstance {
       isExpired: false,
     })
 
-    // Push message as Event
     this.event.send({
       id: createId(),
       type: 'NEW_PLAYER_MESSAGE',
@@ -242,22 +237,19 @@ export class StreamCharge implements ChargeInstance {
   }
 
   handleRedemption(data: { rewardId: string, userId: string, userName: string, rewardTitle: string }) {
-    this.#logger.log('The viewer bought a reward using channel points', data.rewardId, data.userId, data.userName, data.rewardTitle)
+    this.#logger.log('Channel point reward redeemed', data.rewardTitle, data.userName)
 
-    const reward = TWITCH_CHANNEL_REWARDS.find((reward) => reward.rewardId === data.rewardId)
+    const reward = TWITCH_CHANNEL_REWARDS.find((r) => r.rewardId === data.rewardId)
     if (!reward) {
       return
     }
 
-    // Instant energy
     if (reward.code === 'positive4') {
       this.energy += 5
     }
     if (reward.code === 'negative4') {
       this.energy -= 5
     }
-
-    // Neutral
     if (reward.code === 'neutral1') {
       this.expireAllModifiers()
     }
@@ -273,7 +265,7 @@ export class StreamCharge implements ChargeInstance {
   }
 
   handleDonation(event: DonationAlertsDonationEvent) {
-    this.#logger.log('The viewer donated', event.username, event.amount, event.currency, event.message)
+    this.#logger.log('Donation received', event.username, event.amount, event.currency)
 
     const amount = this.convertDonationToEnergy(event.currency, event.amount)
     this.energy += amount
@@ -296,7 +288,6 @@ export class StreamCharge implements ChargeInstance {
 
     const rate = conversionRates[currency as keyof typeof conversionRates]
     if (!rate) {
-      this.#logger.warn(`Unsupported currency: ${currency}, treating as USD equivalent`)
       return amount * conversionRates.USD
     }
 
@@ -331,76 +322,13 @@ export class StreamCharge implements ChargeInstance {
 }
 
 const TWITCH_CHANNEL_REWARDS = [
-  {
-    code: 'positive1',
-    rewardId: '57b753fb-3a74-47f3-bb88-5d4feab6f42e',
-    rewardTitle: 'Солнечная панель',
-    description: 'Преобразует фоновое излучение в энергию, +2 каждый тик. Действует минуту.',
-    price: 200,
-    actionTimeInSeconds: 60,
-  },
-  {
-    code: 'positive2',
-    rewardId: '66e1569d-2226-49f6-9abd-f8b0b03fd5fd',
-    rewardTitle: 'Квантовый аккумулятор',
-    description: 'Накапливает энергию из окружающего пространства, восстанавливая +4 каждый тик в течение 2 минут.',
-    price: 400,
-    actionTimeInSeconds: 120,
-  },
-  {
-    code: 'positive3',
-    rewardId: 'd37c5835-db07-44b2-80cb-e16f854ae8b7',
-    rewardTitle: 'Магнитный ускоритель x1.5',
-    description: 'Усиливает поток энергии, увеличивая скорость восстановления. Действует 3 минуты.',
-    price: 800,
-    actionTimeInSeconds: 180,
-  },
-  {
-    code: 'positive4',
-    rewardId: '121c393a-d5a2-4167-aa4b-efe4a016ea6d',
-    rewardTitle: 'Энергетический всплеск',
-    description: 'Мощный выброс энергии, мгновенно восстанавливающий 5% уровня Заряженности.',
-    price: 1600,
-    actionTimeInSeconds: 0,
-  },
-  {
-    code: 'negative1',
-    rewardId: 'e5420bca-e719-4b8d-8a15-d8ae46739d74',
-    rewardTitle: 'Энергетическая утечка',
-    description: 'Создает дыру в энергетическом поле, -2 каждый тик. Действует минуту.',
-    price: 150,
-    actionTimeInSeconds: 60,
-  },
-  {
-    code: 'negative2',
-    rewardId: 'aa0ca8b8-cf9e-4161-8a75-b3c67dd97cb0',
-    rewardTitle: 'Разряд конденсатора',
-    description: 'Упс, такие дела. -4 каждый тик в течение 2 минут.',
-    price: 300,
-    actionTimeInSeconds: 120,
-  },
-  {
-    code: 'negative3',
-    rewardId: '0e6ebe0c-8d6a-4f0d-a300-1269c0d44339',
-    rewardTitle: 'Энергетический шторм x1.5',
-    description: 'Создает хаос в энергетическом поле, снижающий скорость восстановления. Действует 3 минуты.',
-    price: 600,
-    actionTimeInSeconds: 180,
-  },
-  {
-    code: 'negative4',
-    rewardId: '48c5e058-2b71-4ae3-9f6f-b0342a9f2032',
-    rewardTitle: 'Электромагнитный разряд',
-    description: 'Мощный разряд, мгновенно уменьшающий уровень Заряженности на 5%.',
-    price: 1200,
-    actionTimeInSeconds: 0,
-  },
-  {
-    code: 'neutral1',
-    rewardId: '178832f9-f84e-4376-a205-db57ac4f0406',
-    rewardTitle: 'Нулевой резонанс',
-    description: 'Создание состояния, при котором все эффекты взаимно уничтожаются.',
-    price: 2250,
-    actionTimeInSeconds: 0,
-  },
+  { code: 'positive1', rewardId: '57b753fb-3a74-47f3-bb88-5d4feab6f42e', actionTimeInSeconds: 60 },
+  { code: 'positive2', rewardId: '66e1569d-2226-49f6-9abd-f8b0b03fd5fd', actionTimeInSeconds: 120 },
+  { code: 'positive3', rewardId: 'd37c5835-db07-44b2-80cb-e16f854ae8b7', actionTimeInSeconds: 180 },
+  { code: 'positive4', rewardId: '121c393a-d5a2-4167-aa4b-efe4a016ea6d', actionTimeInSeconds: 0 },
+  { code: 'negative1', rewardId: 'e5420bca-e719-4b8d-8a15-d8ae46739d74', actionTimeInSeconds: 60 },
+  { code: 'negative2', rewardId: 'aa0ca8b8-cf9e-4161-8a75-b3c67dd97cb0', actionTimeInSeconds: 120 },
+  { code: 'negative3', rewardId: '0e6ebe0c-8d6a-4f0d-a300-1269c0d44339', actionTimeInSeconds: 180 },
+  { code: 'negative4', rewardId: '48c5e058-2b71-4ae3-9f6f-b0342a9f2032', actionTimeInSeconds: 0 },
+  { code: 'neutral1', rewardId: '178832f9-f84e-4376-a205-db57ac4f0406', actionTimeInSeconds: 0 },
 ]

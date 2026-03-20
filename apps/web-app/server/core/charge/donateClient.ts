@@ -1,0 +1,55 @@
+import { ApiClient } from '@donation-alerts/api'
+import { RefreshingAuthProvider } from '@donation-alerts/auth'
+import { UserEventsClient } from '@donation-alerts/events'
+
+export class DonateController {
+  client!: UserEventsClient
+
+  async init() {
+    const {
+      donationAlertsClientId,
+      donationAlertsClientSecret,
+    } = useRuntimeConfig()
+
+    const scopes = [
+      'oauth-user-show',
+      'oauth-donation-index',
+      'oauth-donation-subscribe',
+      'oauth-custom_alert-store',
+    ]
+
+    const authProvider = new RefreshingAuthProvider({
+      clientId: donationAlertsClientId,
+      clientSecret: donationAlertsClientSecret,
+      redirectUri: 'http://localhost:3000',
+      scopes,
+    })
+
+    const token = await db.twitchAccessToken.findByUserId(donationAlertsClientId)
+    if (!token) {
+      throw new Error('No DonationAlerts access token')
+    }
+
+    authProvider.addUser(donationAlertsClientId, {
+      accessToken: token.accessToken,
+      refreshToken: token.refreshToken as string,
+      expiresIn: 0,
+      obtainmentTimestamp: 0,
+      scopes,
+    })
+
+    authProvider.onRefresh(async (userId, newTokenData) => {
+      await db.twitchAccessToken.updateByUserId(userId.toString(), {
+        ...newTokenData,
+        obtainmentTimestamp: newTokenData.obtainmentTimestamp?.toString(),
+      })
+    })
+
+    const apiClient = new ApiClient({ authProvider })
+
+    this.client = new UserEventsClient({
+      user: donationAlertsClientId,
+      apiClient,
+    })
+  }
+}

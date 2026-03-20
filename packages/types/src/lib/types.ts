@@ -70,7 +70,7 @@ export interface TwitchToken {
   updatedAt: Date
   onlineAt: Date
   status: 'ACTIVE' | 'INACTIVE'
-  type: 'ADDON' | 'AI_VIEW'
+  type: 'ADDON'
   points: number
   language: 'ru' | 'en'
   profileId: string

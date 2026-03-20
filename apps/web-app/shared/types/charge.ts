@@ -6,8 +6,8 @@ export interface Charge {
   energy: number
   baseRate: number
   difficulty: number
-  twitchStreamId: string
-  twitchStreamName: string
+  twitchChannelId: string
+  twitchChannelName: string
 }
 
 export interface ChargeInstance extends Charge {}

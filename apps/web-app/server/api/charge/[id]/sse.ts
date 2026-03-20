@@ -1,3 +1,5 @@
+import { chargeRooms } from '~~/server/core/charge'
+
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
 

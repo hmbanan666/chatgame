@@ -2,11 +2,17 @@ import { rooms } from '~~/server/core/stream-journey'
 import { getDateMinusMinutes } from '../date'
 import { QuestService } from '../quest'
 
+// TODO: move to quest config
+const COUPON_QUEST_ID = 'xu44eon7teobb4a74cd4yvuh'
+
 export class TwitchService {
   readonly #quest: QuestService
+  readonly #roomId: string
 
   constructor() {
+    const { twitchChannelId } = useRuntimeConfig()
     this.#quest = new QuestService()
+    this.#roomId = twitchChannelId.toString()
   }
 
   async handleMessage({
@@ -33,7 +39,7 @@ export class TwitchService {
     const player = await db.player.findOrCreate({ profileId: profile.id, userName })
 
     // Stream Journey
-    const room = rooms.get('12345')
+    const room = rooms.get(this.#roomId)
     if (room) {
       room.send({
         event: 'newPlayerMessage',
@@ -73,6 +79,7 @@ export class TwitchService {
       }
     }
 
+    // TODO: i18n
     return {
       ok: true,
       message: `У тебя есть ${profile.coupons} купон(а/ов). Обменивай их на награды в игре.`,
@@ -80,17 +87,21 @@ export class TwitchService {
   }
 
   handleGitHubCommand() {
+    const { public: publicEnv } = useRuntimeConfig()
+    const siteUrl = publicEnv.siteUrl || 'https://chatgame.space'
+
     return {
       ok: true,
-      message: '👨‍💻 https://github.com/hmbanan666\n ⭐ https://github.com/k39space/k39',
+      message: `👨‍💻 ${siteUrl} | ⭐ https://github.com/chat-game`,
     }
   }
 
   async handleCouponActivation(id: string, profileId: string) {
     const status = await this.#activateCouponByCommand(id, profileId)
+
+    // TODO: i18n
     if (status === 'OK') {
-      // Quest
-      await this.#quest.completeQuest('xu44eon7teobb4a74cd4yvuh', profileId)
+      await this.#quest.completeQuest(COUPON_QUEST_ID, profileId)
 
       return {
         ok: true,

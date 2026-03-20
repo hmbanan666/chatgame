@@ -16,14 +16,12 @@ export default defineEventHandler(
     let description = formData.get('description') as string
 
     const profile = await db.profile.find(session.user!.id)
-    if (!profile || profile.mana < 5) {
+    if (!profile) {
       throw createError({
-        status: 404,
+        statusCode: 404,
+        message: 'Profile not found',
       })
     }
-
-    // Take payment
-    await db.profile.deductMana(profile.id, 5)
 
     // sanitize, max chars
     name = name.trim().substring(0, 35)

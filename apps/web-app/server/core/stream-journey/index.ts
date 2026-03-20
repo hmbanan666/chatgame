@@ -3,5 +3,8 @@ import { StreamJourneyRoom } from '@chatgame/stream-journey'
 
 export const rooms = new Map<string, Room>()
 
-// Create room for hmbanan666
-rooms.set('12345', new StreamJourneyRoom({ id: '12345' }))
+export function initStreamJourneyRoom(roomId: string) {
+  if (!rooms.has(roomId)) {
+    rooms.set(roomId, new StreamJourneyRoom({ id: roomId }))
+  }
+}

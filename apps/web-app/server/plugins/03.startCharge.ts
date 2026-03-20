@@ -1,3 +1,5 @@
+import { initCharges } from '../core/charge'
+
 export default defineNitroPlugin(async () => {
   const logger = useLogger('plugin-start-charge')
 
