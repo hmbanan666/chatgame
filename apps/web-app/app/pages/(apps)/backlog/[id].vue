@@ -1,16 +1,24 @@
 <template>
   <ClientOnly>
     <div class="relative w-dvw h-dvh overscroll-none overflow-hidden bg-transparent">
-      <div class="flex flex-col gap-2 p-4 h-full overflow-y-auto">
+      <div class="flex flex-col gap-2 p-4 h-full overflow-y-auto scrollbar-hide">
         <TransitionGroup name="list">
           <div
             v-for="item in items"
             :key="item.id"
-            class="flex flex-col gap-1 p-3 bg-orange-950/80 rounded-lg border border-orange-800/50"
+            class="flex flex-col gap-1 p-3 bg-orange-950 rounded-lg border border-orange-800/50"
+            :class="{ 'border-orange-500/60': item.source === 'donation' }"
           >
             <div class="flex items-center justify-between">
-              <span class="text-sm font-bold text-orange-200">{{ item.authorName }}</span>
-              <span v-if="item.amount" class="text-xs text-orange-400">{{ item.amount }} ₽</span>
+              <div class="flex items-center gap-1.5">
+                <Icon
+                  v-if="item.source === 'donation'"
+                  name="lucide:heart"
+                  class="!size-3 text-orange-400"
+                />
+                <span class="text-sm font-bold text-orange-200">{{ item.authorName }}</span>
+              </div>
+              <span v-if="item.amount" class="text-xs font-medium text-orange-400">{{ item.amount }} ₽</span>
             </div>
             <p class="text-sm text-orange-100">
               {{ item.text }}
@@ -90,5 +98,14 @@ onUnmounted(() => {
 .list-leave-to {
   opacity: 0;
   transform: translateX(20px);
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 </style>

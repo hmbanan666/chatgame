@@ -19,6 +19,7 @@ export class BacklogItemRepository {
         eq(t.status, 'new'),
       ),
       orderBy: (t, { desc }) => desc(t.createdAt),
+      limit: 20,
     })
   }
 
