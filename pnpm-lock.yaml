@@ -182,6 +182,9 @@ importers:
       playwright:
         specifier: catalog:test
         version: 1.56.1
+      typescript:
+        specifier: catalog:dev
+        version: 5.9.3
       vitest:
         specifier: catalog:test
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.37.0)(yaml@2.8.2)

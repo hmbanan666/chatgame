@@ -48,6 +48,7 @@
     "husky": "catalog:dev",
     "lint-staged": "catalog:dev",
     "playwright": "catalog:test",
+    "typescript": "catalog:dev",
     "vitest": "catalog:test",
     "vitest-browser-vue": "catalog:test"
   },

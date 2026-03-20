@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-app
+  namespace: chatgame
+  labels:
+    app.kubernetes.io/name: web-app
+    app.kubernetes.io/part-of: chatgame
+spec:
+  selector:
+    app.kubernetes.io/name: web-app
+  ports:
+    - port: 3000
+      targetPort: 3000
+      protocol: TCP
