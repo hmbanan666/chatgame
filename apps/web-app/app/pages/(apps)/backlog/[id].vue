@@ -1,7 +1,8 @@
 <template>
   <ClientOnly>
     <div class="relative w-dvw h-dvh overscroll-none overflow-hidden bg-transparent">
-      <div class="flex flex-col gap-2 p-4 h-full overflow-y-auto scrollbar-hide">
+      <div class="flex flex-col justify-end gap-2 p-4 h-full overflow-y-auto scrollbar-hide">
+        <!-- Items grow from bottom up -->
         <TransitionGroup name="list">
           <div
             v-for="item in items"
@@ -20,15 +21,17 @@
               </div>
               <span v-if="item.amount" class="text-xs font-medium text-orange-400">{{ item.amount }} ₽</span>
             </div>
-            <p class="text-sm text-orange-100">
+            <p class="text-base text-orange-100">
               {{ item.text }}
             </p>
           </div>
         </TransitionGroup>
 
-        <div v-if="items.length === 0" class="flex items-center justify-center h-full">
-          <p class="text-orange-500/50 text-sm">
-            Пока пусто
+        <!-- CTA -->
+        <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-orange-950 border border-orange-800/50 shrink-0">
+          <Icon name="lucide:sparkles" class="!size-4 text-orange-400 shrink-0" />
+          <p class="text-sm text-orange-400">
+            Отправь донат с идеей — она появится здесь
           </p>
         </div>
       </div>
@@ -92,7 +95,7 @@ onUnmounted(() => {
 
 .list-enter-from {
   opacity: 0;
-  transform: translateY(-20px);
+  transform: translateY(20px);
 }
 
 .list-leave-to {
