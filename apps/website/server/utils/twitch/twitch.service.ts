@@ -1,14 +1,12 @@
 import { rooms } from '~~/server/core/stream-journey'
+import { getDateMinusMinutes } from '../date'
 import { QuestService } from '../quest'
-import { DBRepository } from '../repository'
 
 export class TwitchService {
   readonly #quest: QuestService
-  readonly #repository: DBRepository
 
   constructor() {
     this.#quest = new QuestService()
-    this.#repository = new DBRepository()
   }
 
   async handleMessage({
@@ -27,12 +25,12 @@ export class TwitchService {
     const otherStrings = strings.toSpliced(0, 1)
     const firstParam = otherStrings[0] ?? ''
 
-    const profile = await this.#repository.findProfileByTwitchId(userId)
+    const profile = await db.profile.findByTwitchId(userId)
     if (!profile) {
       return
     }
 
-    const player = await this.#repository.findOrCreatePlayer({ profileId: profile.id, userName })
+    const player = await db.player.findOrCreate({ profileId: profile.id, userName })
 
     // Stream Journey
     const room = rooms.get('12345')
@@ -54,10 +52,10 @@ export class TwitchService {
       switch (possibleCommand) {
         case 'купон':
         case 'coupon':
-          return this.handleCouponActivation(firstParam, player.profileId)
+          return this.handleCouponActivation(firstParam, player!.profileId)
         case 'инвентарь':
         case 'inventory':
-          return this.handleInventoryCommand(player.profileId)
+          return this.handleInventoryCommand(player!.profileId)
         case 'гитхаб':
         case 'github':
         case 'git':
@@ -67,7 +65,7 @@ export class TwitchService {
   }
 
   async handleInventoryCommand(profileId: string) {
-    const profile = await this.#repository.findProfile(profileId)
+    const profile = await db.profile.find(profileId)
     if (!profile) {
       return {
         ok: false,
@@ -89,7 +87,7 @@ export class TwitchService {
   }
 
   async handleCouponActivation(id: string, profileId: string) {
-    const status = await this.#repository.activateCouponByCommand(id, profileId)
+    const status = await this.#activateCouponByCommand(id, profileId)
     if (status === 'OK') {
       // Quest
       await this.#quest.completeQuest('xu44eon7teobb4a74cd4yvuh', profileId)
@@ -117,5 +115,30 @@ export class TwitchService {
         message: null,
       }
     }
+  }
+
+  async #activateCouponByCommand(
+    id: string,
+    profileId: string,
+  ): Promise<'OK' | 'TAKEN_ALREADY' | 'TIME_LIMIT' | 'NOT_FOUND'> {
+    const cutoff = getDateMinusMinutes(60 * 10)
+
+    const isAlreadyToday = await db.coupon.findByProfileSince(profileId, cutoff)
+    if (isAlreadyToday) {
+      return 'TIME_LIMIT'
+    }
+
+    const coupon = await db.coupon.findByActivationCommandSince(id, cutoff)
+    if (!coupon) {
+      return 'NOT_FOUND'
+    }
+    if (coupon.profileId) {
+      return 'TAKEN_ALREADY'
+    }
+
+    await db.coupon.update(coupon.id, { profileId, status: 'TAKEN' })
+    await db.profile.deductCoupons(profileId, -1)
+
+    return 'OK'
   }
 }

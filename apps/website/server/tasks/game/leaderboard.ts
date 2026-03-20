@@ -18,25 +18,15 @@ export default defineTask({
     try {
       await createAndUpdateMembersInWoodlandsLeaderboard()
 
-      const leaderboards = await prisma.leaderboard.findMany({
-        include: {
-          members: {
-            orderBy: {
-              points: 'desc',
-            },
-          },
-        },
-      })
+      const leaderboards = await db.leaderboard.findAllWithMembers()
 
       for (const lb of leaderboards) {
+        // Sort members by points descending
+        const sortedMembers = [...lb.members].sort((a, b) => b.points - a.points)
+
         // update all members positions: by points
-        for (const [index, member] of lb.members.entries()) {
-          await prisma.leaderboardMember.update({
-            where: { id: member.id },
-            data: {
-              position: index + 1,
-            },
-          })
+        for (const [index, member] of sortedMembers.entries()) {
+          await db.leaderboardMember.updatePosition(member.id, index + 1)
         }
       }
     } catch (error) {
@@ -50,37 +40,21 @@ export default defineTask({
 })
 
 async function createAndUpdateMembersInWoodlandsLeaderboard() {
-  // Main lb
-  const profiles = await prisma.profile.findMany({
-    where: { points: { gt: 0 } },
-    orderBy: {
-      points: 'desc',
-    },
-  })
-  const leaderboard = await prisma.leaderboard.findUnique({
-    where: { id: woodlandLeaderboardId },
-    include: {
-      members: {
-        orderBy: {
-          points: 'desc',
-        },
-      },
-    },
-  })
+  const profiles = await db.profile.findAllWithPointsDesc()
+
+  const leaderboard = await db.leaderboard.findWithMembers(woodlandLeaderboardId)
 
   // Check if members exist and have actual points
   for (const profile of profiles) {
-    const member = leaderboard?.members.find((member) => member.profileId === profile.id)
+    const member = leaderboard?.members.find((member: { profileId: string }) => member.profileId === profile.id)
     if (!member) {
       // Create
-      await prisma.leaderboardMember.create({
-        data: {
-          id: createId(),
-          leaderboardId: woodlandLeaderboardId,
-          profileId: profile.id,
-          points: profile.points,
-          position: 0,
-        },
+      await db.leaderboardMember.create({
+        id: createId(),
+        leaderboardId: woodlandLeaderboardId,
+        profileId: profile.id,
+        points: profile.points,
+        position: 0,
       })
 
       continue
@@ -88,12 +62,7 @@ async function createAndUpdateMembersInWoodlandsLeaderboard() {
 
     // Update
     if (member.points !== profile.points) {
-      await prisma.leaderboardMember.update({
-        where: { id: member.id },
-        data: {
-          points: profile.points,
-        },
-      })
+      await db.leaderboardMember.updatePoints(member.id, profile.points)
     }
   }
 }

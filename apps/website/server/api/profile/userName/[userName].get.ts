@@ -2,16 +2,7 @@ export default defineEventHandler(
   async (event) => {
     const userName = getRouterParam(event, 'userName')
 
-    const profile = await prisma.profile.findFirst({
-      where: { userName },
-      include: {
-        characterEditions: {
-          include: {
-            character: true,
-          },
-        },
-      },
-    })
+    const profile = await db.profile.findByUserName(userName!)
     if (!profile) {
       throw createError({
         status: 404,

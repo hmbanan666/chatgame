@@ -9,7 +9,6 @@ interface DonateControllerOptions {
 export class DonateController {
   userId: string
   client!: UserEventsClient
-  readonly #repository = new DBRepository()
 
   constructor(data: DonateControllerOptions) {
     this.userId = data.userId
@@ -36,17 +35,20 @@ export class DonateController {
     })
 
     authProvider.onRefresh(async (userId, newTokenData) => {
-      await this.#repository.updateTwitchAccessToken(userId.toString(), newTokenData)
+      await db.twitchAccessToken.updateByUserId(userId.toString(), {
+        ...newTokenData,
+        obtainmentTimestamp: newTokenData.obtainmentTimestamp?.toString(),
+      })
     })
 
-    const accessToken = await this.#repository.getTwitchAccessToken(this.userId)
-    if (!accessToken) {
+    const token = await db.twitchAccessToken.findByUserId(this.userId)
+    if (!token) {
       throw new Error('No access token')
     }
 
     authProvider.addUser(this.userId, {
-      accessToken: accessToken.accessToken,
-      refreshToken: accessToken.refreshToken as string,
+      accessToken: token.accessToken,
+      refreshToken: token.refreshToken as string,
       expiresIn: 0,
       obtainmentTimestamp: 0,
       scopes,

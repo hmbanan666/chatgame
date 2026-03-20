@@ -3,12 +3,12 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "prisma generate --schema ../../prisma/schema.prisma && nuxt build",
-    "dev": "prisma generate --schema ../../prisma/schema.prisma && nuxt dev",
+    "build": "nuxt build",
+    "dev": "nuxt dev",
     "preview": "nuxt preview",
     "clean": "rm -rf dist",
     "clean:modules": "rm -rf .nuxt .output node_modules",
-    "typecheck": "prisma generate --schema ../../prisma/schema.prisma && nuxt typecheck",
+    "typecheck": "nuxt typecheck",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
@@ -23,8 +23,6 @@
     "@number-flow/vue": "catalog:integrations",
     "@nuxt/ui": "catalog:integrations",
     "@paralleldrive/cuid2": "catalog:integrations",
-    "@prisma/client": "6.2.1",
-    "@telegram-apps/init-data-node": "catalog:integrations",
     "@twurple/api": "catalog:integrations",
     "@twurple/auth": "catalog:integrations",
     "@twurple/chat": "catalog:integrations",
@@ -33,11 +31,10 @@
     "@vueuse/components": "catalog:integrations",
     "@vueuse/core": "catalog:integrations",
     "@vueuse/nuxt": "catalog:integrations",
-    "grammy": "catalog:integrations",
     "zod": "catalog:integrations"
   },
   "devDependencies": {
-    "@d-fischer/typed-event-emitter": "3.3.3",
+    "@d-fischer/typed-event-emitter": "catalog:dev",
     "@iconify-json/lucide": "catalog:dev",
     "@iconify-json/simple-icons": "catalog:dev",
     "@nuxt/devtools": "catalog:dev",
@@ -45,7 +42,6 @@
     "@types/node": "catalog:types",
     "nuxt": "catalog:dev",
     "nuxt-auth-utils": "catalog:dev",
-    "prisma": "6.2.1",
     "vue-tsc": "catalog:dev"
   }
 }

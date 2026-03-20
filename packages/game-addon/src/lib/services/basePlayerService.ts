@@ -25,12 +25,11 @@ export class BasePlayerService implements PlayerService {
 
   async findOrCreatePlayer(
     id: string,
-    telegramId: string,
     character?: CharacterEditionWithCharacter,
   ): Promise<GameObjectPlayer> {
     const player = this.findPlayer(id)
     if (!player) {
-      return this.createPlayer({ id, telegramId, character, x: 0 })
+      return this.createPlayer({ id, character, x: 0 })
     }
 
     return player
@@ -40,11 +39,10 @@ export class BasePlayerService implements PlayerService {
     return this.addon.children.find((p) => p.id === id && p.type === 'PLAYER') as PlayerObject | undefined
   }
 
-  async createPlayer({ id, telegramId, x, character }: { id: string, telegramId: string, x: number, character?: CharacterEditionWithCharacter }) {
+  async createPlayer({ id, x, character }: { id: string, x: number, character?: CharacterEditionWithCharacter }) {
     const player = new PlayerObject({
       addon: this.addon,
       id,
-      telegramId,
       x,
       y: this.addon.bottomY,
     })

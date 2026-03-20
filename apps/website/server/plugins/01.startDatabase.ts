@@ -1,0 +1,26 @@
+import process from 'node:process'
+import { useCreateDatabase, useMigrateDatabase } from '@chatgame/database'
+
+export default defineNitroPlugin(async () => {
+  const config = useRuntimeConfig()
+  const logger = useLogger('plugin-start-database')
+
+  const url = config.databaseUrl || process.env.DATABASE_URL
+  if (!url) {
+    throw new Error('DATABASE_URL is not defined')
+  }
+
+  useCreateDatabase(url)
+  logger.success('Database connection created')
+
+  const migrationsPath = import.meta.dev
+    ? '../../packages/database/migrations'
+    : './migrations'
+
+  try {
+    await useMigrateDatabase(migrationsPath)
+    logger.success('Database migrated')
+  } catch (error) {
+    logger.warn('Migration warning (may be already applied):', error)
+  }
+})

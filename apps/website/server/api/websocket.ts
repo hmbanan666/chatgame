@@ -1,8 +1,7 @@
-import type { CharacterEditionWithCharacter, GameObject, GameObjectPlayer, WebSocketConnect, WebSocketConnectAddon, WebSocketDestroyTree, WebSocketEvents, WebSocketMessage, WebSocketNewPlayerTarget } from '@chat-game/types'
+import type { WebSocketConnect, WebSocketConnectAddon, WebSocketDestroyTree, WebSocketEvents, WebSocketMessage, WebSocketNewPlayerTarget } from '@chat-game/types'
 import type { Peer } from 'crossws'
 import type { WagonRoom } from '../core/rooms/wagon'
 import { createId } from '@paralleldrive/cuid2'
-import { dropFromTree } from '../core/inventory/drop'
 import { activeRooms } from '../core/rooms'
 import { AddonRoom } from '../core/rooms/addon'
 
@@ -93,7 +92,7 @@ function handleClose(peer: Peer) {
 function handleConnectAddon(message: WebSocketConnectAddon, peer: Peer) {
   const token = message.data.token
   // Create if not exist
-  if (!activeRooms.find((room) => room.id === token)) {
+  if (!activeRooms.some((room) => room.id === token)) {
     activeRooms.push(new AddonRoom({ token }))
   }
 
@@ -105,8 +104,6 @@ function handleConnectAddon(message: WebSocketConnectAddon, peer: Peer) {
 
 async function handleConnect(message: WebSocketConnect, peer: Peer) {
   switch (message.data.client) {
-    case 'TELEGRAM_CLIENT':
-      return handleConnectTelegramClient(message, peer)
     case 'WAGON_CLIENT':
       return handleConnectWagonClient(peer, message.data.id)
     case 'SERVER':
@@ -114,59 +111,11 @@ async function handleConnect(message: WebSocketConnect, peer: Peer) {
   }
 }
 
-async function handleConnectTelegramClient(message: WebSocketConnect, peer: Peer) {
-  if (!message.data.telegramId) {
-    return
-  }
-
-  if (!activeRooms.find((room) => room.id === message.data.id)) {
-    return
-  }
-
-  const activeRoom = activeRooms.find((room) => room.id === message.data.id) as WagonRoom
-
-  // add to objects
-  const wagon = activeRoom.objects.find((obj) => obj.type === 'WAGON')
-  const telegramProfile = await prisma.telegramProfile.findFirst({
-    where: { telegramId: message.data.telegramId },
-    include: {
-      profile: true,
-    },
-  })
-  const activeEditionId = telegramProfile?.profile?.activeEditionId
-  const character = await prisma.characterEdition.findFirst({
-    where: { id: activeEditionId },
-    include: { character: true },
-  }) as CharacterEditionWithCharacter | null
-  if (!character) {
-    return
-  }
-
-  // Check, if already exists by Telegram
-  const playerExist = activeRoom.objects.find((obj) => obj.type === 'PLAYER' && obj.telegramId === message.data.telegramId)
-  if (playerExist) {
-    return
-  }
-
-  const playerId = createId()
-
-  if (!activeRoom.clients.find((c) => c.peerId === peer.id)) {
-    activeRoom.clients.push({ id: playerId, peerId: peer.id })
-  }
-
-  activeRoom.addPlayer({ id: playerId, telegramId: message.data.telegramId, x: wagon?.x ? wagon.x - 200 : 100, character })
-
-  peer.subscribe(activeRoom.id)
-  sendMessage({ type: 'CONNECTED_TO_WAGON_ROOM', data: { type: 'PLAYER', roomId: activeRoom.id, id: playerId, objects: activeRoom.objects } }, activeRoom.id)
-
-  logger.log(`Telegram client ${message.data.telegramId} subscribed to Wagon Room ${activeRoom.id}`, peer.id)
-}
-
 async function handleConnectWagonClient(peer: Peer, id: string) {
   const activeRoom = activeRooms.find((room) => room.id === id) as WagonRoom
 
   const wagonId = createId()
-  if (!activeRoom.clients.find((c) => c.peerId === peer.id)) {
+  if (!activeRoom.clients.some((c) => c.peerId === peer.id)) {
     activeRoom.clients.push({ id: wagonId, peerId: peer.id })
   }
 
@@ -201,12 +150,6 @@ async function handleDestroyTree(message: WebSocketDestroyTree, peer: Peer) {
   const tree = activeRoom.objects.find((obj) => obj.type === 'TREE' && obj.id === message.data.id)
   if (tree) {
     activeRoom.removeObject(tree.id)
-
-    const playerObject = activeRoom.objects.find((obj) => obj.type === 'PLAYER' && obj.id === player.id) as GameObject & GameObjectPlayer
-    if (playerObject) {
-      await dropFromTree(playerObject.telegramId)
-    }
-
     peer.publish(activeRoom.id, JSON.stringify({ id: createId(), type: 'DESTROY_TREE', data: { id: tree.id } }))
   }
 }

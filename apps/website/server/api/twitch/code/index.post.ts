@@ -14,9 +14,7 @@ export default defineEventHandler<EventHandlerRequest, Promise<TokenCreateRespon
       })
     }
 
-    const profile = await prisma.profile.findFirst({
-      where: { id: body.profileId },
-    })
+    const profile = await db.profile.find(body.profileId)
     if (!profile) {
       throw createError({
         statusCode: 400,
@@ -33,31 +31,27 @@ export default defineEventHandler<EventHandlerRequest, Promise<TokenCreateRespon
       })
     }
 
-    const twitchAccessToken = await prisma.twitchAccessToken.create({
-      data: {
-        id: createId(),
-        userId: profile.twitchId,
-        accessToken: res.access_token,
-        refreshToken: res.refresh_token,
-        scope: res.scope,
-        expiresIn: res.expires_in,
-        obtainmentTimestamp: new Date().getTime().toString(),
-      },
+    const [twitchAccessToken] = await db.twitchAccessToken.create({
+      id: createId(),
+      userId: profile.twitchId!,
+      accessToken: res.access_token,
+      refreshToken: res.refresh_token,
+      scope: res.scope,
+      expiresIn: res.expires_in,
+      obtainmentTimestamp: Date.now().toString(),
     })
 
-    const token = await prisma.twitchToken.create({
-      data: {
-        id: createId(),
-        accessTokenId: twitchAccessToken.id,
-        profileId: profile.id,
-        status: 'ACTIVE',
-        type: 'ADDON',
-      },
+    const [token] = await db.twitchToken.create({
+      id: createId(),
+      accessTokenId: twitchAccessToken!.id,
+      profileId: profile.id,
+      status: 'ACTIVE',
+      type: 'ADDON',
     })
 
     return {
       ok: true,
-      result: token as TwitchToken,
+      result: token as unknown as TwitchToken,
     }
   },
 )

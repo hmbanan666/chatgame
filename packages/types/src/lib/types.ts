@@ -3,7 +3,6 @@ export interface Profile {
   createdAt: Date
   updatedAt: Date
   twitchId: string
-  telegramProfileId: string | null
   userName: string
   isStreamer: boolean
   coupons: number
@@ -41,20 +40,6 @@ export interface ProfileCreateRequest {
 export interface ProfileCreateResponse {
   ok: boolean
   result: Profile
-}
-
-export interface TelegramProfile {
-  id: string
-  createdAt: Date
-  updatedAt: Date
-  telegramId: string
-  username: string | null
-  firstName: string
-  lastName: string | null
-  languageCode: string | null
-  level: number
-  coins: number
-  energy: number
 }
 
 export interface TokenCreateRequest {
@@ -396,7 +381,6 @@ export interface Product {
   coins: number
   bonusCoins: number
   price: number
-  starsPrice: number
   regularPrice: number
   isActive: boolean
   priority: number
@@ -422,9 +406,8 @@ export interface Payment {
   productId: string
   status: 'PENDING' | 'PAID'
   externalId: string
-  provider: 'YOOKASSA' | 'TELEGRAM'
+  provider: 'YOOKASSA'
   amount: number
-  telegramChargeId: string | null
 }
 
 export interface PaymentCreateRequest {
@@ -463,9 +446,7 @@ export interface LeaderboardMember {
 
 export type LeaderboardData = Leaderboard & {
   members: (LeaderboardMember & {
-    profile: Profile & {
-      telegramProfile: TelegramProfile
-    }
+    profile: Profile
   })[]
 }
 

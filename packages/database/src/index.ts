@@ -1,3 +1,5 @@
-export { useCreateDatabase, useMigrateDatabase } from './database'
+export { useCreateDatabase, useDatabase, useMigrateDatabase } from './database'
+export type { Database } from './database'
 export { repository as db } from './repository'
+export * as tables from './tables'
 export type * from './types'

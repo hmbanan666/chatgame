@@ -4,9 +4,7 @@ import type { EventHandlerRequest } from 'h3'
 export default defineEventHandler<EventHandlerRequest, Promise<Player>>(async (event) => {
   const id = getRouterParam(event, 'id')
 
-  const player = await prisma.player.findUnique({
-    where: { id },
-  })
+  const player = await db.player.find(id!)
   if (!player) {
     throw createError({
       status: 404,

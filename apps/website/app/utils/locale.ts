@@ -1,12 +1,14 @@
 import type { UseTimeAgoMessages, UseTimeAgoUnitNamesDefault } from '@vueuse/core'
 
+const DIGIT_RE = /\d/
+
 export function useLocaleTimeAgo(date: Date) {
   const { t } = useI18n()
 
   const I18N_MESSAGES: UseTimeAgoMessages<UseTimeAgoUnitNamesDefault> = {
     justNow: t('common.timeAgo.just-now'),
-    past: (n) => (n.match(/\d/) ? t('common.timeAgo.ago', [n]) : n),
-    future: (n) => (n.match(/\d/) ? t('common.timeAgo.in', [n]) : n),
+    past: (n) => (DIGIT_RE.test(n) ? t('common.timeAgo.ago', [n]) : n),
+    future: (n) => (DIGIT_RE.test(n) ? t('common.timeAgo.in', [n]) : n),
     month: (n, past) =>
       n === 1
         ? past

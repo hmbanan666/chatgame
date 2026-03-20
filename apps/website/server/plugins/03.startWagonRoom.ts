@@ -12,7 +12,7 @@ export default defineNitroPlugin(async () => {
     return
   }
 
-  if (!activeRooms.find((room) => room.id === wagonRoomId)) {
+  if (!activeRooms.some((room) => room.id === wagonRoomId)) {
     rebootRoom()
 
     setInterval(() => {

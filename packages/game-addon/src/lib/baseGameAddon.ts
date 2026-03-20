@@ -10,7 +10,6 @@ import type {
 import { createId } from '@paralleldrive/cuid2'
 import { Application, Container, Rectangle, TextureStyle } from 'pixi.js'
 import { BaseWagonObject } from './objects/baseWagonObject'
-import { FlagObject } from './objects/flagObject'
 import { MoveToFlagScript } from './scripts/moveToFlagScript'
 import { BaseAssetService } from './services/baseAssetService'
 import { BasePlayerService } from './services/basePlayerService'
@@ -88,7 +87,7 @@ export class BaseGameAddon extends Container implements GameAddon {
     this.websocketService = new BaseWebSocketService(this as GameAddon, websocketUrl)
   }
 
-  async init(telegramId: string) {
+  async init() {
     await this.app.init({
       backgroundAlpha: 0,
       antialias: false,
@@ -111,49 +110,7 @@ export class BaseGameAddon extends Container implements GameAddon {
 
     this.app.stage.addChild(this)
 
-    if (this.client === 'TELEGRAM_CLIENT') {
-      await this.initTelegramPlayer(telegramId)
-    }
-
     this.app.ticker.add(this.baseAppTicker, 'baseAppTicker')
-  }
-
-  async initTelegramPlayer(telegramId: string) {
-    this.player = await this.playerService.createPlayer({ id: createId(), telegramId, x: 200 })
-    this.cameraTarget = this.player
-
-    this.app.stage.addEventListener('pointerdown', (e) => {
-      if (!this.player || !this.player.canClick) {
-        return
-      }
-
-      const isTargetAnObject = e.target.children.length === 0
-      if (isTargetAnObject) {
-        return
-      }
-
-      const middle = this.app.screen.width / 2
-      const offsetX = e.clientX - middle
-      const serverX = offsetX + this.leftX
-
-      const flag = new FlagObject({ addon: this, x: serverX, y: this.bottomY, variant: 'PLAYER_MOVEMENT' })
-      if (this.player.target && this.player.target.type === 'FLAG') {
-        const flag = this.player.target
-        this.player.target = undefined
-        flag.state = 'DESTROYED'
-      }
-      this.player.target = flag
-
-      this.player.click()
-
-      this.websocketService.send({
-        type: 'NEW_PLAYER_TARGET',
-        data: {
-          x: serverX,
-          id: this.player.id,
-        },
-      })
-    })
   }
 
   async play() {}
@@ -257,7 +214,7 @@ export class BaseGameAddon extends Container implements GameAddon {
   changeCameraPosition(x: number) {
     const columnWidth = this.app.screen.width / 8
 
-    const leftPadding = this.client === 'TELEGRAM_CLIENT' ? 4 : 2
+    const leftPadding = 2
 
     this.cameraPerfectX = -x + columnWidth * leftPadding
 

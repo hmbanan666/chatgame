@@ -13,10 +13,8 @@ export default defineEventHandler(async (event) => {
 
   const type = body.type as string
 
-  const profile = await prisma.profile.findFirst({
-    where: { id: session.user.id, coupons: { gte: 1 } },
-  })
-  if (!profile) {
+  const profile = await db.profile.find(session.user!.id)
+  if (!profile || profile.coupons < 1) {
     throw createError({
       status: 404,
       message: 'You do not have enough coupons',
@@ -24,26 +22,15 @@ export default defineEventHandler(async (event) => {
   }
 
   if (type === 'COINS') {
-    await prisma.profile.update({
-      where: { id: profile.id },
-      data: {
-        coins: {
-          increment: 2,
-        },
-        coupons: {
-          decrement: 1,
-        },
-      },
-    })
+    await db.profile.addCoins(profile.id, 2)
+    await db.profile.deductCoupons(profile.id, 1)
 
-    await prisma.transaction.create({
-      data: {
-        id: createId(),
-        profileId: profile.id,
-        entityId: profile.id,
-        amount: 2,
-        type: 'COINS_FROM_COUPON',
-      },
+    await db.transaction.create({
+      id: createId(),
+      profileId: profile.id,
+      entityId: profile.id,
+      amount: 2,
+      type: 'COINS_FROM_COUPON',
     })
   }
 

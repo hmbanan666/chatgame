@@ -76,6 +76,7 @@ export default defineNuxtConfig({
   },
   css: ['~/assets/css/styles.css'],
   runtimeConfig: {
+    databaseUrl: '',
     websiteBearer: '',
     twitchChannelName: '',
     twitchChannelId: '',
@@ -84,9 +85,6 @@ export default defineNuxtConfig({
     yookassaApiKey: '',
     oauthTwitchClientId: '',
     oauthTwitchClientSecret: '',
-    telegramBotToken: '',
-    telegramGameBotToken: '',
-    telegramAdminId: '',
     donationAlertsClientId: '',
     donationAlertsClientSecret: '',
     public: {

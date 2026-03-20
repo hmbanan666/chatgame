@@ -1,6 +1,5 @@
-import type { ProfileCreateResponse } from '@chat-game/types'
+import type { Profile, ProfileCreateResponse } from '@chat-game/types'
 import type { EventHandlerRequest } from 'h3'
-import { DBRepository } from '../../utils/repository'
 
 export default defineEventHandler<EventHandlerRequest, Promise<ProfileCreateResponse>>(
   async (event) => {
@@ -13,15 +12,14 @@ export default defineEventHandler<EventHandlerRequest, Promise<ProfileCreateResp
       })
     }
 
-    const repository = new DBRepository()
-    const profile = await repository.findOrCreateProfile({
+    const profile = await db.profile.findOrCreate({
       userId: body.twitchId,
       userName: body.userName,
     })
 
     return {
       ok: true,
-      result: profile,
+      result: profile as unknown as Profile,
     }
   },
 )

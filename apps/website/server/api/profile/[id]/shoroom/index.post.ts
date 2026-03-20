@@ -12,34 +12,25 @@ export default defineEventHandler<EventHandlerRequest, Promise<{ ok: boolean }>>
     })
   }
 
-  const profile = await prisma.profile.findUnique({
-    where: { id: profileId },
-    include: {
-      trophyEditions: true,
-    },
-  })
+  const profile = await db.profile.find(profileId!)
   if (!profile) {
     throw createError({
       status: 404,
     })
   }
 
-  const character = await prisma.character.findUnique({
-    where: { id: body.characterId, isReady: true },
-  })
-  if (!character) {
+  const character = await db.character.find(body.characterId)
+  if (!character || !character.isReady) {
     throw createError({
       status: 404,
     })
   }
 
   // Check, if already have
-  const editionAlready = await prisma.characterEdition.findFirst({
-    where: {
-      profileId,
-      characterId: body.characterId,
-    },
-  })
+  const profileWithEditions = await db.profile.findWithCharacterEditions(profileId!)
+  const editionAlready = profileWithEditions?.characterEditions?.find(
+    (e: { characterId: string }) => e.characterId === body.characterId,
+  )
   if (editionAlready?.id) {
     throw createError({
       status: 400,
@@ -48,74 +39,46 @@ export default defineEventHandler<EventHandlerRequest, Promise<{ ok: boolean }>>
   }
 
   // Give new edition
-  const edition = await prisma.characterEdition.create({
-    data: {
-      id: createId(),
-      profileId: profile.id,
-      characterId: character.id,
-    },
+  const [edition] = await db.characterEdition.create({
+    id: createId(),
+    profileId: profile.id,
+    characterId: character.id,
   })
 
-  await prisma.transaction.create({
-    data: {
-      id: createId(),
-      profileId: profile.id,
-      entityId: edition.id,
-      amount: character.price,
-      type: 'CHARACTER_UNLOCK',
-    },
+  await db.transaction.create({
+    id: createId(),
+    profileId: profile.id,
+    entityId: edition!.id,
+    amount: character.price,
+    type: 'CHARACTER_UNLOCK',
   })
 
-  await prisma.transaction.create({
-    data: {
-      id: createId(),
-      profileId: profile.id,
-      entityId: edition.id,
-      amount: character.price,
-      type: 'POINTS_FROM_CHARACTER_UNLOCK',
-    },
+  await db.transaction.create({
+    id: createId(),
+    profileId: profile.id,
+    entityId: edition!.id,
+    amount: character.price,
+    type: 'POINTS_FROM_CHARACTER_UNLOCK',
   })
 
-  await prisma.profile.update({
-    where: { id: profile.id },
-    data: {
-      collectorPoints: {
-        increment: character.price,
-      },
-    },
-  })
+  await db.profile.addCollectorPoints(profile.id, character.price)
 
   // Check trophy
+  const trophyEditions = await db.trophyEdition.findByProfile(profile.id)
   if (
-    !profile.trophyEditions.some((progress) => progress.trophyId === 'h09eur7whn4nyjr0bereyb5l')
+    !trophyEditions.some((progress: { trophyId: string }) => progress.trophyId === 'h09eur7whn4nyjr0bereyb5l')
   ) {
-    await prisma.trophyEdition.create({
-      data: {
-        id: createId(),
-        profileId: profile.id,
-        trophyId: 'h09eur7whn4nyjr0bereyb5l',
-      },
+    await db.trophyEdition.create({
+      id: createId(),
+      profileId: profile.id,
+      trophyId: 'h09eur7whn4nyjr0bereyb5l',
     })
 
-    await prisma.profile.update({
-      where: { id: profile.id },
-      data: {
-        trophyHunterPoints: {
-          increment: 50,
-        },
-      },
-    })
+    await db.profile.addTrophyHunterPoints(profile.id, 50)
   }
 
   // Donate points
-  await prisma.profile.update({
-    where: { id: profile.id },
-    data: {
-      patronPoints: {
-        increment: (character.price / 2) * 10,
-      },
-    },
-  })
+  await db.profile.addPatronPoints(profile.id, (character.price / 2) * 10)
 
   return {
     ok: true,

@@ -38,7 +38,6 @@ export class BaseWebSocketService implements WebSocketService {
       data: {
         client: this.addon.client,
         id: roomId,
-        telegramId: this.addon.player?.telegramId,
       },
     }
     this.send(connectMessage)
@@ -83,8 +82,8 @@ export class BaseWebSocketService implements WebSocketService {
       }
 
       if (obj.type === 'PLAYER') {
-        if (obj?.telegramId !== this.addon.player?.telegramId) {
-          await this.addon.playerService.createPlayer({ id: obj.id, telegramId: obj.telegramId, x: obj.x, character: obj.character })
+        if (obj.id !== this.addon.player?.id) {
+          await this.addon.playerService.createPlayer({ id: obj.id, x: obj.x, character: obj.character })
         }
       } else if (obj.type === 'TREE') {
         this.addon.treeService.create({ id: obj.id, x: obj.x, zIndex: obj.zIndex, treeType: obj.treeType, variant: obj.variant, size: obj.size, maxSize: obj.maxSize })
@@ -100,8 +99,7 @@ export class BaseWebSocketService implements WebSocketService {
 
   async initPlayer(objects: GameObject[], id: string) {
     const player = objects.find((obj) => obj.type === 'PLAYER' && obj.id === id) as GameObject & GameObjectPlayer
-    // Me?
-    if (player && player?.telegramId === this.addon.player?.telegramId) {
+    if (player && player.id === this.addon.player?.id) {
       this.addon.player.id = id
       this.addon.player.x = player.x
       await this.addon.player.initVisual(player.character.character.codename)
@@ -125,12 +123,6 @@ export class BaseWebSocketService implements WebSocketService {
 
   handleNewPlayerTarget(message: WebSocketNewPlayerTarget) {
     const { id, x } = message.data
-
-    if (this.addon.client === 'TELEGRAM_CLIENT') {
-      if (this.addon.player?.id !== id) {
-        this.addon.playerService.movePlayer({ id, x })
-      }
-    }
 
     if (this.addon.client === 'WAGON_CLIENT') {
       this.addon.playerService.movePlayer({ id, x })

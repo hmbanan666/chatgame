@@ -2,15 +2,7 @@ export default defineEventHandler(
   async (event) => {
     const profileId = getRouterParam(event, 'profileId')
 
-    const quests = (await prisma.quest.findMany({
-      include: {
-        editions: {
-          where: { profileId },
-        },
-        rewards: true,
-        profile: true,
-      },
-    }))
+    const quests = await db.quest.findForProfile(profileId!)
     if (!quests) {
       throw createError({
         status: 404,

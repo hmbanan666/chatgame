@@ -8,7 +8,7 @@ import type { Application, Container, Sprite } from 'pixi.js'
 
 export interface GameAddon extends Container {
   id: string
-  client: 'TELEGRAM_CLIENT' | 'WAGON_CLIENT'
+  client: 'WAGON_CLIENT'
   children: GameObject[]
   tick: number
   bottomY: number
@@ -25,7 +25,7 @@ export interface GameAddon extends Container {
   play: () => void
   checkIfThisFlagIsTarget: (id: string) => boolean
   findObject: (id: string) => GameObject | undefined
-  createObject: (data: { type: GameObject['type'], id: string, x: number, zIndex?: number, telegramId?: string }) => void
+  createObject: (data: { type: GameObject['type'], id: string, x: number, zIndex?: number }) => void
   removeObject: (id: string) => void
   rebuildScene: () => void
 }
@@ -83,7 +83,6 @@ export interface GameObjectUnit extends GameObject {
 }
 
 export interface GameObjectPlayer extends GameObjectUnit {
-  telegramId: string
   canClick: boolean
   nextClick: number
   click: () => void
@@ -98,7 +97,7 @@ export interface WebSocketService {
 
 export interface PlayerService {
   activePlayers: GameObjectPlayer[]
-  createPlayer: (data: { id: string, telegramId: string, x: number, character?: CharacterEditionWithCharacter }) => Promise<GameObjectPlayer>
+  createPlayer: (data: { id: string, x: number, character?: CharacterEditionWithCharacter }) => Promise<GameObjectPlayer>
   removePlayer: (id: string) => void
   movePlayer: (data: { id: string, x: number }) => void
   update: () => void

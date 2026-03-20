@@ -1,3 +1,3 @@
 export default defineEventHandler(async () => {
-  return prisma.trophy.findMany()
+  return db.trophy.findAll()
 })

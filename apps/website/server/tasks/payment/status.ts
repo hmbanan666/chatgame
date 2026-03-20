@@ -15,25 +15,14 @@ export default defineTask({
     }
 
     try {
-      const payments = await prisma.payment.findMany({
-        where: {
-          status: { in: ['PENDING'] },
-          createdAt: {
-            gt: new Date(new Date().getTime() - 24 * 60 * 60 * 1000),
-          },
-        },
-      })
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000)
+      const payments = await db.payment.findPendingSince(since)
 
       for (const payment of payments) {
         // Check payment status
         const status = await checkPayment(payment.externalId)
         if (status === 'PAID' && payment.status !== 'PAID') {
-          await prisma.payment.update({
-            where: { id: payment.id },
-            data: {
-              status: 'PAID',
-            },
-          })
+          await db.payment.updateStatus(payment.id, 'PAID')
 
           await activateProduct({ productId: payment.productId, profileId: payment.profileId })
 

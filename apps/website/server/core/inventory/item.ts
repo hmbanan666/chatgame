@@ -5,27 +5,16 @@ export async function addItemToInventory(data: { profileId: string, itemId: stri
     return
   }
 
-  const item = await prisma.inventoryItemEdition.findFirst({
-    where: { profileId: data.profileId, itemId: data.itemId },
-  })
+  const item = await db.inventoryItemEdition.findByProfileAndItem(data.profileId, data.itemId)
   if (item) {
-    return prisma.inventoryItemEdition.update({
-      where: { id: item?.id },
-      data: {
-        amount: {
-          increment: data.amount,
-        },
-      },
-    })
+    return db.inventoryItemEdition.addAmount(item.id, data.amount)
   }
 
-  return prisma.inventoryItemEdition.create({
-    data: {
-      id: createId(),
-      itemId: data.itemId,
-      profileId: data.profileId,
-      amount: data.amount,
-    },
+  return db.inventoryItemEdition.create({
+    id: createId(),
+    itemId: data.itemId,
+    profileId: data.profileId,
+    amount: data.amount,
   })
 }
 
@@ -34,26 +23,15 @@ export async function removeItemFromInventory({ itemEditionId, amount }: { itemE
     return
   }
 
-  const item = await prisma.inventoryItemEdition.findFirst({
-    where: { id: itemEditionId },
-  })
+  const item = await db.inventoryItemEdition.find(itemEditionId)
   if (!item) {
     return
   }
 
   // Will be zero?
   if (item.amount - amount <= 0) {
-    return prisma.inventoryItemEdition.delete({
-      where: { id: item.id },
-    })
+    return db.inventoryItemEdition.delete(item.id)
   }
 
-  return prisma.inventoryItemEdition.update({
-    where: { id: item.id },
-    data: {
-      amount: {
-        decrement: amount,
-      },
-    },
-  })
+  return db.inventoryItemEdition.removeAmount(item.id, amount)
 }

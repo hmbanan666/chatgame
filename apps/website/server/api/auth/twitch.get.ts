@@ -21,18 +21,16 @@ export default defineOAuthTwitchEventHandler({
   async onSuccess(event, result: { user: TwitchUser }) {
     logger.success(JSON.stringify(result.user))
 
-    const repository = new DBRepository()
-
-    const profileInDB = await repository.findOrCreateProfile({
+    const profileInDB = await db.profile.findOrCreate({
       userId: result.user.id,
       userName: result.user.login,
     })
 
     await setUserSession(event, {
       user: {
-        id: profileInDB.id,
-        twitchId: profileInDB.twitchId,
-        userName: profileInDB.userName,
+        id: profileInDB!.id,
+        twitchId: profileInDB!.twitchId,
+        userName: profileInDB!.userName,
         imageUrl: result.user.profile_image_url,
       },
     })

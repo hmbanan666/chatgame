@@ -1,7 +1,7 @@
 import { ApiClient } from '@twurple/api'
 import { Bot } from '@twurple/easy-bot'
 import { EventSubWsListener } from '@twurple/eventsub-ws'
-import { DBRepository } from '../repository'
+import { getDateMinusMinutes } from '../date'
 import { twitchProvider } from './twitch.provider'
 import { TwitchService } from './twitch.service'
 
@@ -10,7 +10,6 @@ class TwitchController {
   readonly #userId: string
 
   readonly #service: TwitchService
-  readonly #repository: DBRepository
 
   #bot!: Bot
   #couponGeneratorId!: ReturnType<typeof setInterval> | null
@@ -21,7 +20,6 @@ class TwitchController {
     this.#userId = twitchChannelId.toString()
 
     this.#service = new TwitchService()
-    this.#repository = new DBRepository()
   }
 
   get status() {
@@ -34,11 +32,12 @@ class TwitchController {
     }
 
     this.#couponGeneratorId = setInterval(async () => {
-      const coupon = await this.#repository.generateCoupon()
+      const cutoff = getDateMinusMinutes(60 * 24)
+      const coupon = await db.coupon.generate(cutoff)
 
       await this.#bot.say(
         this.#channel,
-        `Появился новый Купон! Забирай: пиши команду "!купон ${coupon.activationCommand}" :D`,
+        `Появился новый Купон! Забирай: пиши команду "!купон ${coupon!.activationCommand}" :D`,
       )
     }, 1000 * 60 * 45)
   }
@@ -78,7 +77,7 @@ class TwitchController {
     })
 
     setInterval(() => {
-      void this.#repository.updateManaOnProfiles()
+      void db.profile.updateManaOnAll()
     }, 1000 * 60 * 120)
 
     // Info message

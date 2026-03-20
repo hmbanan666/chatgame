@@ -6,11 +6,6 @@ export default defineEventHandler<EventHandlerRequest, Promise<TwitchTokenWithPr
   async () => {
     const gte = getDateMinusMinutes(5)
 
-    return (await prisma.twitchToken.findMany({
-      where: { onlineAt: { gte } },
-      include: {
-        profile: true,
-      },
-    })) as TwitchTokenWithProfile[]
+    return (await db.twitchToken.findOnlineSince(gte)) as unknown as TwitchTokenWithProfile[]
   },
 )

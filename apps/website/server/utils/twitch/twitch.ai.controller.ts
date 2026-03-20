@@ -3,7 +3,6 @@ import type { Listener } from '@d-fischer/typed-event-emitter'
 import type { AuthProvider } from '@twurple/auth'
 import { RefreshingAuthProvider } from '@twurple/auth'
 import { ChatClient } from '@twurple/chat'
-import { DBRepository } from '../repository'
 
 class TwitchAiController {
   readonly #logger = useLogger('ai-controller')
@@ -11,7 +10,6 @@ class TwitchAiController {
   readonly #clientId: string
   readonly #clientSecret: string
 
-  readonly #repository: DBRepository
   #authProvider!: AuthProvider
   #client!: ChatClient
   #activeListeners: Listener[] = []
@@ -21,8 +19,6 @@ class TwitchAiController {
   #streamerProfiles: ProfileWithTokens[] = []
 
   constructor() {
-    this.#repository = new DBRepository()
-
     const { oauthTwitchClientSecret, oauthTwitchClientId } = useRuntimeConfig()
     this.#clientId = oauthTwitchClientId
     this.#clientSecret = oauthTwitchClientSecret
@@ -41,7 +37,7 @@ class TwitchAiController {
 
     // Checking new Tokens
     this.#checkerId = setInterval(async () => {
-      const now = await this.#repository.getTokensCount('AI_VIEW')
+      const now = await db.profile.getTokensCount('AI_VIEW')
       if (this.#tokensCount !== now) {
         void this.#restart()
         this.#tokensCount = now
@@ -66,7 +62,8 @@ class TwitchAiController {
       this.#client.quit()
     }
 
-    this.#streamerProfiles = await this.#repository.findAllStreamers('AI_VIEW')
+    const result = await db.profile.findAllStreamers('AI_VIEW')
+    this.#streamerProfiles = result as unknown as ProfileWithTokens[]
 
     this.#client = new ChatClient({
       channels: this.#streamerProfiles.map((p) => p.userName),
@@ -102,10 +99,16 @@ class TwitchAiController {
   }
 
   async #initAuthProvider() {
-    const accessToken = await this.#repository.getTwitchAccessToken(this.#userId)
-    if (!accessToken) {
+    const token = await db.twitchAccessToken.findByUserId(this.#userId)
+    if (!token) {
       this.#logger.log('No access token found')
       return
+    }
+
+    const accessToken = {
+      ...token,
+      scope: token.scope ?? [],
+      obtainmentTimestamp: Number(token.obtainmentTimestamp),
     }
 
     const authProvider = new RefreshingAuthProvider({
@@ -114,7 +117,10 @@ class TwitchAiController {
     })
 
     authProvider.onRefresh(async (userId, newTokenData) => {
-      await this.#repository.updateTwitchAccessToken(userId, newTokenData)
+      await db.twitchAccessToken.updateByUserId(userId, {
+        ...newTokenData,
+        obtainmentTimestamp: newTokenData.obtainmentTimestamp?.toString(),
+      })
     })
 
     await authProvider.addUserForToken(accessToken, ['chat'])

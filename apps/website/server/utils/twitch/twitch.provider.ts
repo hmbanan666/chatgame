@@ -2,7 +2,6 @@ import type { TwitchAccessTokenResponse } from '@chat-game/types'
 import type { AuthProvider } from '@twurple/auth'
 import { createId } from '@paralleldrive/cuid2'
 import { RefreshingAuthProvider } from '@twurple/auth'
-import { DBRepository } from '../repository'
 import { twitchController } from './twitch.controller'
 
 class TwitchProvider {
@@ -13,11 +12,8 @@ class TwitchProvider {
   readonly #clientSecret: string
   readonly #code: string
   readonly #redirectUrl: string
-  readonly #repository: DBRepository
 
   constructor() {
-    this.#repository = new DBRepository()
-
     const {
       public: publicEnv,
       twitchChannelId,
@@ -83,14 +79,14 @@ class TwitchProvider {
   async #createNewAccessToken(): Promise<never> {
     const res = await this.#obtainTwitchAccessToken()
     if (res?.access_token) {
-      await this.#repository.createTwitchAccessToken({
+      await db.twitchAccessToken.create({
         id: createId(),
         userId: this.#userId,
         accessToken: res.access_token,
         refreshToken: res.refresh_token,
         scope: res.scope,
         expiresIn: res.expires_in,
-        obtainmentTimestamp: new Date().getTime(),
+        obtainmentTimestamp: Date.now().toString(),
       })
 
       throw new Error('Saved new access token. Restart server!')
@@ -104,9 +100,15 @@ class TwitchProvider {
       throw new Error('No user id')
     }
 
-    const accessToken = await this.#repository.getTwitchAccessToken(this.#userId)
-    if (!accessToken) {
+    const token = await db.twitchAccessToken.findByUserId(this.#userId)
+    if (!token) {
       return this.#createNewAccessToken()
+    }
+
+    const accessToken = {
+      ...token,
+      scope: token.scope ?? [],
+      obtainmentTimestamp: Number(token.obtainmentTimestamp),
     }
 
     const authProvider = new RefreshingAuthProvider({
@@ -115,7 +117,10 @@ class TwitchProvider {
     })
 
     authProvider.onRefresh(async (userId, newTokenData) => {
-      await this.#repository.updateTwitchAccessToken(userId, newTokenData)
+      await db.twitchAccessToken.updateByUserId(userId, {
+        ...newTokenData,
+        obtainmentTimestamp: newTokenData.obtainmentTimestamp?.toString(),
+      })
     })
 
     const intents = ['chat', 'user', 'channel', 'moderator']

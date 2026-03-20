@@ -2,9 +2,7 @@ export default defineEventHandler(
   async (event) => {
     const id = getRouterParam(event, 'id')
 
-    const character = await prisma.character.findFirst({
-      where: { id },
-    })
+    const character = await db.character.find(id!)
     if (!character) {
       throw createError({
         status: 404,

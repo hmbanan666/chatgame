@@ -33,7 +33,7 @@
 <script setup lang="ts">
 const { loggedIn, user } = useUserSession()
 const { data } = await useFetch('/api/auth/me')
-const isMerged = computed(() => data.value?.profile.telegramProfileId)
+const isMerged = computed(() => (data.value?.profile as any)?.telegramProfileId)
 
 const route = useRoute()
 
@@ -48,7 +48,7 @@ async function handleMerge(profileId?: string) {
     return
   }
 
-  const { data } = await useFetch(`/api/profile/${profileId}/telegram/merge`, {
+  const { data } = await useFetch<{ ok: boolean }>(`/api/profile/${profileId}/telegram/merge` as string, {
     method: 'POST',
     body: JSON.stringify({
       telegramId: localStorage.getItem('telegramId'),

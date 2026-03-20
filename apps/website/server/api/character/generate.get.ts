@@ -6,12 +6,7 @@ export default defineEventHandler(async () => {
   const characterId = 'ytyz0rtl2s84x2gmbvzl3r5h'
   const levels = 20
 
-  const character = await prisma.character.findFirst({
-    where: { id: characterId },
-    include: {
-      levels: true,
-    },
-  })
+  const character = await db.character.findWithLevels(characterId)
   if (!character) {
     throw createError({
       status: 404,
@@ -20,17 +15,15 @@ export default defineEventHandler(async () => {
 
   for (let level = 1; level <= levels; level++) {
     // If already exists, skip
-    if (character.levels.find((l) => l.level === level)) {
+    if (character.levels.some((l: { level: number }) => l.level === level)) {
       continue
     }
 
-    await prisma.characterLevel.create({
-      data: {
-        id: createId(),
-        characterId,
-        level,
-        requiredXp: getXpForLevel(level, character.coefficient),
-      },
+    await db.characterLevel.create({
+      id: createId(),
+      characterId,
+      level,
+      requiredXp: getXpForLevel(level, character.coefficient),
     })
   }
 

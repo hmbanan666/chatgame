@@ -1,24 +1,12 @@
 import { createId } from '@paralleldrive/cuid2'
 
 export async function activateProduct({ profileId, productId }: { profileId: string, productId: string }) {
-  const product = await prisma.product.findFirst({
-    where: { id: productId },
-    include: {
-      items: true,
-    },
-  })
+  const product = await db.product.findWithItems(productId)
 
   // Patron points
-  const itemPatronPoints = product?.items.find(({ type }) => type === 'PATRON_POINT')
+  const itemPatronPoints = product?.items.find(({ type }: { type: string }) => type === 'PATRON_POINT')
   if (itemPatronPoints) {
-    await prisma.profile.update({
-      where: { id: profileId },
-      data: {
-        points: {
-          increment: itemPatronPoints.amount,
-        },
-      },
-    })
+    await db.profile.addPatronPoints(profileId, itemPatronPoints.amount)
   }
 
   switch (productId) {
@@ -39,114 +27,63 @@ export async function activateProduct({ profileId, productId }: { profileId: str
 
 function activateProduct1(profileId: string) {
   // 10 coins
-  return prisma.profile.update({
-    where: { id: profileId },
-    data: {
-      coins: {
-        increment: 10,
-      },
-    },
-  })
+  return db.profile.addCoins(profileId, 10)
 }
 
 function activateProduct2(profileId: string) {
   // 50+10 coins
-  return prisma.profile.update({
-    where: { id: profileId },
-    data: {
-      coins: {
-        increment: 60,
-      },
-    },
-  })
+  return db.profile.addCoins(profileId, 60)
 }
 
 function activateProduct3(profileId: string) {
   // 150+30 coins
-  return prisma.profile.update({
-    where: { id: profileId },
-    data: {
-      coins: {
-        increment: 180,
-      },
-    },
-  })
+  return db.profile.addCoins(profileId, 180)
 }
 
 function activateProduct4(profileId: string) {
   // 250+80 coins
-  return prisma.profile.update({
-    where: { id: profileId },
-    data: {
-      coins: {
-        increment: 330,
-      },
-    },
-  })
+  return db.profile.addCoins(profileId, 330)
 }
 
 async function activateProduct5(profileId: string) {
   // 500+150 coins
-  await prisma.profile.update({
-    where: { id: profileId },
-    data: {
-      coins: {
-        increment: 650,
-      },
-    },
-  })
+  await db.profile.addCoins(profileId, 650)
 
   // Gentleman: check if already have char
-  const char = await prisma.characterEdition.findFirst({
-    where: { profileId, characterId: 'w22vo3qzgfmvgt85ncfg398i' },
-  })
-  if (!char) {
-    await prisma.characterEdition.create({
-      data: {
-        id: createId(),
-        profileId,
-        characterId: 'w22vo3qzgfmvgt85ncfg398i',
-      },
+  const profileWithEditions = await db.profile.findWithCharacterEditions(profileId)
+  const hasChar = profileWithEditions?.characterEditions.some((ce: { characterId: string }) => ce.characterId === 'w22vo3qzgfmvgt85ncfg398i')
+  if (!hasChar) {
+    await db.characterEdition.create({
+      id: createId(),
+      profileId,
+      characterId: 'w22vo3qzgfmvgt85ncfg398i',
     })
   }
 }
 
 async function activateProduct6(profileId: string) {
   // 50 coins
-  await prisma.profile.update({
-    where: { id: profileId },
-    data: {
-      coins: {
-        increment: 50,
-      },
-    },
-  })
+  await db.profile.addCoins(profileId, 50)
 
   // Trophy
-  const trophy = await prisma.trophyEdition.findFirst({
-    where: { profileId, trophyId: 'iadp4l86kc84hwz0culhig91' },
-  })
-  if (!trophy) {
-    await prisma.trophyEdition.create({
-      data: {
-        id: createId(),
-        profileId,
-        trophyId: 'iadp4l86kc84hwz0culhig91',
-      },
+  const trophyEditions = await db.trophyEdition.findByProfile(profileId)
+  const hasTrophy = trophyEditions.some((te: { trophyId: string }) => te.trophyId === 'iadp4l86kc84hwz0culhig91')
+  if (!hasTrophy) {
+    await db.trophyEdition.create({
+      id: createId(),
+      profileId,
+      trophyId: 'iadp4l86kc84hwz0culhig91',
     })
   }
 
   // Santa: check if already have char
-  const char = await prisma.characterEdition.findFirst({
-    where: { profileId, characterId: 'ytyz0rtl2s84x2gmbvzl3r5h' },
-  })
-  if (!char) {
-    await prisma.characterEdition.create({
-      data: {
-        id: createId(),
-        profileId,
-        characterId: 'ytyz0rtl2s84x2gmbvzl3r5h',
-      },
+  const profileWithEditions = await db.profile.findWithCharacterEditions(profileId)
+  const hasChar = profileWithEditions?.characterEditions.some((ce: { characterId: string }) => ce.characterId === 'ytyz0rtl2s84x2gmbvzl3r5h')
+  if (!hasChar) {
+    await db.characterEdition.create({
+      id: createId(),
+      profileId,
+      characterId: 'ytyz0rtl2s84x2gmbvzl3r5h',
     })
   }
 }

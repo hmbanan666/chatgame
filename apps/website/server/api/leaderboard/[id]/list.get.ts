@@ -3,24 +3,7 @@ export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const limit = query.limit ? Number.parseInt(query.limit.toString()) : 500
 
-  const leaderboard = await prisma.leaderboard.findUnique({
-    where: { id },
-    include: {
-      members: {
-        orderBy: {
-          position: 'asc',
-        },
-        take: limit,
-        include: {
-          profile: {
-            include: {
-              telegramProfile: true,
-            },
-          },
-        },
-      },
-    },
-  })
+  const leaderboard = await db.leaderboard.findWithMembers(id!, limit)
   if (!leaderboard) {
     throw createError({
       statusCode: 404,

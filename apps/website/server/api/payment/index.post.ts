@@ -14,18 +14,14 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    const profile = await prisma.profile.findFirst({
-      where: { id: session.user.id },
-    })
+    const profile = await db.profile.find(session.user!.id)
     if (!profile) {
       throw createError({
         status: 404,
       })
     }
 
-    const product = await prisma.product.findFirst({
-      where: { id: productId },
-    })
+    const product = await db.product.find(productId)
     if (!product) {
       throw createError({
         status: 404,
@@ -73,16 +69,14 @@ export default defineEventHandler(async (event) => {
     const redirectUrl: string = paymentOnProvider.confirmation?.confirmation_url ?? '/'
 
     // Create payment
-    await prisma.payment.create({
-      data: {
-        id: createId(),
-        externalId: paymentOnProvider.id,
-        provider: 'YOOKASSA',
-        status: 'PENDING',
-        profileId: profile.id,
-        productId: product.id,
-        amount: product.price,
-      },
+    await db.payment.create({
+      id: createId(),
+      externalId: paymentOnProvider.id,
+      provider: 'YOOKASSA',
+      status: 'PENDING',
+      profileId: profile.id,
+      productId: product.id,
+      amount: product.price,
     })
 
     return {

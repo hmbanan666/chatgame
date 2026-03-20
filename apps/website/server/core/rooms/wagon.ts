@@ -74,7 +74,7 @@ export class WagonRoom extends BaseRoom {
     }
 
     // if wagon is on last chunk - close room
-    const lastChunk = this.chunks[this.chunks.length - 1]
+    const lastChunk = this.chunks.at(-1)
     if (!lastChunk) {
       return
     }
@@ -99,7 +99,7 @@ export class WagonRoom extends BaseRoom {
   }
 
   initNextChunk() {
-    const previousChunk = this.chunks[this.chunks.length - 1]
+    const previousChunk = this.chunks.at(-1)
     if (!previousChunk) {
       return
     }
@@ -115,11 +115,10 @@ export class WagonRoom extends BaseRoom {
     }
   }
 
-  addPlayer(data: { id: string, telegramId: string, x: number, character: CharacterEditionWithCharacter }) {
+  addPlayer(data: { id: string, x: number, character: CharacterEditionWithCharacter }) {
     this.objects.push({
       type: 'PLAYER',
       id: data.id,
-      telegramId: data.telegramId,
       x: data.x,
       state: 'IDLE',
       health: 100,
@@ -169,7 +168,7 @@ export class WagonRoom extends BaseRoom {
 
   createNewChunks() {
     // when wagon reach middle of this chunk - create new chunk
-    const lastChunk = this.chunks[this.chunks.length - 1]
+    const lastChunk = this.chunks.at(-1)
     if (!lastChunk) {
       return
     }
@@ -263,7 +262,7 @@ export class WagonRoom extends BaseRoom {
     this.objects.push(...firstChunk.objects)
 
     for (let i = 0; i < chunksCount; i++) {
-      const previousChunk = this.chunks[this.chunks.length - 1]
+      const previousChunk = this.chunks.at(-1)
       if (!previousChunk) {
         continue
       }
@@ -279,7 +278,7 @@ export class WagonRoom extends BaseRoom {
       this.objects.push(...forestChunk.objects)
     }
 
-    const previousChunk = this.chunks[this.chunks.length - 1]
+    const previousChunk = this.chunks.at(-1)
     if (!previousChunk) {
       return
     }

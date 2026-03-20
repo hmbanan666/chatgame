@@ -1,28 +1,34 @@
-import type { Database } from './connection'
+import type { NodePgQueryResultHKT } from 'drizzle-orm/node-postgres'
+import type { PgDatabase } from 'drizzle-orm/pg-core'
 import { resolve } from 'node:path'
+import { drizzle } from 'drizzle-orm/node-postgres'
 import { migrate } from 'drizzle-orm/node-postgres/migrator'
-import { createConnection } from './connection'
+import pg from 'pg'
+import * as tables from './tables'
 
-let instance: Database | null = null
+let _db: ReturnType<typeof drizzle<typeof tables>> | null = null
 
-export function useCreateDatabase(databaseURL: string): void {
-  instance = createConnection(databaseURL)
+export function useCreateDatabase(url: string) {
+  const pool = new pg.Pool({ connectionString: url })
+  _db = drizzle({ client: pool, schema: tables })
 }
 
-export async function useMigrateDatabase(migrationFolder: string): Promise<void> {
-  if (!instance) {
+export function useDatabase() {
+  if (!_db) {
+    throw new Error('Database is not created. Call useCreateDatabase() first.')
+  }
+  return _db
+}
+
+export async function useMigrateDatabase(migrationsFolder: string) {
+  if (!_db) {
     throw new Error('Database is not created')
   }
 
-  await migrate(instance, {
-    migrationsFolder: resolve(migrationFolder),
+  await migrate(_db, {
+    migrationsFolder: resolve(migrationsFolder),
   })
 }
 
-export function useDatabase(): Database {
-  if (!instance) {
-    throw new Error('Database is not created')
-  }
-
-  return instance
-}
+/** Base query interface — compatible with both full DB connections and transactions */
+export type Database = PgDatabase<NodePgQueryResultHKT, typeof tables>

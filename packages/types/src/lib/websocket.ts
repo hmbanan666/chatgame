@@ -29,7 +29,6 @@ export interface GameObjectWagon {
 
 export interface GameObjectPlayer {
   type: 'PLAYER'
-  telegramId: string
   character: CharacterEditionWithCharacter
 }
 
@@ -59,9 +58,8 @@ export interface WebSocketConnectAddon {
 export interface WebSocketConnect {
   type: 'CONNECT'
   data: {
-    client: 'TELEGRAM_CLIENT' | 'WAGON_CLIENT' | 'SERVER'
+    client: 'WAGON_CLIENT' | 'SERVER'
     id: string
-    telegramId?: string
   }
 }
 

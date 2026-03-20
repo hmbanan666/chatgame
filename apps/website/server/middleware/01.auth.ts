@@ -11,11 +11,6 @@ export default defineEventHandler(async (event) => {
     return
   }
 
-  // Telegram routes dont need basic auth
-  if (event.path.startsWith('/api/telegram')) {
-    return
-  }
-
   if (event.method !== 'GET') {
     // Secured, but without auth
     return createError({

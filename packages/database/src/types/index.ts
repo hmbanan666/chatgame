@@ -1,3 +1,3 @@
-export type { Database } from '../connection'
+export type { Database } from '../database'
 export type * from './entities'
 export type * from './tables'

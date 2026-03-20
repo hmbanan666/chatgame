@@ -15,6 +15,6 @@
     "@chat-game/types": "workspace:*",
     "@paralleldrive/cuid2": "catalog:integrations",
     "@vueuse/core": "catalog:integrations",
-    "pixi.js": "8.14.0"
+    "pixi.js": "catalog:integrations"
   }
 }

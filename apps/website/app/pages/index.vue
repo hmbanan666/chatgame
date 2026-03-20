@@ -296,7 +296,7 @@ const { data: characters } = await useFetch('/api/character')
 const isCharacterOpened = ref(false)
 const selectedCharacterId = ref<string>()
 const selectedCharacter = computed(() =>
-  characters.value?.find(({ id }) => id === selectedCharacterId.value),
+  characters.value?.find(({ id }: { id: string }) => id === selectedCharacterId.value),
 )
 
 const { data: profile } = await useFetch(`/api/profile/${user.value?.id}`)
