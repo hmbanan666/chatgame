@@ -9,10 +9,9 @@ export class TwitchService {
   readonly #quest: QuestService
   readonly #roomId: string
 
-  constructor() {
-    const { twitchChannelId } = useRuntimeConfig()
+  constructor(roomId: string) {
     this.#quest = new QuestService()
-    this.#roomId = twitchChannelId.toString()
+    this.#roomId = roomId
   }
 
   async handleMessage({
@@ -87,12 +86,9 @@ export class TwitchService {
   }
 
   handleGitHubCommand() {
-    const { public: publicEnv } = useRuntimeConfig()
-    const siteUrl = publicEnv.siteUrl || 'https://chatgame.space'
-
     return {
       ok: true,
-      message: `👨‍💻 ${siteUrl} | ⭐ https://github.com/chat-game`,
+      message: '👨‍💻 https://chatgame.space | ⭐ https://github.com/chat-game',
     }
   }
 

@@ -9,5 +9,9 @@ export default defineNitroPlugin(async () => {
     return
   }
 
-  await initCharges()
+  try {
+    await initCharges()
+  } catch (err) {
+    logger.error('Failed to initialize charges', err)
+  }
 })

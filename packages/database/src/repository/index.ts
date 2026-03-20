@@ -13,6 +13,7 @@ import { ProductRepository } from './product'
 import { Profile } from './profile'
 import { QuestRepository } from './quest'
 import { QuestEditionRepository } from './questEdition'
+import { StreamerRepository } from './streamer'
 import { TransactionRepository } from './transaction'
 import { TrophyRepository } from './trophy'
 import { TrophyEditionRepository } from './trophyEdition'
@@ -30,6 +31,7 @@ class Repository {
   readonly trophyEdition = TrophyEditionRepository
   readonly quest = QuestRepository
   readonly questEdition = QuestEditionRepository
+  readonly streamer = StreamerRepository
   readonly transaction = TransactionRepository
   readonly payment = PaymentRepository
   readonly product = ProductRepository

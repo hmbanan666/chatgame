@@ -17,10 +17,10 @@ const INFO_MESSAGES = [
 ]
 
 class TwitchController {
-  readonly #channel: string
-  readonly #userId: string
+  #channel!: string
+  #userId!: string
 
-  readonly #service: TwitchService
+  #service!: TwitchService
 
   #bot!: Bot
   #couponGeneratorId: ReturnType<typeof setInterval> | null = null
@@ -28,12 +28,15 @@ class TwitchController {
   #infoMessageId: ReturnType<typeof setInterval> | null = null
   #eventSubListener: EventSubWsListener | null = null
 
-  constructor() {
-    const { twitchChannelName, twitchChannelId } = useRuntimeConfig()
-    this.#channel = twitchChannelName
-    this.#userId = twitchChannelId.toString()
+  async init() {
+    const streamer = (await db.streamer.findAll())[0]
+    if (!streamer) {
+      throw new Error('No active streamer found')
+    }
 
-    this.#service = new TwitchService()
+    this.#channel = streamer.twitchChannelName
+    this.#userId = streamer.twitchChannelId
+    this.#service = new TwitchService(streamer.twitchChannelId)
   }
 
   get status() {
@@ -73,6 +76,8 @@ class TwitchController {
   }
 
   async serve() {
+    await this.init()
+
     const authProvider = await getTwitchProvider().getAuthProvider()
 
     this.#bot = new Bot({

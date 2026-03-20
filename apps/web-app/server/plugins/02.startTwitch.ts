@@ -10,13 +10,15 @@ export default defineNitroPlugin(async () => {
     return
   }
 
-  const { twitchChannelId } = useRuntimeConfig()
-
-  if (!twitchChannelId) {
+  const streamers = await db.streamer.findAll()
+  if (streamers.length === 0) {
+    logger.warn('No active streamers found, skipping Twitch init')
     return
   }
 
-  initStreamJourneyRoom(twitchChannelId.toString())
+  for (const streamer of streamers) {
+    initStreamJourneyRoom(streamer.twitchChannelId)
+  }
 
   const controller = getTwitchController()
   await controller.serve()

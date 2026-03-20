@@ -126,17 +126,21 @@ const messagesCount = ref(0)
 const modifiers = ref<ChargeModifier[]>([])
 
 async function update(id: string) {
-  const data = await $fetch(`/api/charge/${id}`)
-  if (!data) {
-    return
-  }
+  try {
+    const data = await $fetch(`/api/charge/${id}`)
+    if (!data) {
+      return
+    }
 
-  energy.value = data.energy
-  rate.value = data.rate
-  ratePerMinute.value = data.ratePerMinute
-  difficulty.value = data.difficulty
-  messagesCount.value = data.messagesCount
-  modifiers.value = data.modifiers.slice(0, 8)
+    energy.value = data.energy
+    rate.value = data.rate
+    ratePerMinute.value = data.ratePerMinute
+    difficulty.value = data.difficulty
+    messagesCount.value = data.messagesCount
+    modifiers.value = data.modifiers.slice(0, 8)
+  } catch {
+    // Charge room not found or server error
+  }
 }
 
 const chargeTextColor = computed(() => {

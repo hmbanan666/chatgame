@@ -204,12 +204,16 @@ export class StreamCharge implements ChargeInstance {
   initSubClient() {
     this.sub.init().then(() => {
       this.sub.client.onChannelRedemptionAdd(this.twitchChannelId, this.handleRedemption.bind(this))
+    }).catch((err) => {
+      this.#logger.error('Failed to init EventSub client', err)
     })
   }
 
   initDonateClient() {
     this.donate!.init().then(() => {
       this.donate!.client.onDonation(this.handleDonation.bind(this))
+    }).catch((err) => {
+      this.#logger.error('Failed to init DonationAlerts client', err)
     })
   }
 

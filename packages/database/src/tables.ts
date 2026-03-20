@@ -91,6 +91,23 @@ export const productItemsRelations = relations(productItems, ({ one }) => ({
   product: one(products, { fields: [productItems.productId], references: [products.id] }),
 }))
 
+// ── Streamer ────────────────────────────────────────────
+
+export const streamers = pgTable('streamer', {
+  id: cuid2('id').defaultRandom().primaryKey(),
+  createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+  isActive: boolean('is_active').notNull().default(true),
+  twitchChannelId: text('twitch_channel_id').notNull().unique(),
+  twitchChannelName: text('twitch_channel_name').notNull(),
+  donationAlertsUserId: text('donation_alerts_user_id'),
+  profileId: text('profile_id').notNull(),
+})
+
+export const streamersRelations = relations(streamers, ({ one }) => ({
+  profile: one(profiles, { fields: [streamers.profileId], references: [profiles.id] }),
+}))
+
 // ── Twitch ───────────────────────────────────────────────
 
 export const twitchTokens = pgTable('twitch_token', {

@@ -3,7 +3,12 @@ import { RefreshingAuthProvider } from '@donation-alerts/auth'
 import { UserEventsClient } from '@donation-alerts/events'
 
 export class DonateController {
+  readonly #userId: string
   client!: UserEventsClient
+
+  constructor(userId: string) {
+    this.#userId = userId
+  }
 
   async init() {
     const {
@@ -25,12 +30,12 @@ export class DonateController {
       scopes,
     })
 
-    const token = await db.twitchAccessToken.findByUserId(donationAlertsClientId)
+    const token = await db.twitchAccessToken.findByUserId(this.#userId)
     if (!token) {
-      throw new Error('No DonationAlerts access token')
+      throw new Error(`No DonationAlerts access token for user ${this.#userId}`)
     }
 
-    authProvider.addUser(donationAlertsClientId, {
+    authProvider.addUser(this.#userId, {
       accessToken: token.accessToken,
       refreshToken: token.refreshToken as string,
       expiresIn: 0,
@@ -38,8 +43,8 @@ export class DonateController {
       scopes,
     })
 
-    authProvider.onRefresh(async (userId, newTokenData) => {
-      await db.twitchAccessToken.updateByUserId(userId.toString(), {
+    authProvider.onRefresh(async (refreshedUserId, newTokenData) => {
+      await db.twitchAccessToken.updateByUserId(refreshedUserId.toString(), {
         ...newTokenData,
         obtainmentTimestamp: newTokenData.obtainmentTimestamp?.toString(),
       })
@@ -48,7 +53,7 @@ export class DonateController {
     const apiClient = new ApiClient({ authProvider })
 
     this.client = new UserEventsClient({
-      user: donationAlertsClientId,
+      user: this.#userId,
       apiClient,
     })
   }
