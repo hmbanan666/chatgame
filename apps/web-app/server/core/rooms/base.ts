@@ -1,6 +1,5 @@
 import type { Room } from '#shared/types/room'
 import type { GameObject } from '@chat-game/types'
-import type { Peer } from 'crossws'
 import type { Chunk } from './types'
 import { createId } from '@paralleldrive/cuid2'
 
@@ -12,7 +11,7 @@ interface BaseRoomOptions {
 export class BaseRoom implements Room {
   id: string
   type: Room['type']
-  server: { ws: WebSocket, peer: Peer | null }
+  server: Room['server']
   clients: Room['clients'] = []
   objects: GameObject[] = []
   chunks: Chunk[] = []

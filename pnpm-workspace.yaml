@@ -20,7 +20,7 @@ catalogs:
     '@iconify-json/simple-icons': ^1.2.55
     '@nuxt/devtools': ^2.6.5
     '@nuxtjs/i18n': ^10.1.1
-    bumpp: ^10.3.1
+    bumpp: ^11.0.1
     dotenv: ^17.2.3
     drizzle-kit: ^0.31.5
     eslint: ^10.0.0

@@ -1,5 +1,5 @@
+import type { WebSocketPeer } from '#shared/types/room'
 import type { WebSocketConnect, WebSocketConnectAddon, WebSocketDestroyTree, WebSocketEvents, WebSocketMessage, WebSocketNewPlayerTarget } from '@chat-game/types'
-import type { Peer } from 'crossws'
 import type { WagonRoom } from '../core/rooms/wagon'
 import { createId } from '@paralleldrive/cuid2'
 import { activeRooms } from '../core/rooms'
@@ -52,7 +52,7 @@ export default defineWebSocketHandler({
   },
 })
 
-async function handleMessage(message: WebSocketMessage, peer: Peer) {
+async function handleMessage(message: WebSocketMessage, peer: WebSocketPeer) {
   switch (message.type) {
     case 'CONNECT_ADDON':
       return handleConnectAddon(message, peer)
@@ -65,7 +65,7 @@ async function handleMessage(message: WebSocketMessage, peer: Peer) {
   }
 }
 
-function handleClose(peer: Peer) {
+function handleClose(peer: WebSocketPeer) {
   const room = activeRooms.find((room) => room.clients.find((c) => c.peerId === peer.id))
   if (room) {
     // if player - remove from objects
@@ -89,7 +89,7 @@ function handleClose(peer: Peer) {
   }
 }
 
-function handleConnectAddon(message: WebSocketConnectAddon, peer: Peer) {
+function handleConnectAddon(message: WebSocketConnectAddon, peer: WebSocketPeer) {
   const token = message.data.token
   // Create if not exist
   if (!activeRooms.some((room) => room.id === token)) {
@@ -102,7 +102,7 @@ function handleConnectAddon(message: WebSocketConnectAddon, peer: Peer) {
   logger.log(`Peer ${peer.id} subscribed to AddonRoom ${activeRoom.id}`)
 }
 
-async function handleConnect(message: WebSocketConnect, peer: Peer) {
+async function handleConnect(message: WebSocketConnect, peer: WebSocketPeer) {
   switch (message.data.client) {
     case 'WAGON_CLIENT':
       return handleConnectWagonClient(peer, message.data.id)
@@ -111,7 +111,7 @@ async function handleConnect(message: WebSocketConnect, peer: Peer) {
   }
 }
 
-async function handleConnectWagonClient(peer: Peer, id: string) {
+async function handleConnectWagonClient(peer: WebSocketPeer, id: string) {
   const activeRoom = activeRooms.find((room) => room.id === id) as WagonRoom
 
   const wagonId = createId()
@@ -125,7 +125,7 @@ async function handleConnectWagonClient(peer: Peer, id: string) {
   logger.log(`Wagon client subscribed to Wagon Room ${activeRoom.id}`, peer.id)
 }
 
-async function handleConnectServer(peer: Peer, id: string) {
+async function handleConnectServer(peer: WebSocketPeer, id: string) {
   const activeRoom = activeRooms.find((room) => room.id === id)
   if (!activeRoom) {
     return
@@ -136,7 +136,7 @@ async function handleConnectServer(peer: Peer, id: string) {
   logger.log(`Server subscribed to Room ${activeRoom.id}`, peer.id)
 }
 
-async function handleDestroyTree(message: WebSocketDestroyTree, peer: Peer) {
+async function handleDestroyTree(message: WebSocketDestroyTree, peer: WebSocketPeer) {
   const activeRoom = activeRooms.find((room) => room.clients.find((c) => c.peerId === peer.id)) as WagonRoom
   if (!activeRoom) {
     return
@@ -154,7 +154,7 @@ async function handleDestroyTree(message: WebSocketDestroyTree, peer: Peer) {
   }
 }
 
-function handleNewPlayerTarget(message: WebSocketNewPlayerTarget, peer: Peer) {
+function handleNewPlayerTarget(message: WebSocketNewPlayerTarget, peer: WebSocketPeer) {
   const activeRoom = activeRooms.find((room) => room.clients.find((c) => c.peerId === peer.id)) as WagonRoom
   if (!activeRoom) {
     return
