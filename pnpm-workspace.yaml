@@ -28,6 +28,8 @@ catalogs:
     lint-staged: ^16.2.6
     nuxt: ^4.1.3
     nuxt-auth-utils: ^0.5.25
+    tailwindcss: ^4.2.2
+    tailwindcss-motion: ^1.1.1
     typescript: ^5.9.3
     unbuild: ^3.6.1
     vue-tsc: ^3.1.1

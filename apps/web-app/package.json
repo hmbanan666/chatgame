@@ -42,6 +42,8 @@
     "@types/node": "catalog:types",
     "nuxt": "catalog:dev",
     "nuxt-auth-utils": "catalog:dev",
+    "tailwindcss": "catalog:dev",
+    "tailwindcss-motion": "catalog:dev",
     "vue-tsc": "catalog:dev"
   }
 }
