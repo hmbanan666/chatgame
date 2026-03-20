@@ -30,7 +30,7 @@
         <!-- CTA -->
         <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-orange-950 border border-orange-800/50 shrink-0">
           <Icon name="lucide:sparkles" class="!size-4 text-orange-400 shrink-0" />
-          <p class="text-sm text-orange-400">
+          <p class="text-sm text-orange-300">
             Отправь донат с идеей — она появится здесь
           </p>
         </div>
@@ -65,7 +65,7 @@ async function update(id: string) {
   try {
     const data = await $fetch<BacklogItem[]>(`/api/backlog/${id}`)
     if (data) {
-      items.value = data
+      items.value = [...data].reverse()
     }
   } catch {
     // Backlog not found or server error
