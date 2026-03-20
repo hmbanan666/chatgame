@@ -433,9 +433,3 @@ export interface TwitchAccessToken {
   expiresIn: number | null
   obtainmentTimestamp: number
 }
-
-export interface WebsiteProfile {
-  id: string
-  twitchId: string
-  userName: string
-}

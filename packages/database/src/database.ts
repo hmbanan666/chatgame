@@ -7,6 +7,7 @@ import pg from 'pg'
 import * as tables from './tables'
 
 let _db: ReturnType<typeof drizzle<typeof tables>> | null = null
+let _migrationPromise: Promise<void> | null = null
 
 export function useCreateDatabase(url: string) {
   const pool = new pg.Pool({ connectionString: url })
@@ -25,9 +26,17 @@ export async function useMigrateDatabase(migrationsFolder: string) {
     throw new Error('Database is not created')
   }
 
-  await migrate(_db, {
+  _migrationPromise = migrate(_db, {
     migrationsFolder: resolve(migrationsFolder),
   })
+
+  await _migrationPromise
+}
+
+export async function waitForMigration() {
+  if (_migrationPromise) {
+    await _migrationPromise
+  }
 }
 
 /** Base query interface — compatible with both full DB connections and transactions */

@@ -1,3 +1,4 @@
+import { waitForMigration } from '@chatgame/database'
 import { initCharges } from '../core/charge'
 
 export default defineNitroPlugin(async () => {
@@ -8,6 +9,8 @@ export default defineNitroPlugin(async () => {
     logger.info('Charge server not started in dev mode')
     return
   }
+
+  await waitForMigration()
 
   try {
     await initCharges()

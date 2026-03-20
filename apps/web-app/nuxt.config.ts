@@ -77,7 +77,6 @@ export default defineNuxtConfig({
   css: ['~/assets/css/styles.css'],
   runtimeConfig: {
     databaseUrl: '',
-    websiteBearer: '',
     twitchChannelId: '',
     twitchOauthCode: '',
     yookassaShopId: '',

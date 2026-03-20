@@ -1,3 +1,4 @@
+import { waitForMigration } from '@chatgame/database'
 import { initStreamJourneyRoom } from '../core/stream-journey'
 import { getTwitchController } from '../utils/twitch/twitch.controller'
 
@@ -9,6 +10,8 @@ export default defineNitroPlugin(async () => {
     logger.info('Twitch server not started in dev mode')
     return
   }
+
+  await waitForMigration()
 
   const streamers = await db.streamer.findAll()
   if (streamers.length === 0) {
