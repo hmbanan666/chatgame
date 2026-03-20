@@ -40,6 +40,14 @@ export class TwitchService {
     // Stream Journey
     const room = rooms.get(this.#roomId)
     if (room) {
+      let codename = 'twitchy'
+      if (profile.activeEditionId) {
+        const edition = await db.characterEdition.findWithCharacter(profile.activeEditionId)
+        if (edition?.character?.codename) {
+          codename = edition.character.codename
+        }
+      }
+
       room.send({
         event: 'newPlayerMessage',
         data: {
@@ -47,7 +55,7 @@ export class TwitchService {
           player: {
             id: userId,
             name: userName,
-            codename: 'twitchy',
+            codename,
           },
         },
       })

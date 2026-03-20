@@ -27,7 +27,22 @@ export type GameObjectState
 
 export type GameObjectDirection = 'LEFT' | 'RIGHT'
 
-export type GameUnitCodename = 'twitchy' | 'telegramo'
+export type GameUnitCodename
+  = | 'twitchy'
+    | 'telegramo'
+    | 'banana'
+    | 'burger'
+    | 'catchy'
+    | 'claw'
+    | 'gentleman'
+    | 'marshmallow'
+    | 'pioneer'
+    | 'pup'
+    | 'santa'
+    | 'shape'
+    | 'sharky'
+    | 'woody'
+    | 'wooly'
 
 export type GameUnitAnimations = {
   idle: { alias: GameUnitAnimationAlias, src: string }
@@ -36,11 +51,7 @@ export type GameUnitAnimations = {
 
 export type GameUnitAnimationType = keyof GameUnitAnimations
 
-export type GameUnitAnimationAlias
-  = | 'units.twitchy.idle'
-    | 'units.twitchy.moving'
-    | 'units.telegramo.idle'
-    | 'units.telegramo.moving'
+export type GameUnitAnimationAlias = `units.${GameUnitCodename}.${'idle' | 'moving'}`
 
 export interface GameScript {
   id: string

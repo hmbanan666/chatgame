@@ -53,8 +53,14 @@ export class GameAssetService implements AssetService {
   constructor(protected game: Game) {
     this.units = new Map()
 
-    this.addUnit('twitchy')
-    this.addUnit('telegramo')
+    const codenames: GameUnitCodename[] = [
+      'twitchy', 'telegramo', 'banana', 'burger', 'catchy', 'claw',
+      'gentleman', 'marshmallow', 'pioneer', 'pup', 'santa', 'shape',
+      'sharky', 'woody', 'wooly',
+    ]
+    for (const codename of codenames) {
+      this.addUnit(codename)
+    }
   }
 
   getSprite(alias: string) {
@@ -62,9 +68,9 @@ export class GameAssetService implements AssetService {
   }
 
   async getAnimatedSprite(codename: GameUnitCodename, type: GameUnitAnimationType): Promise<AnimatedSprite> {
-    const unit = this.units.get(codename) as GameUnitAnimations
+    const unit = this.units.get(codename) ?? this.units.get('twitchy') as GameUnitAnimations
 
-    return this.loadAnimation(unit[type])
+    return this.loadAnimation(unit![type])
   }
 
   async init() {
