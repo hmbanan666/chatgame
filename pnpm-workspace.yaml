@@ -62,14 +62,4 @@ catalogs:
     '@types/node': ^24.9.1
     '@types/pg': ^8.15.5
 
-ignoredBuiltDependencies:
-  - '@parcel/watcher'
-  - esbuild
-  - msw
-  - vue-demi
-
-onlyBuiltDependencies:
-  - sharp
-  - protobufjs
-
 autoInstallPeers: true

@@ -1,5 +1,5 @@
 {
-  "name": "@chatgame/website",
+  "name": "@chatgame/web-app",
   "type": "module",
   "private": true,
   "scripts": {

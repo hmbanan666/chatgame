@@ -8,10 +8,10 @@ WORKDIR /app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages ./packages
-COPY apps/website ./apps/website
+COPY apps/web-app ./apps/web-app
 
 RUN corepack enable pnpm && pnpm install --frozen-lockfile
-RUN pnpm --filter @chatgame/website build
+RUN pnpm --filter @chatgame/web-app build
 
 FROM node:24-slim
 WORKDIR /app
@@ -19,7 +19,7 @@ WORKDIR /app
 RUN chown node:node /app
 USER node
 
-COPY --from=build --chown=node:node /app/apps/website/.output .output
+COPY --from=build --chown=node:node /app/apps/web-app/.output .output
 COPY --from=build --chown=node:node /app/packages/database/migrations ./migrations
 
 ENV NODE_ENV=production
