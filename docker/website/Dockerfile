@@ -1,33 +1,29 @@
-FROM node:22.21.0-alpine AS base
+FROM node:24-slim AS build
 
-# Install dependencies and build
-FROM base AS builder
+LABEL org.opencontainers.image.source=https://github.com/hmbanan666/chatgame
+LABEL org.opencontainers.image.description="Chat Game for Twitch"
+LABEL org.opencontainers.image.licenses=MIT
+
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY ./prisma ./prisma
-COPY ./packages ./packages
-COPY ./apps/website ./apps/website
+COPY packages ./packages
+COPY apps/website ./apps/website
 
-RUN npm install --ignore-scripts -g pnpm && \
-    pnpm i --frozen-lockfile && \
-    pnpm build --filter @chat-game/website
+RUN corepack enable pnpm && pnpm install --frozen-lockfile
+RUN pnpm --filter @chatgame/website build
 
-# Production image, copy all the files and run
-FROM base
+FROM node:24-slim
 WORKDIR /app
 
+RUN chown node:node /app
+USER node
+
+COPY --from=build --chown=node:node /app/apps/website/.output .output
+COPY --from=build --chown=node:node /app/packages/database/migrations ./migrations
+
 ENV NODE_ENV=production
-ARG VERSION=nightly
-ENV VERSION=${VERSION}
-
-RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 appuser
-
-COPY --from=builder /app/apps/website/.output ./
-
-USER appuser
-
-EXPOSE 3000
 ENV PORT=3000
+EXPOSE 3000
 
-CMD ["/app/server/index.mjs"]
+CMD ["node", ".output/server/index.mjs"]

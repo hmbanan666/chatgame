@@ -1,7 +1,7 @@
 {
   "name": "@chatgame/monorepo",
   "private": true,
-  "packageManager": "pnpm@10.19.0",
+  "packageManager": "pnpm@10.32.1",
   "description": "Chat Game for Twitch",
   "author": "Nick Kosarev <hmbanan666@hotmail.com>",
   "license": "MIT",
@@ -18,8 +18,8 @@
     "chatgame"
   ],
   "engines": {
-    "node": ">=22.21.0",
-    "pnpm": ">=10.19.0"
+    "node": ">=24.14.0",
+    "pnpm": ">=10.32.1"
   },
   "scripts": {
     "release": "bumpp --execute=\"npm run release:prepare\" --recursive",
@@ -34,7 +34,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "check:full": "pnpm run lint:fix && pnpm run typecheck && pnpm vitest run",
+    "check:full": "pnpm run lint:fix && pnpm run typecheck && pnpm run test",
     "prepare": "husky"
   },
   "devDependencies": {

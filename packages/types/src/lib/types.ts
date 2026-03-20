@@ -166,13 +166,6 @@ export interface CharacterEditionCreateRequest {
   }
 }
 
-export interface CharacterPostCreateRequest {
-  data: {
-    profileId: string
-    text: string
-  }
-}
-
 export interface Trophy {
   id: string
   createdAt: Date
@@ -263,33 +256,6 @@ export interface QuestWithEditions extends Quest {
 
 export interface QuestWithRewards extends Quest {
   rewards: QuestReward[]
-}
-
-export interface Post {
-  id: string
-  createdAt: Date
-  updatedAt: Date
-  profileId: string
-  characterId: string
-  type: 'NOTE'
-  text: string
-  profile: Profile
-  rating: number
-  likes: Like[]
-}
-
-export interface Like {
-  id: string
-  createdAt: Date
-  updatedAt: Date
-  profileId: string
-  postId: string
-}
-
-export interface PostLikeCreateRequest {
-  data: {
-    profileId: string
-  }
 }
 
 export interface Coupon {
