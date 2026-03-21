@@ -68,7 +68,7 @@ export class StreamJourneyGame extends Container implements Game {
       roundPixels: false,
       resolution: 1,
       width,
-      height: this.bottomY,
+      height: 300,
     })
 
     this.app.ticker.maxFPS = 60
@@ -77,6 +77,7 @@ export class StreamJourneyGame extends Container implements Game {
     this.drawGround()
     this.wagonService.init()
 
+    this.app.stage.sortableChildren = true
     this.app.stage.addChild(this.groundGraphics!)
     this.app.stage.addChild(this)
     this.app.ticker.add(this.baseTicker, 'baseTicker')
