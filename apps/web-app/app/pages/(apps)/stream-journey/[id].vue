@@ -1,7 +1,7 @@
 <template>
   <ClientOnly>
     <div class="relative w-full h-svh">
-      <div ref="stage" class="absolute left-0 right-0 bottom-0 h-83 w-full" />
+      <div ref="stage" class="absolute left-0 right-0 bottom-0 h-75 w-full" />
     </div>
   </ClientOnly>
 </template>

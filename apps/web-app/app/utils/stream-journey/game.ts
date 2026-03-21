@@ -32,7 +32,7 @@ const DEMO_MESSAGES = [
 export class StreamJourneyGame extends Container implements Game {
   id: Game['id']
   tick: Game['tick'] = 0
-  bottomY: Game['bottomY'] = 300
+  bottomY: Game['bottomY'] = 270
 
   app: Application
   override children: GameObject[] = []
@@ -68,7 +68,7 @@ export class StreamJourneyGame extends Container implements Game {
       roundPixels: false,
       resolution: 1,
       width,
-      height: this.bottomY + 30,
+      height: this.bottomY,
     })
 
     this.app.ticker.maxFPS = 60
