@@ -47,11 +47,11 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   devServer: {
     port: 4300,
-    host: 'app.local',
-    https: {
-      key: '../../.cert/localhost-key.pem',
-      cert: '../../.cert/localhost.pem',
-    },
+    // host: 'app.local',
+    // https: {
+    //   key: '../../.cert/localhost-key.pem',
+    //   cert: '../../.cert/localhost.pem',
+    // },
   },
   fonts: {
     provider: 'google',

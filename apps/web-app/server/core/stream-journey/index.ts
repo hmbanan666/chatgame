@@ -1,5 +1,5 @@
-import type { Room } from '@chatgame/stream-journey'
-import { StreamJourneyRoom } from '@chatgame/stream-journey'
+import type { Room } from '~~/server/utils/stream-journey/types'
+import { StreamJourneyRoom } from '~~/server/utils/stream-journey/room'
 
 export const rooms = new Map<string, Room>()
 

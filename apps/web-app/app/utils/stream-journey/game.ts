@@ -1,0 +1,216 @@
+import type { Game, GameObject, GameUnitCodename } from './types'
+import { createId } from '@paralleldrive/cuid2'
+import { Application, Container, Graphics } from 'pixi.js'
+import { PALETTE } from './palette'
+import { GameAssetService, GameEventService, GamePlayerService, GameTreeService, GameWagonService } from './services'
+
+interface StreamJourneyGameOptions {
+  eventsUrl?: string
+  demo?: boolean
+}
+
+const DEMO_NAMES = ['kungfux010', 'sava5621', 'BezSovesty', 'flack_zombi', 'player_mmcm', 'PeregonStream', 'derailon', 'sloghniy']
+const DEMO_CODENAMES: GameUnitCodename[] = ['twitchy', 'banana', 'burger', 'catchy', 'claw', 'gentleman', 'marshmallow', 'pioneer', 'pup', 'santa', 'shape', 'sharky', 'woody', 'wooly']
+const DEMO_MESSAGES = [
+  'Привет всем! Как дела на стриме?',
+  'Го рубить деревья, надо путь расчистить!',
+  'Кто-нибудь знает куда мы едем вообще?',
+  'Красота какая, лес густой!',
+  'Вперёд! Машина не ждёт!',
+  'Я новенький, подскажите что делать',
+  'Ку! Давно не заходил, что нового?',
+  'GG, срубили дерево за 2 секунды',
+  'А можно на вагон залезть?',
+  'Погнали! Сегодня далеко уедем',
+  'Классная игра, залипаю уже час',
+  'Топор мой, никому не давам',
+  'Сколько деревьев мы уже срубили?',
+  'Помогите, я застрял за деревом!',
+  'Всем привет с ночного стрима!',
+]
+
+export class StreamJourneyGame extends Container implements Game {
+  id: Game['id']
+  tick: Game['tick'] = 0
+  bottomY: Game['bottomY'] = 300
+
+  app: Application
+  override children: GameObject[] = []
+
+  assetService: GameAssetService
+  eventService: GameEventService
+  wagonService: GameWagonService
+  playerService: GamePlayerService
+  treeService: GameTreeService
+
+  private demoMode: boolean
+  private demoInterval: ReturnType<typeof setInterval> | undefined
+  private groundGraphics: Container | undefined
+
+  constructor({ eventsUrl, demo }: StreamJourneyGameOptions) {
+    super()
+
+    this.id = createId()
+    this.app = new Application()
+    this.demoMode = demo ?? false
+
+    this.eventService = new GameEventService(this, eventsUrl ?? '')
+    this.assetService = new GameAssetService(this)
+    this.treeService = new GameTreeService(this)
+    this.wagonService = new GameWagonService(this)
+    this.playerService = new GamePlayerService(this)
+  }
+
+  async init({ width }: { width: number }) {
+    await this.app.init({
+      backgroundAlpha: 0,
+      antialias: false,
+      roundPixels: false,
+      resolution: 1,
+      width,
+      height: this.bottomY + 30,
+    })
+
+    this.app.ticker.maxFPS = 60
+
+    await this.assetService.init()
+    this.drawGround()
+    this.wagonService.init()
+
+    this.app.stage.addChild(this.groundGraphics!)
+    this.app.stage.addChild(this)
+    this.app.ticker.add(this.baseTicker, 'baseTicker')
+
+    if (this.demoMode) {
+      this.startDemo()
+    }
+  }
+
+  private baseTicker = () => {
+    this.tick = this.app.ticker.FPS
+
+    this.wagonService.update()
+    this.playerService.update()
+    this.treeService.update()
+    this.updateObjects()
+  }
+
+  removeObject(id: string) {
+    const obj = this.findObject(id)
+    if (!obj) {
+      return
+    }
+
+    this.removeChild(obj)
+    obj.destroy()
+  }
+
+  override destroy() {
+    if (this.demoInterval) {
+      clearInterval(this.demoInterval)
+    }
+    this.app.destroy()
+    super.destroy()
+  }
+
+  findObject(id: string): GameObject | undefined {
+    return this.children.find((obj) => obj.id === id)
+  }
+
+  rebuildScene() {
+    for (const obj of this.children) {
+      obj.state = 'DESTROYED'
+    }
+
+    this.wagonService.init()
+
+    this.app.ticker.remove(this.baseTicker, 'baseTicker')
+    this.app.ticker.add(this.baseTicker, 'baseTicker')
+  }
+
+  private startDemo() {
+    // Spawn a few players immediately
+    for (let i = 0; i < 3; i++) {
+      setTimeout(() => this.spawnDemoPlayer(), i * 800)
+    }
+
+    // Then keep spawning every 4-7 seconds
+    this.demoInterval = setInterval(() => {
+      this.spawnDemoPlayer()
+    }, 4000 + Math.random() * 3000)
+  }
+
+  private async spawnDemoPlayer() {
+    const name = DEMO_NAMES[Math.floor(Math.random() * DEMO_NAMES.length)]!
+    const codename = DEMO_CODENAMES[Math.floor(Math.random() * DEMO_CODENAMES.length)]!
+    const message = DEMO_MESSAGES[Math.floor(Math.random() * DEMO_MESSAGES.length)]!
+
+    const player = await this.playerService.init(`demo-${name}`, name, codename)
+    player.addMessage(message)
+  }
+
+  private drawGround() {
+    const ground = new Container()
+    const chunkSize = 48
+    const totalChunks = 800
+    const startX = -200 * chunkSize / 2
+
+    // Color palettes for chunk variants
+    const { lightGreen, green2, brown2, brown1 } = PALETTE
+    const v = { grass1: lightGreen, grass2: green2, dirt1: brown2, dirt2: brown1 }
+
+    for (let i = 0; i < totalChunks; i++) {
+      const x = startX + i * chunkSize
+      const chunk = new Graphics()
+
+      // Grass top with random height variation
+      const grassH = 4 + Math.floor(Math.random() * 4)
+      chunk.rect(0, -grassH, chunkSize, grassH).fill(v.grass1)
+
+      // Grass line
+      chunk.rect(0, 0, chunkSize, 4).fill(v.grass2)
+
+      // Dirt with random specks
+      chunk.rect(0, 4, chunkSize, 10).fill(v.dirt1)
+      chunk.rect(0, 14, chunkSize, 20).fill(v.dirt2)
+
+      // Random dirt specks for texture
+      for (let s = 0; s < 3; s++) {
+        const sx = Math.floor(Math.random() * (chunkSize - 4))
+        const sy = 6 + Math.floor(Math.random() * 16)
+        chunk.rect(sx, sy, 3, 2).fill(v.dirt1 + 0x111111)
+      }
+
+      // Random dark specks
+      for (let s = 0; s < 2; s++) {
+        const sx = Math.floor(Math.random() * (chunkSize - 3))
+        const sy = 8 + Math.floor(Math.random() * 14)
+        chunk.rect(sx, sy, 2, 2).fill(v.dirt2 - 0x0A0A0A)
+      }
+
+      // Random grass tufts on top
+      if (Math.random() > 0.5) {
+        const tx = Math.floor(Math.random() * (chunkSize - 6))
+        chunk.rect(tx, -grassH - 2, 2, 3).fill(v.grass1)
+        chunk.rect(tx + 3, -grassH - 3, 2, 4).fill(v.grass2)
+      }
+
+      chunk.x = x
+      chunk.y = this.bottomY
+      ground.addChild(chunk)
+    }
+
+    ground.zIndex = -100
+    this.groundGraphics = ground
+  }
+
+  private updateObjects() {
+    for (const object of [...this.children]) {
+      if (object.destroyed) {
+        continue
+      }
+      object.animate()
+      object.live()
+    }
+  }
+}

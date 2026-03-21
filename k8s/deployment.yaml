@@ -24,6 +24,9 @@ spec:
           ports:
             - containerPort: 3000
               protocol: TCP
+          env:
+            - name: NODE_OPTIONS
+              value: '--max-old-space-size=384'
           envFrom:
             - secretRef:
                 name: web-app-secret
@@ -33,7 +36,7 @@ spec:
               memory: 512Mi
             requests:
               cpu: 10m
-              memory: 64Mi
+              memory: 256Mi
           livenessProbe:
             httpGet:
               path: /api/health

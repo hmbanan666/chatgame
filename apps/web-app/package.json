@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev",
+    "dev": "nuxt dev --host",
     "preview": "nuxt preview",
     "clean": "rm -rf dist",
     "clean:modules": "rm -rf .nuxt .output node_modules",
@@ -16,7 +16,6 @@
     "@chat-game/locale": "workspace:*",
     "@chat-game/types": "workspace:*",
     "@chatgame/database": "workspace:*",
-    "@chatgame/stream-journey": "catalog:integrations",
     "@donation-alerts/api": "catalog:integrations",
     "@donation-alerts/auth": "catalog:integrations",
     "@donation-alerts/events": "catalog:integrations",
@@ -31,6 +30,7 @@
     "@vueuse/components": "catalog:integrations",
     "@vueuse/core": "catalog:integrations",
     "@vueuse/nuxt": "catalog:integrations",
+    "pixi.js": "catalog:integrations",
     "zod": "catalog:integrations"
   },
   "devDependencies": {

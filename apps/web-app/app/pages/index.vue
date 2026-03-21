@@ -37,7 +37,8 @@
     </div>
   </div>
 
-  <div class="my-2 py-8 w-full" style="background-image: url('/img/background-green.webp')">
+  <!-- Mobile: static image -->
+  <div class="my-2 py-8 w-full md:hidden" style="background-image: url('/img/background-green.webp')">
     <div class="my-0 mx-auto w-fit text-center">
       <img
         src="/img/wagon-full.png"
@@ -46,6 +47,13 @@
       >
     </div>
   </div>
+
+  <!-- Desktop: live demo -->
+  <ClientOnly>
+    <div class="my-2 w-full relative hidden md:block bg-orange-200">
+      <div ref="demoStage" class="w-full h-75" />
+    </div>
+  </ClientOnly>
 
   <div
     id="characters"
@@ -258,6 +266,7 @@
 
 <script setup lang="ts">
 import { vElementVisibility } from '@vueuse/components'
+import { StreamJourneyGame } from '~/utils/stream-journey/game'
 
 useHead({
   title: 'Интерактивная онлайн-игра',
@@ -290,6 +299,27 @@ function onVisibilityChangeProfile(isVisible: boolean) {
 }
 
 const observerOptions = { rootMargin: '0px 0px -400px 0px' }
+
+const demoStage = ref<HTMLElement>()
+const demoGame = shallowRef<StreamJourneyGame>()
+
+watch(demoStage, async () => {
+  if (!demoStage.value) {
+    return
+  }
+
+  try {
+    demoGame.value = new StreamJourneyGame({ demo: true })
+    await demoGame.value.init({ width: demoStage.value.clientWidth })
+    demoStage.value.appendChild(demoGame.value.app.canvas)
+  } catch (error) {
+    console.error(error)
+  }
+})
+
+onUnmounted(() => {
+  demoGame.value?.destroy()
+})
 
 const { data: characters } = await useFetch('/api/character')
 
