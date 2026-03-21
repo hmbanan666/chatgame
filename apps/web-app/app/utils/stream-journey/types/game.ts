@@ -13,6 +13,7 @@ export interface Game extends Container {
   playerService: PlayerService
   treeService: TreeService
   init: (window: { width: number }) => Promise<void>
+  addDecoration: (child: Container) => void
   removeObject: (id: string) => void
 }
 
@@ -100,8 +101,10 @@ export interface GameObject extends Container {
 export interface GameObjectWagon extends GameObject {
 }
 
+export type BiomeVariant = 'GREEN' | 'BLUE' | 'STONE' | 'TEAL' | 'TOXIC' | 'VIOLET'
+
 export interface GameObjectTree extends GameObject {
-  variant: 'GREEN' | 'VIOLET' | 'STONE' | 'TEAL' | 'TOXIC' | 'BLUE'
+  variant: BiomeVariant
   treeType: '1' | '2' | '3' | '4' | '5'
 }
 

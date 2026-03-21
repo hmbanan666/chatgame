@@ -50,7 +50,7 @@
 
   <!-- Desktop: live demo -->
   <ClientOnly>
-    <div class="my-2 w-full relative hidden md:block bg-orange-200">
+    <div class="my-2 w-full relative hidden md:block bg-sky-100">
       <div ref="demoStage" class="w-full h-75" />
     </div>
   </ClientOnly>

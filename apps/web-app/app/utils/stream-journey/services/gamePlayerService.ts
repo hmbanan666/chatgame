@@ -3,6 +3,7 @@ import { TargetPoint } from '../objects/targetPoint'
 import { PlayerObject } from '../objects/unit/playerObject'
 import { MoveOffScreenAndSelfDestroyScript } from '../scripts/moveOffScreenAndSelfDestroyScript'
 import { MoveToTargetScript } from '../scripts/moveToTargetScript'
+import { MoveToTreeAndChopScript } from '../scripts/moveToTreeAndChopScript'
 import { getDateMinusMinutes } from './../utils/date'
 
 export class GamePlayerService implements PlayerService {
@@ -17,13 +18,21 @@ export class GamePlayerService implements PlayerService {
 
     player.updateLastActionAt()
 
-    // Run to a point near the wagon on spawn
-    const point = this.game.wagonService.getRandomNearPoint()
-    const target = new TargetPoint(point.x, point.y)
-    player.script = new MoveToTargetScript({
-      object: player,
-      target,
-    })
+    // If there's an obstacle — chop it. Otherwise run to random point.
+    const tree = this.game.wagonService.getNearestObstacle()
+    if (tree) {
+      player.script = new MoveToTreeAndChopScript({
+        object: player,
+        target: tree,
+      })
+    } else {
+      const point = this.game.wagonService.getRandomNearPoint()
+      const target = new TargetPoint(point.x, point.y)
+      player.script = new MoveToTargetScript({
+        object: player,
+        target,
+      })
+    }
 
     return player
   }

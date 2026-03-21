@@ -55,7 +55,7 @@ export class TreeObject extends BaseObject implements GameObjectTree {
 
   initVisual() {
     const variantIndex = Number.parseInt(this.treeType) - 1
-    const tree = createProceduralTree({ variant: variantIndex, size: 1 })
+    const tree = createProceduralTree({ variant: variantIndex, size: 1, biome: this.variant })
     this.addChild(tree)
   }
 

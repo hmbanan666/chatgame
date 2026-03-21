@@ -101,6 +101,11 @@ export class StreamJourneyGame extends Container implements Game {
     this.updateObjects()
   }
 
+  /** Add any Container as decoration (bushes, particles, etc.) */
+  addDecoration(child: Container) {
+    super.addChild(child)
+  }
+
   removeObject(id: string) {
     const obj = this.findObject(id)
     if (!obj) {
@@ -137,14 +142,16 @@ export class StreamJourneyGame extends Container implements Game {
 
   private startDemo() {
     // Spawn a few players immediately
-    for (let i = 0; i < 3; i++) {
-      setTimeout(() => this.spawnDemoPlayer(), i * 800)
+    for (let i = 0; i < 2; i++) {
+      setTimeout(() => this.spawnDemoPlayer(), i * 1200)
     }
 
-    // Then keep spawning every 4-7 seconds
+    // Then keep spawning every 8-15 seconds
     this.demoInterval = setInterval(() => {
-      this.spawnDemoPlayer()
-    }, 4000 + Math.random() * 3000)
+      if (this.playerService.activePlayers.length < 4) {
+        this.spawnDemoPlayer()
+      }
+    }, 8000 + Math.random() * 7000)
   }
 
   private async spawnDemoPlayer() {
@@ -162,44 +169,47 @@ export class StreamJourneyGame extends Container implements Game {
     const totalChunks = 800
     const startX = -200 * chunkSize / 2
 
-    // Color palettes for chunk variants
-    const { lightGreen, green2, brown2, brown1 } = PALETTE
-    const v = { grass1: lightGreen, grass2: green2, dirt1: brown2, dirt2: brown1 }
+    const P = PALETTE
+    // Ground palettes per biome: [grass1, grass2, dirt1, dirt2]
+    const GROUND_BIOMES: Record<string, [number, number, number, number]> = {
+      GREEN: [P.lightGreen, P.green2, P.brown2, P.brown1],
+      BLUE: [P.blue3, P.blue2, P.brown2, P.brown1],
+      STONE: [P.grayGreen3, P.grayGreen2, P.brown2, P.brown1],
+      TEAL: [P.teal3, P.teal2, P.brown2, P.brown1],
+      TOXIC: [P.lime, P.yellowGreen, P.brown2, P.brown1],
+      VIOLET: [P.violet3, P.violet2, P.brown2, P.brown1],
+    }
 
     for (let i = 0; i < totalChunks; i++) {
       const x = startX + i * chunkSize
+      const biome = this.treeService.getBiomeAt(x)
+      const [grass1, grass2, dirt1, dirt2] = GROUND_BIOMES[biome] ?? GROUND_BIOMES.GREEN!
+
       const chunk = new Graphics()
 
       // Grass top with random height variation
       const grassH = 4 + Math.floor(Math.random() * 4)
-      chunk.rect(0, -grassH, chunkSize, grassH).fill(v.grass1)
+      chunk.rect(0, -grassH, chunkSize, grassH).fill(grass1)
 
       // Grass line
-      chunk.rect(0, 0, chunkSize, 4).fill(v.grass2)
+      chunk.rect(0, 0, chunkSize, 4).fill(grass2)
 
-      // Dirt with random specks
-      chunk.rect(0, 4, chunkSize, 10).fill(v.dirt1)
-      chunk.rect(0, 14, chunkSize, 20).fill(v.dirt2)
+      // Dirt
+      chunk.rect(0, 4, chunkSize, 10).fill(dirt1)
+      chunk.rect(0, 14, chunkSize, 20).fill(dirt2)
 
-      // Random dirt specks for texture
+      // Random dirt specks
       for (let s = 0; s < 3; s++) {
         const sx = Math.floor(Math.random() * (chunkSize - 4))
         const sy = 6 + Math.floor(Math.random() * 16)
-        chunk.rect(sx, sy, 3, 2).fill(v.dirt1 + 0x111111)
-      }
-
-      // Random dark specks
-      for (let s = 0; s < 2; s++) {
-        const sx = Math.floor(Math.random() * (chunkSize - 3))
-        const sy = 8 + Math.floor(Math.random() * 14)
-        chunk.rect(sx, sy, 2, 2).fill(v.dirt2 - 0x0A0A0A)
+        chunk.rect(sx, sy, 3, 2).fill(P.brownOrange)
       }
 
       // Random grass tufts on top
       if (Math.random() > 0.5) {
         const tx = Math.floor(Math.random() * (chunkSize - 6))
-        chunk.rect(tx, -grassH - 2, 2, 3).fill(v.grass1)
-        chunk.rect(tx + 3, -grassH - 3, 2, 4).fill(v.grass2)
+        chunk.rect(tx, -grassH - 2, 2, 3).fill(grass1)
+        chunk.rect(tx + 3, -grassH - 3, 2, 4).fill(grass2)
       }
 
       chunk.x = x

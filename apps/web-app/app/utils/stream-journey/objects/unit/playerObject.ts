@@ -45,7 +45,7 @@ export class PlayerObject extends UnitObject implements GameObjectPlayer {
 
   private assignRandomAction() {
     const tree = this.game.wagonService.getNearestObstacle()
-    if (tree && Math.random() > 0.85) {
+    if (tree && Math.random() > 0.6) {
       this.script = new MoveToTreeAndChopScript({
         object: this,
         target: tree,
