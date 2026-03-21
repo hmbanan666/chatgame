@@ -1,6 +1,5 @@
 import { ApiClient } from '@twurple/api'
 import { Bot } from '@twurple/easy-bot'
-import { EventSubWsListener } from '@twurple/eventsub-ws'
 import { getDateMinusMinutes } from '../date'
 import { getTwitchProvider } from './twitch.provider'
 import { TwitchService } from './twitch.service'
@@ -26,7 +25,8 @@ class TwitchController {
   #couponGeneratorId: ReturnType<typeof setInterval> | null = null
   #manaUpdateId: ReturnType<typeof setInterval> | null = null
   #infoMessageId: ReturnType<typeof setInterval> | null = null
-  #eventSubListener: EventSubWsListener | null = null
+  #streamPollId: ReturnType<typeof setInterval> | null = null
+  #apiClient: ApiClient | null = null
 
   async init() {
     const streamer = (await db.streamer.findAll())[0]
@@ -120,19 +120,28 @@ class TwitchController {
 
   async serveStreamOnline() {
     const authProvider = await getTwitchProvider().getAuthProvider()
+    this.#apiClient = new ApiClient({ authProvider })
 
-    const apiClient = new ApiClient({ authProvider })
-    this.#eventSubListener = new EventSubWsListener({ apiClient })
+    // Poll stream status every 60 seconds
+    const checkStream = async () => {
+      try {
+        const stream = await this.#apiClient!.streams.getStreamByUserId(this.#userId)
+        const wasStreaming = getTwitchProvider().isStreaming
+        getTwitchProvider().isStreaming = stream !== null
 
-    this.#eventSubListener.start()
+        if (!wasStreaming && stream) {
+          logger.info(`Stream online: ${this.#channel}`)
+        }
+        if (wasStreaming && !stream) {
+          logger.info(`Stream offline: ${this.#channel}`)
+        }
+      } catch (err) {
+        logger.error('Stream status check failed', err)
+      }
+    }
 
-    this.#eventSubListener.onStreamOnline(this.#userId, () => {
-      getTwitchProvider().isStreaming = true
-    })
-
-    this.#eventSubListener.onStreamOffline(this.#userId, () => {
-      getTwitchProvider().isStreaming = false
-    })
+    await checkStream()
+    this.#streamPollId = setInterval(checkStream, 60_000)
   }
 
   destroy() {
@@ -148,8 +157,10 @@ class TwitchController {
       this.#infoMessageId = null
     }
 
-    this.#eventSubListener?.stop()
-    this.#eventSubListener = null
+    if (this.#streamPollId) {
+      clearInterval(this.#streamPollId)
+      this.#streamPollId = null
+    }
 
     logger.info('TwitchController destroyed')
   }

@@ -2,7 +2,7 @@ import { waitForMigration } from '@chatgame/database'
 import { initStreamJourneyRoom } from '../core/stream-journey'
 import { getTwitchController } from '../utils/twitch/twitch.controller'
 
-export default defineNitroPlugin(async () => {
+export default defineNitroPlugin(async (nitroApp) => {
   const logger = useLogger('plugin-start-twitch')
 
   // Only run in production
@@ -28,4 +28,9 @@ export default defineNitroPlugin(async () => {
   await controller.serveStreamOnline()
 
   logger.success('Twitch server started')
+
+  nitroApp.hooks.hook('close', () => {
+    logger.info('Shutting down Twitch controller...')
+    controller.destroy()
+  })
 })
