@@ -231,6 +231,16 @@ export class StreamCharge implements ChargeInstance {
     clearInterval(this.difficultyTicker)
     clearInterval(this.messagesTicker)
     clearInterval(this.modifiersTicker)
+
+    // Cleanup clients
+    this.chat.destroy()
+    this.sub.destroy()
+    this.donate?.destroy()
+
+    // Clear arrays
+    this.messages = []
+    this.modifiers = []
+    this.donations = []
   }
 
   handleMessage(_: string, userName: string, text: string) {

@@ -57,4 +57,8 @@ export class DonateController {
       apiClient,
     })
   }
+
+  destroy() {
+    this.client?.disconnect()
+  }
 }

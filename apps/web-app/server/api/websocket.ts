@@ -47,6 +47,12 @@ export default defineWebSocketHandler({
 
   close(peer, event) {
     logger.log('close', peer.id, JSON.stringify(event))
+
+    // Remove closed peer from addon rooms
+    const roomIndex = addonRooms.findIndex((r) => r.peer?.id === peer.id)
+    if (roomIndex !== -1) {
+      addonRooms.splice(roomIndex, 1)
+    }
   },
 
   error(peer, error) {

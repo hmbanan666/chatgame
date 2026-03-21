@@ -26,14 +26,14 @@ spec:
               protocol: TCP
           env:
             - name: NODE_OPTIONS
-              value: --max-old-space-size=512
+              value: --max-old-space-size=768
           envFrom:
             - secretRef:
                 name: web-app-secret
           resources:
             limits:
               cpu: '1'
-              memory: 768Mi
+              memory: 1Gi
             requests:
               cpu: 10m
               memory: 256Mi

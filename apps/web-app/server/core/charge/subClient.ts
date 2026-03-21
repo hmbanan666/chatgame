@@ -12,4 +12,8 @@ export class TwitchSubController {
     this.client = new EventSubWsListener({ apiClient })
     this.client.start()
   }
+
+  destroy() {
+    this.client?.stop()
+  }
 }

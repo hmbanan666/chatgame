@@ -6,6 +6,7 @@ interface TwitchChatControllerOptions {
 
 export class TwitchChatController {
   client: ChatClient
+  private isDestroyed = false
 
   constructor(data: TwitchChatControllerOptions) {
     this.client = new ChatClient({
@@ -15,7 +16,14 @@ export class TwitchChatController {
     this.client.connect()
 
     this.client.onDisconnect(() => {
-      this.client.reconnect()
+      if (!this.isDestroyed) {
+        this.client.reconnect()
+      }
     })
+  }
+
+  destroy() {
+    this.isDestroyed = true
+    this.client.quit()
   }
 }

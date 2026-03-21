@@ -162,6 +162,11 @@ class TwitchController {
       this.#streamPollId = null
     }
 
+    // Disconnect bot
+    if (this.#bot) {
+      this.#bot.chat.quit()
+    }
+
     logger.info('TwitchController destroyed')
   }
 
