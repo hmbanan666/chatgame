@@ -125,8 +125,6 @@ export class UnitObject extends BaseObject implements GameObjectUnit {
       || this.state === 'MINING'
     ) {
       this.animationMoving.animationSpeed = 0
-      this.animationMoving.animationSpeed = 0
-      this.animationMoving.currentFrame = 0
       this.animationMoving.currentFrame = 0
       this.animationMoving.visible = false
 

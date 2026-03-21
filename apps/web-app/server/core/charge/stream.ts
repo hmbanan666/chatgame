@@ -181,6 +181,9 @@ export class StreamCharge implements ChargeInstance {
           message.isExpired = true
         }
       }
+
+      // Remove expired messages to prevent memory leak
+      this.messages = this.messages.filter((m) => !m.isExpired)
     }, this.messagesTickerInterval)
   }
 
@@ -197,6 +200,9 @@ export class StreamCharge implements ChargeInstance {
           modifier.isExpired = true
         }
       }
+
+      // Remove expired modifiers to prevent memory leak
+      this.modifiers = this.modifiers.filter((m) => !m.isExpired)
     }, this.modifiersTickerInterval)
   }
 
@@ -284,6 +290,11 @@ export class StreamCharge implements ChargeInstance {
       userName: event.username,
       message: event.message,
     })
+
+    // Keep only last 50 donations
+    if (this.donations.length > 50) {
+      this.donations = this.donations.slice(-50)
+    }
 
     if (event.message?.trim()) {
       db.backlogItem.create({

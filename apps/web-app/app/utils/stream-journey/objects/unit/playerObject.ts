@@ -37,7 +37,7 @@ export class PlayerObject extends UnitObject implements GameObjectPlayer {
     }
 
     this.idleFrames++
-    if (this.idleFrames > getRandInteger(180, 420)) {
+    if (this.idleFrames > getRandInteger(300, 600)) {
       this.idleFrames = 0
       this.assignRandomAction()
     }
@@ -46,14 +46,9 @@ export class PlayerObject extends UnitObject implements GameObjectPlayer {
   private assignRandomAction() {
     const tree = this.game.wagonService.getNearestObstacle()
     if (tree && Math.random() > 0.85) {
-      const chopFunc = () => {
-        tree.state = 'CHOPPING'
-        return true
-      }
       this.script = new MoveToTreeAndChopScript({
         object: this,
         target: tree,
-        chopFunc,
       })
     } else {
       const point = this.game.wagonService.getRandomNearPoint()

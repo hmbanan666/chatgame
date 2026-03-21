@@ -43,6 +43,9 @@ export class StreamJourneyGame extends Container implements Game {
   playerService: GamePlayerService
   treeService: GameTreeService
 
+  /** Container that holds everything in the world — camera moves this */
+  worldContainer: Container
+
   private demoMode: boolean
   private demoInterval: ReturnType<typeof setInterval> | undefined
   private groundGraphics: Container | undefined
@@ -52,6 +55,7 @@ export class StreamJourneyGame extends Container implements Game {
 
     this.id = createId()
     this.app = new Application()
+    this.worldContainer = new Container()
     this.demoMode = demo ?? false
 
     this.eventService = new GameEventService(this, eventsUrl ?? '')
@@ -77,9 +81,10 @@ export class StreamJourneyGame extends Container implements Game {
     this.drawGround()
     this.wagonService.init()
 
-    this.app.stage.sortableChildren = true
-    this.app.stage.addChild(this.groundGraphics!)
-    this.app.stage.addChild(this)
+    this.worldContainer.sortableChildren = true
+    this.worldContainer.addChild(this.groundGraphics!)
+    this.worldContainer.addChild(this)
+    this.app.stage.addChild(this.worldContainer)
     this.app.ticker.add(this.baseTicker, 'baseTicker')
 
     if (this.demoMode) {
@@ -110,6 +115,7 @@ export class StreamJourneyGame extends Container implements Game {
     if (this.demoInterval) {
       clearInterval(this.demoInterval)
     }
+    this.eventService.destroy()
     this.app.destroy()
     super.destroy()
   }

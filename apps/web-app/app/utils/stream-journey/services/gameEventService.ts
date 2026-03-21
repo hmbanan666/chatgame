@@ -3,11 +3,21 @@ import type { EventMessage, NewPlayerMessage } from '../types/events'
 
 export class GameEventService implements EventService {
   private stream: EventSource | undefined
+  private reconnectTimer: ReturnType<typeof setTimeout> | undefined
 
   constructor(readonly game: Game, readonly eventsUrl: string) {
     if (this.eventsUrl && this.eventsUrl.startsWith('/')) {
       this.connect()
     }
+  }
+
+  destroy() {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer)
+      this.reconnectTimer = undefined
+    }
+    this.stream?.close()
+    this.stream = undefined
   }
 
   private connect() {
@@ -19,7 +29,7 @@ export class GameEventService implements EventService {
 
     this.stream.onmessage = (event) => {
       const message = this.parse(event.data.toString())
-      if (!message || !message?.event) {
+      if (!message?.event) {
         return
       }
 
@@ -30,7 +40,7 @@ export class GameEventService implements EventService {
       this.stream?.close()
       this.stream = undefined
 
-      setTimeout(() => this.connect(), 5000)
+      this.reconnectTimer = setTimeout(() => this.connect(), 5000)
     }
   }
 
@@ -38,25 +48,20 @@ export class GameEventService implements EventService {
     if (message.event === 'newPlayerMessage') {
       return this.handleNewPlayerMessage(message.data)
     }
-
-    return false
   }
 
-  private async handleNewPlayerMessage(data: NewPlayerMessage['data']): Promise<boolean> {
+  private async handleNewPlayerMessage(data: NewPlayerMessage['data']): Promise<void> {
     const playerObj = await this.game.playerService.init(data.player.id, data.player.name, data.player.codename)
 
     playerObj.addMessage(data.text)
     playerObj.updateLastActionAt()
-
-    return true
   }
 
   private parse(message: string): EventMessage | undefined {
-    const parsed = JSON.parse(message)
-    if (parsed) {
-      return parsed as EventMessage
+    try {
+      return JSON.parse(message) as EventMessage
+    } catch {
+      return undefined
     }
-
-    return undefined
   }
 }

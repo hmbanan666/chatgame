@@ -5,6 +5,7 @@ export interface Game extends Container {
   tick: number
   bottomY: number
   app: Application
+  worldContainer: Container
   children: GameObject[]
   assetService: AssetService
   eventService: EventService

@@ -1,7 +1,10 @@
 import type { Game, GameObjectTree } from '../types'
+import { Graphics } from 'pixi.js'
+import { PALETTE } from '../palette'
 import { getRandInteger } from '../utils/random'
 import { BaseObject } from './baseObject'
 import { createProceduralTree } from './proceduralTree'
+import { StumpObject } from './stumpObject'
 
 interface TreeObjectOptions {
   game: Game
@@ -23,21 +26,23 @@ export class TreeObject extends BaseObject implements GameObjectTree {
   /** Min scale multiplier to allow chopping (0.75 = 75% of base) */
   minSizeToChop = 75
   growSpeedPerSecond = getRandInteger(2, 4)
-  /** Wind animation phase offset — unique per tree for natural look */
+  /** Wind animation */
   private windPhase = Math.random() * Math.PI * 2
-  /** Individual sway amplitude — slight variation between trees */
   private windAmplitude = 1.2 + Math.random() * 0.8
-  /** Individual speed factor */
   private windSpeed = 0.6 + Math.random() * 0.4
-  /** Chop shake state */
+  /** Chop shake */
   private animationAngle = 0
   private animationHighSpeed = 0.5
+  /** Falling animation */
+  private isFalling = false
+  private fallAngle = 0
+  private fallSpeed = 0
+  private fallDirection = 1
 
   constructor({ game, x, y, size, maxSize, id, zIndex, treeType, variant }: TreeObjectOptions) {
     super({ id, game, x, y: y ?? game.bottomY, type: 'TREE' })
 
     this.health = 100
-    // size/maxSize as percentage: 100 = original PNG size (128px), 150 = 1.5x bigger
     this.size = size ?? 5
     this.maxSize = maxSize ?? getRandInteger(80, 150)
     this.variant = variant ?? 'GREEN'
@@ -58,6 +63,7 @@ export class TreeObject extends BaseObject implements GameObjectTree {
     this.state = 'CHOPPING'
     this.health -= getRandInteger(9, 15)
     this.alpha = 0.9
+    this.spawnLeafParticles(5)
   }
 
   override live() {
@@ -66,8 +72,12 @@ export class TreeObject extends BaseObject implements GameObjectTree {
       return
     }
 
+    if (this.isFalling) {
+      return
+    }
+
     if (this.health <= 0) {
-      this.destroy()
+      this.startFalling()
       return
     }
 
@@ -85,8 +95,12 @@ export class TreeObject extends BaseObject implements GameObjectTree {
     }
 
     if (this?.scale) {
-      // size 100 = BASE_SCALE (128px), size 150 = 1.5x base
       this.scale = (this.size / 100) * this.BASE_SCALE
+    }
+
+    if (this.isFalling) {
+      this.animateFalling()
+      return
     }
 
     if (this.state === 'IDLE') {
@@ -95,6 +109,87 @@ export class TreeObject extends BaseObject implements GameObjectTree {
 
     if (this.state === 'CHOPPING') {
       this.shakeAnimation()
+    }
+  }
+
+  private startFalling() {
+    this.isFalling = true
+    this.isObstacleForWagon = false
+    this.fallDirection = Math.random() > 0.5 ? 1 : -1
+    this.fallSpeed = 1.0
+    this.spawnLeafParticles(12)
+  }
+
+  private animateFalling() {
+    this.fallSpeed += 0.25
+    this.fallAngle += this.fallSpeed * this.fallDirection
+    this.angle = this.fallAngle
+
+    // Fade out as it falls
+    if (Math.abs(this.fallAngle) > 45) {
+      this.alpha -= 0.04
+    }
+
+    // Done falling
+    if (Math.abs(this.fallAngle) > 90 || this.alpha <= 0) {
+      this.spawnStump()
+      this.destroy()
+    }
+  }
+
+  private spawnStump() {
+    const variantIndex = Number.parseInt(this.treeType) - 1
+    const stump = new StumpObject(variantIndex, this.BASE_SCALE * (this.maxSize / 100))
+    stump.x = this.x
+    stump.y = this.y
+    stump.zIndex = this.zIndex - 1
+
+    this.game.worldContainer.addChild(stump)
+
+    // Update stump each frame via ticker
+    const ticker = () => {
+      const alive = stump.update()
+      if (!alive) {
+        this.game.app.ticker.remove(ticker)
+        stump.destroy({ children: true })
+      }
+    }
+    this.game.app.ticker.add(ticker)
+  }
+
+  private spawnLeafParticles(count: number) {
+    const leafColors = [PALETTE.lightGreen, PALETTE.green2, PALETTE.paleGreen, PALETTE.green1]
+    const currentScale = (this.size / 100) * this.BASE_SCALE
+
+    for (let i = 0; i < count; i++) {
+      const leaf = new Graphics()
+      const color = leafColors[Math.floor(Math.random() * leafColors.length)]!
+      const leafSize = getRandInteger(2, 4)
+      leaf.rect(0, 0, leafSize, leafSize).fill(color)
+
+      leaf.x = this.x + getRandInteger(-30, 30) * currentScale / 4
+      leaf.y = this.y - getRandInteger(20, 90) * currentScale / 4
+      leaf.zIndex = this.zIndex - 1
+
+      const vx = (Math.random() - 0.5) * 4
+      const vy = -Math.random() * 1.5
+      let life = 0
+
+      this.game.worldContainer.addChild(leaf)
+
+      const ticker = () => {
+        life++
+        leaf.x += vx
+        leaf.y += vy + life * 0.03 // gravity
+        leaf.alpha -= 0.015
+        leaf.angle += getRandInteger(-3, 3)
+
+        if (leaf.alpha <= 0 || life > 80) {
+          this.game.app.ticker.remove(ticker)
+          leaf.destroy({ children: true })
+        }
+      }
+      this.game.app.ticker.add(ticker)
     }
   }
 
@@ -115,10 +210,8 @@ export class TreeObject extends BaseObject implements GameObjectTree {
   }
 
   private shakeOnWind() {
-    // Global time-based wind using sin wave + per-tree phase offset
     const time = performance.now() / 1000
     const wind = Math.sin(time * this.windSpeed + this.windPhase) * this.windAmplitude
-    // Add subtle secondary wave for organic feel
     const gust = Math.sin(time * 1.7 + this.windPhase * 3) * 0.5
     this.animationAngle = wind + gust
     this.angle = this.animationAngle

@@ -46,7 +46,6 @@ export class BaseObject extends Container implements GameObject {
   }
 
   private init() {
-    this.game.app.stage.addChild(this)
     this.game.addChild(this)
   }
 
@@ -105,7 +104,7 @@ export class BaseObject extends Container implements GameObject {
   }
 
   override destroy() {
-    super.destroy()
+    super.destroy({ children: true })
     this.size = 0
     this.health = 0
     this.state = 'DESTROYED'
