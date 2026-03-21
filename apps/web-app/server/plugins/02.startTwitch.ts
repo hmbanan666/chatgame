@@ -25,7 +25,6 @@ export default defineNitroPlugin(async (nitroApp) => {
 
   const controller = getTwitchController()
   await controller.serve()
-  await controller.serveStreamOnline()
 
   logger.success('Twitch server started')
 

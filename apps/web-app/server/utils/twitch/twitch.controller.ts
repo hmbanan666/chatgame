@@ -1,5 +1,6 @@
 import { ApiClient } from '@twurple/api'
 import { Bot } from '@twurple/easy-bot'
+import { EventSubWsListener } from '@twurple/eventsub-ws'
 import { getDateMinusMinutes } from '../date'
 import { getTwitchProvider } from './twitch.provider'
 import { TwitchService } from './twitch.service'
@@ -15,18 +16,26 @@ const INFO_MESSAGES = [
   'Донаты имеют сильное влияние на Заряженность: разовый буст и рандомные эффекты.',
 ]
 
+type MessageHandler = (channel: string, userName: string, text: string) => void
+type RedemptionHandler = (userId: string, rewardId: string) => void
+
 class TwitchController {
   #channel!: string
   #userId!: string
-
   #service!: TwitchService
 
   #bot!: Bot
+  #apiClient!: ApiClient
+  #eventSub!: EventSubWsListener
+
   #couponGeneratorId: ReturnType<typeof setInterval> | null = null
   #manaUpdateId: ReturnType<typeof setInterval> | null = null
   #infoMessageId: ReturnType<typeof setInterval> | null = null
   #streamPollId: ReturnType<typeof setInterval> | null = null
-  #apiClient: ApiClient | null = null
+
+  // External subscribers (charge, etc.)
+  #messageHandlers: MessageHandler[] = []
+  #redemptionHandlers: RedemptionHandler[] = []
 
   async init() {
     const streamer = (await db.streamer.findAll())[0]
@@ -41,6 +50,16 @@ class TwitchController {
 
   get status() {
     return getTwitchProvider().isStreaming ? 'RUNNING' : 'STOPPED'
+  }
+
+  /** Subscribe to chat messages (for charge, etc.) */
+  onMessage(handler: MessageHandler) {
+    this.#messageHandlers.push(handler)
+  }
+
+  /** Subscribe to channel point redemptions (for charge, etc.) */
+  onRedemption(handler: RedemptionHandler) {
+    this.#redemptionHandlers.push(handler)
   }
 
   startCouponGenerator() {
@@ -79,7 +98,9 @@ class TwitchController {
     await this.init()
 
     const authProvider = await getTwitchProvider().getAuthProvider()
+    this.#apiClient = new ApiClient({ authProvider })
 
+    // Single bot for chat
     this.#bot = new Bot({
       authProvider,
       channels: [this.#channel],
@@ -90,6 +111,7 @@ class TwitchController {
 
     this.#bot.onMessage(async (message) => {
       try {
+        // Internal handler (stream journey, quests, etc.)
         const answer = await this.#service.handleMessage({
           userId: message.userId,
           userName: message.userName,
@@ -98,34 +120,30 @@ class TwitchController {
         if (answer?.message) {
           await message.reply(answer.message)
         }
+
+        // External handlers (charge, etc.)
+        for (const handler of this.#messageHandlers) {
+          handler(this.#channel, message.userName, message.text)
+        }
       } catch (err) {
         logger.error('Failed to handle chat message', err)
       }
     })
 
-    this.#manaUpdateId = setInterval(async () => {
-      try {
-        await db.profile.updateManaOnAll()
-      } catch (err) {
-        logger.error('Mana update failed', err)
+    // Single EventSub for channel point redemptions
+    this.#eventSub = new EventSubWsListener({ apiClient: this.#apiClient })
+    this.#eventSub.start()
+
+    this.#eventSub.onChannelRedemptionAdd(this.#userId, (event) => {
+      for (const handler of this.#redemptionHandlers) {
+        handler(event.userId, event.rewardId)
       }
-    }, 1000 * 60 * 120)
+    })
 
-    this.#infoMessageId = setInterval(() => {
-      if (getTwitchProvider().isStreaming) {
-        this.#bot.announce(this.#channel, this.#getRandomInfoMessage())
-      }
-    }, 1000 * 60 * 10)
-  }
-
-  async serveStreamOnline() {
-    const authProvider = await getTwitchProvider().getAuthProvider()
-    this.#apiClient = new ApiClient({ authProvider })
-
-    // Poll stream status every 60 seconds
+    // Stream online/offline polling
     const checkStream = async () => {
       try {
-        const stream = await this.#apiClient!.streams.getStreamByUserId(this.#userId)
+        const stream = await this.#apiClient.streams.getStreamByUserId(this.#userId)
         const wasStreaming = getTwitchProvider().isStreaming
         getTwitchProvider().isStreaming = stream !== null
 
@@ -142,6 +160,21 @@ class TwitchController {
 
     await checkStream()
     this.#streamPollId = setInterval(checkStream, 60_000)
+
+    // Periodic tasks
+    this.#manaUpdateId = setInterval(async () => {
+      try {
+        await db.profile.updateManaOnAll()
+      } catch (err) {
+        logger.error('Mana update failed', err)
+      }
+    }, 1000 * 60 * 120)
+
+    this.#infoMessageId = setInterval(() => {
+      if (getTwitchProvider().isStreaming) {
+        this.#bot.announce(this.#channel, this.#getRandomInfoMessage())
+      }
+    }, 1000 * 60 * 10)
   }
 
   destroy() {
@@ -162,10 +195,11 @@ class TwitchController {
       this.#streamPollId = null
     }
 
-    // Disconnect bot
-    if (this.#bot) {
-      this.#bot.chat.quit()
-    }
+    this.#eventSub?.stop()
+    this.#bot?.chat?.quit()
+
+    this.#messageHandlers = []
+    this.#redemptionHandlers = []
 
     logger.info('TwitchController destroyed')
   }

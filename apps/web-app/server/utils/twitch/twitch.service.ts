@@ -2,8 +2,6 @@ import { rooms } from '~~/server/core/stream-journey'
 import { getDateMinusMinutes } from '../date'
 import { QuestService } from '../quest'
 
-const logger = useLogger('twitch:service')
-
 // TODO: move to quest config
 const COUPON_QUEST_ID = 'xu44eon7teobb4a74cd4yvuh'
 
@@ -49,8 +47,6 @@ export class TwitchService {
           codename = edition.character.codename
         }
       }
-      logger.info(`Stream Journey: ${userName} codename=${codename} activeEditionId=${profile.activeEditionId ?? 'null'}`)
-
       room.send({
         event: 'newPlayerMessage',
         data: {

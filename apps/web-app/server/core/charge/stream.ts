@@ -1,9 +1,7 @@
 import type { ChargeEventService, ChargeInstance, ChargeModifier } from '#shared/types/charge'
 import type { CharacterEditionWithCharacter } from '@chat-game/types'
 import type { DonationAlertsDonationEvent } from '@donation-alerts/events'
-import type { TwitchChatController } from './chatClient'
 import type { DonateController } from './donateClient'
-import type { TwitchSubController } from './subClient'
 import { createId } from '@paralleldrive/cuid2'
 import { EventService } from './event'
 
@@ -67,8 +65,6 @@ export class StreamCharge implements ChargeInstance {
 
   constructor(
     data: StreamChargeOptions,
-    readonly chat: TwitchChatController,
-    readonly sub: TwitchSubController,
     readonly donate: DonateController | null,
   ) {
     this.id = data.id
@@ -86,9 +82,6 @@ export class StreamCharge implements ChargeInstance {
     this.initDifficultyTicker()
     this.initMessagesTicker()
     this.initModifiersTicker()
-
-    this.initChatClient()
-    this.initSubClient()
 
     if (this.donate) {
       this.initDonateClient()
@@ -206,18 +199,6 @@ export class StreamCharge implements ChargeInstance {
     }, this.modifiersTickerInterval)
   }
 
-  initChatClient() {
-    this.chat.client.onMessage(this.handleMessage.bind(this))
-  }
-
-  initSubClient() {
-    this.sub.init().then(() => {
-      this.sub.client.onChannelRedemptionAdd(this.twitchChannelId, this.handleRedemption.bind(this))
-    }).catch((err) => {
-      this.#logger.error('Failed to init EventSub client', err)
-    })
-  }
-
   initDonateClient() {
     this.donate!.init().then(() => {
       this.donate!.client.onDonation(this.handleDonation.bind(this))
@@ -233,8 +214,6 @@ export class StreamCharge implements ChargeInstance {
     clearInterval(this.modifiersTicker)
 
     // Cleanup clients
-    this.chat.destroy()
-    this.sub.destroy()
     this.donate?.destroy()
 
     // Clear arrays
@@ -259,10 +238,10 @@ export class StreamCharge implements ChargeInstance {
     })
   }
 
-  handleRedemption(data: { rewardId: string, userId: string, userName: string, rewardTitle: string }) {
-    this.#logger.log('Channel point reward redeemed', data.rewardTitle, data.userName)
+  handleRedemption(userId: string, rewardId: string) {
+    this.#logger.log('Channel point reward redeemed', rewardId, userId)
 
-    const reward = TWITCH_CHANNEL_REWARDS.find((r) => r.rewardId === data.rewardId)
+    const reward = TWITCH_CHANNEL_REWARDS.find((r) => r.rewardId === rewardId)
     if (!reward) {
       return
     }
@@ -282,7 +261,7 @@ export class StreamCharge implements ChargeInstance {
       createdAt: Date.now(),
       expiredAt: Date.now() + reward.actionTimeInSeconds * 1000,
       code: reward.code,
-      userName: data.userName,
+      userName: userId,
       isExpired: false,
     })
   }
