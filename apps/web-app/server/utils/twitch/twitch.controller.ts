@@ -1,8 +1,7 @@
-import { ApiClient } from '@twurple/api'
-import { Bot } from '@twurple/easy-bot'
-import { EventSubWsListener } from '@twurple/eventsub-ws'
 import { getDateMinusMinutes } from '../date'
-import { getTwitchProvider } from './twitch.provider'
+import { getStreamByUserId } from './twitch.api'
+import { TwitchChat } from './twitch.chat'
+import { TwitchEventSub } from './twitch.eventsub'
 import { TwitchService } from './twitch.service'
 
 const logger = useLogger('twitch:controller')
@@ -24,20 +23,44 @@ class TwitchController {
   #userId!: string
   #service!: TwitchService
 
-  #bot!: Bot
-  #apiClient!: ApiClient
-  #eventSub!: EventSubWsListener
+  #chat!: TwitchChat
+  #eventSub!: TwitchEventSub
+  #isStreaming = false
 
   #couponGeneratorId: ReturnType<typeof setInterval> | null = null
   #manaUpdateId: ReturnType<typeof setInterval> | null = null
   #infoMessageId: ReturnType<typeof setInterval> | null = null
   #streamPollId: ReturnType<typeof setInterval> | null = null
 
-  // External subscribers (charge, etc.)
   #messageHandlers: MessageHandler[] = []
   #redemptionHandlers: RedemptionHandler[] = []
 
-  async init() {
+  get status() {
+    return this.#isStreaming ? 'RUNNING' : 'STOPPED'
+  }
+
+  get isStreaming() {
+    return this.#isStreaming
+  }
+
+  set isStreaming(value: boolean) {
+    this.#isStreaming = value
+    if (value) {
+      this.startCouponGenerator()
+    } else {
+      this.stopCouponGenerator()
+    }
+  }
+
+  onMessage(handler: MessageHandler) {
+    this.#messageHandlers.push(handler)
+  }
+
+  onRedemption(handler: RedemptionHandler) {
+    this.#redemptionHandlers.push(handler)
+  }
+
+  async serve() {
     const streamer = (await db.streamer.findAll())[0]
     if (!streamer) {
       throw new Error('No active streamer found')
@@ -46,113 +69,48 @@ class TwitchController {
     this.#channel = streamer.twitchChannelName
     this.#userId = streamer.twitchChannelId
     this.#service = new TwitchService(streamer.twitchChannelId)
-  }
 
-  get status() {
-    return getTwitchProvider().isStreaming ? 'RUNNING' : 'STOPPED'
-  }
-
-  /** Subscribe to chat messages (for charge, etc.) */
-  onMessage(handler: MessageHandler) {
-    this.#messageHandlers.push(handler)
-  }
-
-  /** Subscribe to channel point redemptions (for charge, etc.) */
-  onRedemption(handler: RedemptionHandler) {
-    this.#redemptionHandlers.push(handler)
-  }
-
-  startCouponGenerator() {
-    if (this.#couponGeneratorId) {
-      return
-    }
-
-    this.#couponGeneratorId = setInterval(async () => {
+    // Chat
+    this.#chat = new TwitchChat(this.#channel)
+    this.#chat.onMessage(async (userName, userId, text) => {
       try {
-        const cutoff = getDateMinusMinutes(60 * 24)
-        const coupon = await db.coupon.generate(cutoff)
-
-        // TODO: i18n
-        await this.#bot.say(
-          this.#channel,
-          `Появился новый Купон! Забирай: пиши команду "!купон ${coupon!.activationCommand}" :D`,
-        )
-      } catch (err) {
-        logger.error('Coupon generation failed', err)
-      }
-    }, 1000 * 60 * 45)
-  }
-
-  stopCouponGenerator() {
-    if (this.#couponGeneratorId) {
-      clearInterval(this.#couponGeneratorId)
-      this.#couponGeneratorId = null
-    }
-  }
-
-  get couponGeneratorStatus() {
-    return this.#couponGeneratorId ? 'RUNNING' : 'STOPPED'
-  }
-
-  async serve() {
-    await this.init()
-
-    const authProvider = await getTwitchProvider().getAuthProvider()
-    this.#apiClient = new ApiClient({ authProvider })
-
-    // Single bot for chat
-    this.#bot = new Bot({
-      authProvider,
-      channels: [this.#channel],
-      chatClientOptions: {
-        requestMembershipEvents: true,
-      },
-    })
-
-    this.#bot.onMessage(async (message) => {
-      try {
-        // Internal handler (stream journey, quests, etc.)
-        const answer = await this.#service.handleMessage({
-          userId: message.userId,
-          userName: message.userName,
-          text: message.text,
-        })
+        const answer = await this.#service.handleMessage({ userId, userName, text })
         if (answer?.message) {
-          await message.reply(answer.message)
+          this.#chat.say(answer.message)
         }
 
-        // External handlers (charge, etc.)
         for (const handler of this.#messageHandlers) {
-          handler(this.#channel, message.userName, message.text)
+          handler(this.#channel, userName, text)
         }
       } catch (err) {
         logger.error('Failed to handle chat message', err)
       }
     })
+    await this.#chat.connect()
 
-    // Single EventSub for channel point redemptions
-    this.#eventSub = new EventSubWsListener({ apiClient: this.#apiClient })
-    this.#eventSub.start()
-
-    this.#eventSub.onChannelRedemptionAdd(this.#userId, (event) => {
+    // EventSub (channel point redemptions)
+    this.#eventSub = new TwitchEventSub(this.#userId)
+    this.#eventSub.onRedemption((userId, rewardId) => {
       for (const handler of this.#redemptionHandlers) {
-        handler(event.userId, event.rewardId)
+        handler(userId, rewardId)
       }
     })
+    this.#eventSub.connect()
 
     // Stream online/offline polling
     const checkStream = async () => {
       try {
-        const stream = await this.#apiClient.streams.getStreamByUserId(this.#userId)
-        const wasStreaming = getTwitchProvider().isStreaming
-        getTwitchProvider().isStreaming = stream !== null
+        const isOnline = await getStreamByUserId(this.#userId)
+        const wasStreaming = this.#isStreaming
 
-        if (!wasStreaming && stream) {
+        if (!wasStreaming && isOnline) {
           logger.info(`Stream online: ${this.#channel}`)
         }
-        if (wasStreaming && !stream) {
+        if (wasStreaming && !isOnline) {
           logger.info(`Stream offline: ${this.#channel}`)
         }
+
+        this.isStreaming = isOnline
       } catch (err) {
         logger.error('Stream status check failed', err)
       }
@@ -171,10 +129,40 @@ class TwitchController {
     }, 1000 * 60 * 120)
 
     this.#infoMessageId = setInterval(() => {
-      if (getTwitchProvider().isStreaming) {
-        this.#bot.announce(this.#channel, this.#getRandomInfoMessage())
+      if (this.#isStreaming) {
+        this.#chat.announce(this.#getRandomInfoMessage())
       }
     }, 1000 * 60 * 10)
+  }
+
+  startCouponGenerator() {
+    if (this.#couponGeneratorId) {
+      return
+    }
+
+    this.#couponGeneratorId = setInterval(async () => {
+      try {
+        const cutoff = getDateMinusMinutes(60 * 24)
+        const coupon = await db.coupon.generate(cutoff)
+
+        this.#chat.say(
+          `Появился новый Купон! Забирай: пиши команду "!купон ${coupon!.activationCommand}" :D`,
+        )
+      } catch (err) {
+        logger.error('Coupon generation failed', err)
+      }
+    }, 1000 * 60 * 45)
+  }
+
+  stopCouponGenerator() {
+    if (this.#couponGeneratorId) {
+      clearInterval(this.#couponGeneratorId)
+      this.#couponGeneratorId = null
+    }
+  }
+
+  get couponGeneratorStatus() {
+    return this.#couponGeneratorId ? 'RUNNING' : 'STOPPED'
   }
 
   destroy() {
@@ -195,8 +183,8 @@ class TwitchController {
       this.#streamPollId = null
     }
 
-    this.#eventSub?.stop()
-    this.#bot?.chat?.quit()
+    this.#chat?.destroy()
+    this.#eventSub?.destroy()
 
     this.#messageHandlers = []
     this.#redemptionHandlers = []

@@ -28,6 +28,9 @@ export default defineNuxtConfig({
     '/static/**': {
       cors: true,
     },
+    '/backlog': {
+      ssr: false,
+    },
     '/charge': {
       ssr: false,
       cors: true,

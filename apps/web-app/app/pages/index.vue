@@ -266,7 +266,6 @@
 
 <script setup lang="ts">
 import { vElementVisibility } from '@vueuse/components'
-import { StreamJourneyGame } from '~/utils/stream-journey/game'
 
 useHead({
   title: 'Интерактивная онлайн-игра',
@@ -301,7 +300,7 @@ function onVisibilityChangeProfile(isVisible: boolean) {
 const observerOptions = { rootMargin: '0px 0px -400px 0px' }
 
 const demoStage = ref<HTMLElement>()
-const demoGame = shallowRef<StreamJourneyGame>()
+const demoGame = shallowRef<any>()
 
 watch(demoStage, async () => {
   if (!demoStage.value) {
@@ -309,6 +308,7 @@ watch(demoStage, async () => {
   }
 
   try {
+    const { StreamJourneyGame } = await import('~/utils/stream-journey/game')
     demoGame.value = new StreamJourneyGame({ demo: true })
     await demoGame.value.init({ width: demoStage.value.clientWidth })
     demoStage.value.appendChild(demoGame.value.app.canvas)

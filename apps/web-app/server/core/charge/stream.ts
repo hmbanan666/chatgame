@@ -1,6 +1,5 @@
 import type { ChargeEventService, ChargeInstance, ChargeModifier } from '#shared/types/charge'
 import type { CharacterEditionWithCharacter } from '@chat-game/types'
-import type { DonationAlertsDonationEvent } from '@donation-alerts/events'
 import type { DonateController } from './donateClient'
 import { createId } from '@paralleldrive/cuid2'
 import { EventService } from './event'
@@ -200,9 +199,8 @@ export class StreamCharge implements ChargeInstance {
   }
 
   initDonateClient() {
-    this.donate!.init().then(() => {
-      this.donate!.client.onDonation(this.handleDonation.bind(this))
-    }).catch((err) => {
+    this.donate!.onDonation(this.handleDonation.bind(this))
+    this.donate!.init().catch((err) => {
       this.#logger.error('Failed to init DonationAlerts client', err)
     })
   }
@@ -266,7 +264,7 @@ export class StreamCharge implements ChargeInstance {
     })
   }
 
-  handleDonation(event: DonationAlertsDonationEvent) {
+  handleDonation(event: { username: string, amount: number, currency: string, message: string }) {
     this.#logger.log('Donation received', event.username, event.amount, event.currency)
 
     const amount = this.convertDonationToEnergy(event.currency, event.amount)

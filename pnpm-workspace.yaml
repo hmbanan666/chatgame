@@ -15,7 +15,6 @@ catalogs:
     '@antfu/eslint-config': ^7.0.0
     '@commitlint/cli': ^20.1.0
     '@commitlint/config-conventional': ^20.0.0
-    '@d-fischer/typed-event-emitter': ^3.3.3
     '@iconify-json/lucide': ^1.2.70
     '@iconify-json/simple-icons': ^1.2.55
     '@nuxt/devtools': ^2.6.5
@@ -33,17 +32,9 @@ catalogs:
     typescript: ^5.9.3
     vue-tsc: ^3.1.1
   integrations:
-    '@donation-alerts/api': ^4.0.0
-    '@donation-alerts/auth': ^4.0.0
-    '@donation-alerts/events': ^4.0.0
     '@number-flow/vue': ^0.4.8
     '@nuxt/ui': ^4.0.1
     '@paralleldrive/cuid2': 2.2.2
-    '@twurple/api': ^8.0.0
-    '@twurple/auth': ^8.0.0
-    '@twurple/chat': ^8.0.0
-    '@twurple/easy-bot': ^8.0.0
-    '@twurple/eventsub-ws': ^8.0.0
     '@vueuse/components': ^13.9.0
     '@vueuse/core': ^13.9.0
     '@vueuse/nuxt': ^13.9.0
