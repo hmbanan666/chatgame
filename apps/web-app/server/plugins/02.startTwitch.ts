@@ -5,7 +5,6 @@ import { getTwitchController } from '../utils/twitch/twitch.controller'
 export default defineNitroPlugin(async (nitroApp) => {
   const logger = useLogger('plugin-start-twitch')
 
-  // Only run in production
   if (import.meta.dev) {
     logger.info('Twitch server not started in dev mode')
     return

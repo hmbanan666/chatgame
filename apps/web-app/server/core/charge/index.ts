@@ -32,13 +32,22 @@ export async function initCharges() {
         : null,
     )
 
-    // Subscribe to shared Twitch events
+    // Subscribe to shared Twitch events (only active when stream online)
     controller.onMessage((_, userName, text) => {
       chargeInstance.handleMessage(_, userName, text)
     })
 
-    controller.onRedemption((userId, rewardTitle) => {
-      chargeInstance.handleRedemption(userId, rewardTitle)
+    controller.onRedemption((userId, rewardId) => {
+      chargeInstance.handleRedemption(userId, rewardId)
+    })
+
+    // DonationAlerts — connect/disconnect with stream
+    controller.onStreamOnline(() => {
+      chargeInstance.connectDonateClient()
+    })
+
+    controller.onStreamOffline(() => {
+      chargeInstance.disconnectDonateClient()
     })
 
     chargeRooms.push(chargeInstance)

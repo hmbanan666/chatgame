@@ -51,18 +51,25 @@ export class DonateController {
     }
 
     try {
-      const token = await this.#getCentrifugoToken()
-      if (!token) {
-        logger.error('Failed to get centrifugo token')
+      const accessToken = await this.#getAccessToken()
+      if (!accessToken) {
+        logger.error('No DonationAlerts access token')
+        return
+      }
+
+      // Get socket connection token from DA API
+      const socketToken = await this.#getSocketConnectionToken()
+      if (!socketToken) {
+        logger.error('No socket connection token')
         return
       }
 
       this.#ws = new WebSocket('wss://centrifugo.donationalerts.com/connection/websocket')
 
       this.#ws.addEventListener('open', () => {
-        // Send connect command with token
+        logger.info('DonationAlerts WebSocket opened')
         this.#send({
-          connect: { token, name: 'js' },
+          params: { token: socketToken },
           id: this.#messageId++,
         })
       })
@@ -72,15 +79,15 @@ export class DonateController {
         this.#handleMessage(data)
       })
 
-      this.#ws.addEventListener('close', () => {
-        logger.info('DonationAlerts disconnected')
+      this.#ws.addEventListener('close', (event) => {
+        logger.info(`DonationAlerts disconnected (code: ${event.code}, reason: ${event.reason || 'none'})`)
         if (!this.#isDestroyed) {
           this.#reconnectTimer = setTimeout(() => this.#connect(), 10000)
         }
       })
 
-      this.#ws.addEventListener('error', () => {
-        logger.error('DonationAlerts WebSocket error')
+      this.#ws.addEventListener('error', (event) => {
+        logger.error('DonationAlerts WebSocket error', event)
       })
     } catch (err) {
       logger.error('DonationAlerts connect failed', err)
@@ -100,74 +107,108 @@ export class DonateController {
     try {
       const msg = JSON.parse(raw)
 
-      // Connected — subscribe to donations channel
-      if (msg.id && msg.connect) {
-        logger.info(`DonationAlerts connected, client: ${msg.connect.client}`)
-        this.#subscribe(`$alerts:donation_${this.#userId}`)
+      // Connected — get client id, then subscribe with token
+      if (msg.id && msg.result?.client && msg.result?.version) {
+        const client = msg.result.client
+        logger.info(`DonationAlerts connected, client: ${client}`)
+        this.#subscribeWithToken(client)
       }
 
-      // Subscription data (push)
-      if (msg.push?.pub?.data) {
-        this.#handlePush(msg.push)
+      // Centrifugo v2 push: {"result":{"type":1,"channel":"...","data":{"data":{...}}}}
+      if (msg.result?.type === 1 && msg.result?.data?.data) {
+        this.#handleDonationData(msg.result.data.data)
       }
     } catch {
       // Ignore parse errors
     }
   }
 
-  #subscribe(channel: string) {
+  async #subscribeWithToken(client: string) {
+    const channel = `$alerts:donation_${this.#userId}`
+    const token = await this.#getSubscribeToken(client)
+
+    if (!token) {
+      logger.error('Failed to get subscribe token')
+      return
+    }
+
+    // Centrifugo v2 protocol: method 1 = subscribe
     this.#send({
-      subscribe: { channel },
+      method: 1,
+      params: { channel, token },
       id: this.#messageId++,
     })
-    logger.info(`Subscribed to ${channel}`)
+    logger.info(`Subscribing to ${channel}`)
   }
 
-  #handlePush(push: any) {
-    try {
-      const data = push.pub.data
-      // DonationAlerts sends data as encoded string
-      const decoded = typeof data === 'string' ? JSON.parse(data) : data
+  #handleDonationData(data: any) {
+    const decoded = typeof data === 'string' ? JSON.parse(data) : data
 
-      if (decoded.username && decoded.amount !== undefined) {
-        const event: DonationEvent = {
-          username: decoded.username ?? '',
-          amount: decoded.amount ?? 0,
-          currency: decoded.currency ?? 'RUB',
-          message: decoded.message ?? '',
-        }
+    logger.info(`Donation received: ${decoded.username} ${decoded.amount} ${decoded.currency}`)
 
-        for (const handler of this.#handlers) {
-          try {
-            handler(event)
-          } catch (err) {
-            logger.error('Donation handler error', err)
-          }
-        }
+    const event: DonationEvent = {
+      username: decoded.username ?? decoded.name ?? '',
+      amount: Number(decoded.amount) || 0,
+      currency: decoded.currency ?? 'RUB',
+      message: decoded.message ?? decoded.message_text ?? '',
+    }
+
+    if (!event.username || !event.amount) {
+      return
+    }
+
+    for (const handler of this.#handlers) {
+      try {
+        handler(event)
+      } catch (err) {
+        logger.error('Donation handler error', err)
       }
-    } catch {
-      // Ignore malformed pushes
     }
   }
 
-  async #getCentrifugoToken(): Promise<string | null> {
+  #accessToken: string | null = null
+
+  async #getSocketConnectionToken(): Promise<string | null> {
+    if (!this.#accessToken) {
+      return null
+    }
+
+    try {
+      const res = await fetch('https://www.donationalerts.com/api/v1/user/oauth', {
+        headers: {
+          Authorization: `Bearer ${this.#accessToken}`,
+        },
+      })
+
+      const data = await res.json()
+      if (!data?.data) {
+        logger.error('DA user/oauth: no data in response')
+        return null
+      }
+
+      const token = data.data.socket_connection_token
+      return token ?? null
+    } catch (err) {
+      logger.error('Failed to get socket connection token', err)
+      return null
+    }
+  }
+
+  async #getAccessToken(): Promise<string | null> {
     const {
       donationAlertsClientId,
       donationAlertsClientSecret,
     } = useRuntimeConfig()
 
-    // Get access token from DB
     const stored = await db.twitchAccessToken.findByUserId(this.#userId)
     if (!stored) {
       logger.error(`No DonationAlerts token for user ${this.#userId}`)
       return null
     }
 
-    let accessToken = stored.accessToken
-
-    // Refresh token first (might be expired)
+    // Refresh token
     try {
-      const refreshRes = await fetch('https://www.donationalerts.com/oauth/token', {
+      const res = await fetch('https://www.donationalerts.com/oauth/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -178,40 +219,51 @@ export class DonateController {
         }),
       })
 
-      const refreshData = await refreshRes.json()
-      if (refreshData.access_token) {
-        accessToken = refreshData.access_token
+      const data = await res.json()
+      if (data.access_token) {
+        this.#accessToken = data.access_token
         await db.twitchAccessToken.updateByUserId(this.#userId, {
-          accessToken: refreshData.access_token,
-          refreshToken: refreshData.refresh_token,
-          expiresIn: refreshData.expires_in,
+          accessToken: data.access_token,
+          refreshToken: data.refresh_token,
+          expiresIn: data.expires_in,
           obtainmentTimestamp: Date.now().toString(),
         })
+        logger.info('DonationAlerts token refreshed')
+        return data.access_token
       }
     } catch (err) {
-      logger.warn('Token refresh failed, using existing token', err)
+      logger.warn('DA token refresh failed', err)
     }
 
-    // Get centrifugo connection token
+    this.#accessToken = stored.accessToken
+    return stored.accessToken
+  }
+
+  async #getSubscribeToken(client: string): Promise<string | null> {
+    if (!this.#accessToken) {
+      return null
+    }
+
+    const channel = `$alerts:donation_${this.#userId}`
+
     try {
       const res = await fetch('https://www.donationalerts.com/api/v1/centrifuge/subscribe', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
+          'Authorization': `Bearer ${this.#accessToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          channels: [`$alerts:donation_${this.#userId}`],
-          client: '',
+          channels: [channel],
+          client,
         }),
       })
 
       const data = await res.json()
-      // The token for connection is in the subscriber tokens
-      return data?.channels?.[0]?.token ?? accessToken
+      return data?.channels?.[0]?.token ?? null
     } catch (err) {
-      logger.error('Failed to get centrifugo token', err)
-      return accessToken
+      logger.error('Failed to get DA subscribe token', err)
+      return null
     }
   }
 }

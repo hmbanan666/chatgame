@@ -34,6 +34,8 @@ class TwitchController {
 
   #messageHandlers: MessageHandler[] = []
   #redemptionHandlers: RedemptionHandler[] = []
+  #onlineHandlers: (() => void)[] = []
+  #offlineHandlers: (() => void)[] = []
 
   get status() {
     return this.#isStreaming ? 'RUNNING' : 'STOPPED'
@@ -44,11 +46,26 @@ class TwitchController {
   }
 
   set isStreaming(value: boolean) {
+    if (value === this.#isStreaming) {
+      return
+    }
+
     this.#isStreaming = value
+
     if (value) {
+      logger.info('Stream went online — connecting clients')
+      this.#connectClients()
       this.startCouponGenerator()
+      for (const handler of this.#onlineHandlers) {
+        handler()
+      }
     } else {
+      logger.info('Stream went offline — disconnecting clients')
+      this.#disconnectClients()
       this.stopCouponGenerator()
+      for (const handler of this.#offlineHandlers) {
+        handler()
+      }
     }
   }
 
@@ -58,6 +75,14 @@ class TwitchController {
 
   onRedemption(handler: RedemptionHandler) {
     this.#redemptionHandlers.push(handler)
+  }
+
+  onStreamOnline(handler: () => void) {
+    this.#onlineHandlers.push(handler)
+  }
+
+  onStreamOffline(handler: () => void) {
+    this.#offlineHandlers.push(handler)
   }
 
   async serve() {
@@ -86,7 +111,7 @@ class TwitchController {
         logger.error('Failed to handle chat message', err)
       }
     })
-    await this.#chat.connect()
+    // Don't connect yet — will connect when stream goes online
 
     // EventSub (channel point redemptions)
     this.#eventSub = new TwitchEventSub(this.#userId)
@@ -95,7 +120,6 @@ class TwitchController {
         handler(userId, rewardId)
       }
     })
-    this.#eventSub.connect()
 
     // Stream online/offline polling
     const checkStream = async () => {
@@ -165,6 +189,16 @@ class TwitchController {
     return this.#couponGeneratorId ? 'RUNNING' : 'STOPPED'
   }
 
+  #connectClients() {
+    this.#chat?.connect()
+    this.#eventSub?.connect()
+  }
+
+  #disconnectClients() {
+    this.#chat?.disconnect()
+    this.#eventSub?.disconnect()
+  }
+
   destroy() {
     this.stopCouponGenerator()
 
@@ -188,6 +222,8 @@ class TwitchController {
 
     this.#messageHandlers = []
     this.#redemptionHandlers = []
+    this.#onlineHandlers = []
+    this.#offlineHandlers = []
 
     logger.info('TwitchController destroyed')
   }

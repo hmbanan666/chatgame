@@ -21,12 +21,12 @@ export default defineEventHandler(async (event) => {
 
   const streamId = streamJourneyRoom.addStream(eventStream)
 
-  logger.success(`New connection to room ${id}, stream id ${streamId}.`)
+  logger.success(`New SSE connection, room ${id}, streams: ${streamJourneyRoom.streamCount}`)
 
   eventStream.onClosed(async () => {
     streamJourneyRoom.removeStream(streamId)
     await eventStream.close()
-    logger.log(`Connection stream id ${streamId} closed`)
+    logger.log(`SSE closed, room ${id}, streams: ${streamJourneyRoom.streamCount}`)
   })
 
   return eventStream.send()

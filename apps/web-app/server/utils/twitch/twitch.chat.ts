@@ -28,9 +28,7 @@ export class TwitchChat {
   }
 
   async connect() {
-    if (this.#isDestroyed) {
-      return
-    }
+    this.#isDestroyed = false
 
     const token = await getTwitchToken()
 
@@ -90,11 +88,17 @@ export class TwitchChat {
     this.say(`/announce ${message}`)
   }
 
-  destroy() {
+  /** Soft disconnect — can reconnect later */
+  disconnect() {
     this.#isDestroyed = true
     this.#cleanup()
     this.#ws?.close()
     this.#ws = null
+  }
+
+  /** Full destroy — clears handlers */
+  destroy() {
+    this.disconnect()
     this.#messageHandlers = []
   }
 
@@ -127,6 +131,8 @@ export class TwitchChat {
     if (!userName || !text) {
       return
     }
+
+    logger.info(`${userName}: ${text}`)
 
     for (const handler of this.#messageHandlers) {
       try {

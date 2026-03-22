@@ -27,9 +27,7 @@ export class TwitchEventSub {
   }
 
   connect() {
-    if (this.#isDestroyed) {
-      return
-    }
+    this.#isDestroyed = false
 
     this.#ws = new WebSocket('wss://eventsub.wss.twitch.tv/ws')
 
@@ -52,11 +50,17 @@ export class TwitchEventSub {
     })
   }
 
-  destroy() {
+  /** Soft disconnect — can reconnect later */
+  disconnect() {
     this.#isDestroyed = true
     this.#cleanup()
     this.#ws?.close()
     this.#ws = null
+  }
+
+  /** Full destroy — clears handlers */
+  destroy() {
+    this.disconnect()
     this.#redemptionHandlers = []
   }
 

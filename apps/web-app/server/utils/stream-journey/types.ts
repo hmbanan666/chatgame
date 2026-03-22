@@ -14,6 +14,7 @@ export type NewPlayerMessage = {
 
 export interface Room {
   id: string
+  streamCount: number
   addStream: (stream: RoomEventStream) => string
   removeStream: (id: string) => void
   send: (event: EventMessage) => Promise<void>

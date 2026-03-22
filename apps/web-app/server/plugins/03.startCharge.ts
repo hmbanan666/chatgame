@@ -4,7 +4,6 @@ import { chargeRooms, initCharges } from '../core/charge'
 export default defineNitroPlugin(async (nitroApp) => {
   const logger = useLogger('plugin-start-charge')
 
-  // Only run in production
   if (import.meta.dev) {
     logger.info('Charge server not started in dev mode')
     return

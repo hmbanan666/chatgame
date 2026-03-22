@@ -81,10 +81,6 @@ export class StreamCharge implements ChargeInstance {
     this.initDifficultyTicker()
     this.initMessagesTicker()
     this.initModifiersTicker()
-
-    if (this.donate) {
-      this.initDonateClient()
-    }
   }
 
   get energyPerTick() {
@@ -198,11 +194,18 @@ export class StreamCharge implements ChargeInstance {
     }, this.modifiersTickerInterval)
   }
 
-  initDonateClient() {
-    this.donate!.onDonation(this.handleDonation.bind(this))
-    this.donate!.init().catch((err) => {
+  connectDonateClient() {
+    if (!this.donate) {
+      return
+    }
+    this.donate.onDonation(this.handleDonation.bind(this))
+    this.donate.init().catch((err) => {
       this.#logger.error('Failed to init DonationAlerts client', err)
     })
+  }
+
+  disconnectDonateClient() {
+    this.donate?.destroy()
   }
 
   destroy() {

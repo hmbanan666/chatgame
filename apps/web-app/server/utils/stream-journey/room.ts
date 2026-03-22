@@ -28,6 +28,10 @@ export class StreamJourneyRoom implements Room {
     this.eventService.streams.delete(id)
   }
 
+  get streamCount() {
+    return this.eventService.streams.size
+  }
+
   send(event: EventMessage) {
     return this.eventService.send(event)
   }
