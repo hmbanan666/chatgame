@@ -1,7 +1,6 @@
 import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
-  ssr: false,
   modules: [
     '@vueuse/nuxt',
     'nuxt-auth-utils',

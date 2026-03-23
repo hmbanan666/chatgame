@@ -26,17 +26,17 @@ spec:
               protocol: TCP
           env:
             - name: NODE_OPTIONS
-              value: --max-old-space-size=768
+              value: --max-old-space-size=128
           envFrom:
             - secretRef:
                 name: web-app-secret
           resources:
             limits:
-              cpu: '1'
-              memory: 1Gi
+              cpu: 500m
+              memory: 200Mi
             requests:
               cpu: 10m
-              memory: 256Mi
+              memory: 200Mi
           livenessProbe:
             httpGet:
               path: /api/health
