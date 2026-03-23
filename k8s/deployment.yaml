@@ -18,6 +18,7 @@ spec:
     spec:
       imagePullSecrets:
         - name: ghcr-secret
+      priorityClassName: high-priority
       containers:
         - name: web-app
           image: ghcr.io/hmbanan666/chatgame-web-app:nightly
@@ -33,10 +34,10 @@ spec:
           resources:
             limits:
               cpu: 500m
-              memory: 200Mi
+              memory: 512Mi
             requests:
               cpu: 10m
-              memory: 200Mi
+              memory: 128Mi
           livenessProbe:
             httpGet:
               path: /api/health

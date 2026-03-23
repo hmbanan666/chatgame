@@ -14,7 +14,7 @@ export default defineNitroPlugin(() => {
     logger.info(`RSS=${rss}MB heap=${heapUsed}/${heapTotal}MB ext=${external}MB uptime=${uptime}s`)
   }
 
-  // Log every 60 seconds
+  // Log every 10 seconds to catch spikes
   logMemory()
-  setInterval(logMemory, 60_000)
+  setInterval(logMemory, 10_000)
 })
