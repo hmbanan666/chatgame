@@ -11,9 +11,7 @@ export type ProductItem = InferSelectModel<typeof tables.productItems>
 export type TwitchToken = InferSelectModel<typeof tables.twitchTokens>
 export type TwitchAccessToken = InferSelectModel<typeof tables.twitchAccessTokens>
 
-export type Village = InferSelectModel<typeof tables.villages>
 export type Player = InferSelectModel<typeof tables.players>
-export type Skill = InferSelectModel<typeof tables.skills>
 
 export type InventoryItem = InferSelectModel<typeof tables.inventoryItems>
 export type InventoryItemEdition = InferSelectModel<typeof tables.inventoryItemEditions>

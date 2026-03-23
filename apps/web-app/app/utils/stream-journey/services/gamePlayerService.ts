@@ -1,10 +1,10 @@
 import type { Game, GameObjectPlayer, PlayerService } from '../types'
+import { getDateMinusMinutes } from '~/utils/date'
 import { TargetPoint } from '../objects/targetPoint'
 import { PlayerObject } from '../objects/unit/playerObject'
 import { MoveOffScreenAndSelfDestroyScript } from '../scripts/moveOffScreenAndSelfDestroyScript'
 import { MoveToTargetScript } from '../scripts/moveToTargetScript'
 import { MoveToTreeAndChopScript } from '../scripts/moveToTreeAndChopScript'
-import { getDateMinusMinutes } from './../utils/date'
 
 export class GamePlayerService implements PlayerService {
   constructor(readonly game: Game) {}

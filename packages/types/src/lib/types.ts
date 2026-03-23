@@ -20,42 +20,14 @@ export interface ProfileWithOwnedCharacters extends Profile {
   characterEditions: CharacterEditionWithCharacter[]
 }
 
-export interface ProfileInfoResponse {
-  count: number
-}
-
-export interface ProfileCreateRequest {
-  data: {
-    twitchId: string
-    userName: string
-  }
-}
-
 export interface ProfileCreateResponse {
   ok: boolean
   result: Profile
 }
 
-export interface TokenCreateRequest {
-  data: {
-    code: string
-    profileId: string
-  }
-}
-
-export interface AddonTokenCreateRequest {
-  data: {
-    profileId: string
-  }
-}
-
 export interface TokenCreateResponse {
   ok: boolean
   result: TwitchToken
-}
-
-export interface StreamerUpdateResponse {
-  ok: boolean
 }
 
 export interface TwitchToken {
@@ -154,12 +126,6 @@ export interface ActiveCharacter extends CharacterEditionWithCharacter {
   playerId: string
 }
 
-export interface CharacterEditionCreateRequest {
-  data: {
-    profileId: string
-  }
-}
-
 export interface Quest {
   id: string
   createdAt: Date
@@ -213,13 +179,6 @@ export interface Coupon {
   activationCommand: string
   status: 'CREATED' | 'TAKEN'
   profileId: string | null
-}
-
-export interface ConvertCouponRequest {
-  data: {
-    profileId: string
-    type: 'COINS'
-  }
 }
 
 export interface Player {
@@ -322,21 +281,6 @@ export interface Payment {
   externalId: string
   provider: 'YOOKASSA'
   amount: number
-}
-
-export interface PaymentCreateRequest {
-  data: {
-    profileId: string
-    productId: string
-  }
-}
-
-export interface PaymentCreateResponse {
-  ok: boolean
-  result: {
-    payment: Payment
-    redirectUrl: string
-  }
 }
 
 export interface TwitchAccessTokenResponse {

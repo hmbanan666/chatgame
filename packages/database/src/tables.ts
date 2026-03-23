@@ -144,17 +144,7 @@ export const twitchAccessTokens = pgTable('twitch_access_token', {
   obtainmentTimestamp: text('obtainment_timestamp').notNull(),
 })
 
-// ── Village / Player / Skill ─────────────────────────────
-
-export const villages = pgTable('village', {
-  id: cuid2('id').defaultRandom().primaryKey(),
-  createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-  globalTarget: integer('global_target'),
-  globalTargetSuccess: integer('global_target_success'),
-  wood: integer('wood').notNull().default(0),
-  stone: integer('stone').notNull().default(0),
-})
+// ── Player ──────────────────────────────────────────────
 
 export const players = pgTable('player', {
   id: cuid2('id').defaultRandom().primaryKey(),
@@ -170,17 +160,6 @@ export const players = pgTable('player', {
   raiderPoints: integer('raider_points').notNull().default(0),
   inventoryId: text('inventory_id').notNull(),
   profileId: text('profile_id').notNull(),
-})
-
-export const skills = pgTable('skill', {
-  id: cuid2('id').defaultRandom().primaryKey(),
-  createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-  type: text('type').notNull(),
-  lvl: integer('lvl').notNull().default(0),
-  xp: integer('xp').notNull().default(0),
-  xpNextLvl: integer('xp_next_lvl').notNull().default(20),
-  objectId: text('object_id').notNull(),
 })
 
 // ── Inventory ────────────────────────────────────────────
