@@ -1,5 +1,5 @@
 import { getDateMinusMinutes } from '../date'
-import { getStreamByUserId } from './twitch.api'
+import { getStreamByUserId, sendChatAnnouncement } from './twitch.api'
 import { TwitchChat } from './twitch.chat'
 import { TwitchEventSub } from './twitch.eventsub'
 import { TwitchService } from './twitch.service'
@@ -125,18 +125,9 @@ class TwitchController {
     const checkStream = async () => {
       try {
         const isOnline = await getStreamByUserId(this.#userId)
-        const wasStreaming = this.#isStreaming
-
-        if (!wasStreaming && isOnline) {
-          logger.info(`Stream online: ${this.#channel}`)
-        }
-        if (wasStreaming && !isOnline) {
-          logger.info(`Stream offline: ${this.#channel}`)
-        }
-
         this.isStreaming = isOnline
       } catch (err) {
-        logger.error('Stream status check failed', err)
+        logger.error('Stream status check failed — isStreaming stays', this.#isStreaming, err)
       }
     }
 
@@ -152,9 +143,13 @@ class TwitchController {
       }
     }, 1000 * 60 * 120)
 
-    this.#infoMessageId = setInterval(() => {
+    this.#infoMessageId = setInterval(async () => {
       if (this.#isStreaming) {
-        this.#chat.announce(this.#getRandomInfoMessage())
+        try {
+          await sendChatAnnouncement(this.#userId, this.#getRandomInfoMessage())
+        } catch (err) {
+          logger.error('Info announcement failed', err)
+        }
       }
     }, 1000 * 60 * 10)
   }
@@ -168,9 +163,13 @@ class TwitchController {
       try {
         const cutoff = getDateMinusMinutes(60 * 24)
         const coupon = await db.coupon.generate(cutoff)
+        if (!coupon) {
+          logger.warn('Coupon generation returned null')
+          return
+        }
 
         this.#chat.say(
-          `Появился новый Купон! Забирай: пиши команду "!купон ${coupon!.activationCommand}" :D`,
+          `Появился новый Купон! Забирай: пиши команду "!купон ${coupon.activationCommand}" :D`,
         )
       } catch (err) {
         logger.error('Coupon generation failed', err)
@@ -189,8 +188,12 @@ class TwitchController {
     return this.#couponGeneratorId ? 'RUNNING' : 'STOPPED'
   }
 
-  #connectClients() {
-    this.#chat?.connect()
+  async #connectClients() {
+    try {
+      await this.#chat?.connect()
+    } catch (err) {
+      logger.error('Chat connect failed:', err)
+    }
     this.#eventSub?.connect()
   }
 

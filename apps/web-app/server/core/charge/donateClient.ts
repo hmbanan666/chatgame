@@ -31,10 +31,11 @@ export class DonateController {
   }
 
   async init() {
+    this.#isDestroyed = false
     await this.#connect()
   }
 
-  destroy() {
+  disconnect() {
     this.#isDestroyed = true
     if (this.#reconnectTimer) {
       clearTimeout(this.#reconnectTimer)
@@ -42,7 +43,17 @@ export class DonateController {
     }
     this.#ws?.close()
     this.#ws = null
+  }
+
+  destroy() {
+    this.disconnect()
     this.#handlers = []
+  }
+
+  #scheduleReconnect() {
+    if (!this.#isDestroyed) {
+      this.#reconnectTimer = setTimeout(() => this.#connect(), 10000)
+    }
   }
 
   async #connect() {
@@ -50,17 +61,25 @@ export class DonateController {
       return
     }
 
+    // Close existing WS to prevent leak on double-connect
+    if (this.#ws) {
+      this.#ws.close()
+      this.#ws = null
+    }
+
     try {
       const accessToken = await this.#getAccessToken()
       if (!accessToken) {
-        logger.error('No DonationAlerts access token')
+        logger.error('No DonationAlerts access token, retrying...')
+        this.#scheduleReconnect()
         return
       }
 
       // Get socket connection token from DA API
       const socketToken = await this.#getSocketConnectionToken()
       if (!socketToken) {
-        logger.error('No socket connection token')
+        logger.error('No socket connection token, retrying...')
+        this.#scheduleReconnect()
         return
       }
 
@@ -81,19 +100,15 @@ export class DonateController {
 
       this.#ws.addEventListener('close', (event) => {
         logger.info(`DonationAlerts disconnected (code: ${event.code}, reason: ${event.reason || 'none'})`)
-        if (!this.#isDestroyed) {
-          this.#reconnectTimer = setTimeout(() => this.#connect(), 10000)
-        }
+        this.#scheduleReconnect()
       })
 
       this.#ws.addEventListener('error', (event) => {
-        logger.error('DonationAlerts WebSocket error', event)
+        logger.error('DonationAlerts WebSocket error:', event)
       })
     } catch (err) {
-      logger.error('DonationAlerts connect failed', err)
-      if (!this.#isDestroyed) {
-        this.#reconnectTimer = setTimeout(() => this.#connect(), 10000)
-      }
+      logger.error('DonationAlerts connect failed:', err)
+      this.#scheduleReconnect()
     }
   }
 

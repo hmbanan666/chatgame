@@ -14,23 +14,21 @@ export default defineTask({
       return { result: true }
     }
 
-    try {
-      const since = new Date(Date.now() - 24 * 60 * 60 * 1000)
-      const payments = await db.payment.findPendingSince(since)
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000)
+    const payments = await db.payment.findPendingSince(since)
 
-      for (const payment of payments) {
-        // Check payment status
+    for (const payment of payments) {
+      try {
         const status = await checkPayment(payment.externalId)
         if (status === 'PAID' && payment.status !== 'PAID') {
-          await db.payment.updateStatus(payment.id, 'PAID')
-
           await activateProduct({ productId: payment.productId, profileId: payment.profileId })
+          await db.payment.updateStatus(payment.id, 'PAID')
 
           logger.log(`Payment ${payment.id} changed to PAID`)
         }
+      } catch (err) {
+        logger.error(`Failed to process payment ${payment.id}:`, err)
       }
-    } catch (error) {
-      errorResolver(error)
     }
 
     return { result: true }
@@ -62,7 +60,7 @@ async function checkPayment(id: string): Promise<'PAID' | 'PENDING' | null> {
 
     return null
   } catch (err) {
-    console.error(err)
+    logger.error('Payment check failed', err)
     return null
   }
 }

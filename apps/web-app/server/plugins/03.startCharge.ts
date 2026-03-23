@@ -2,7 +2,7 @@ import { waitForMigration } from '@chatgame/database'
 import { chargeRooms, initCharges } from '../core/charge'
 
 export default defineNitroPlugin(async (nitroApp) => {
-  const logger = useLogger('plugin-start-charge')
+  const logger = useLogger('plugin:charge')
 
   if (import.meta.dev) {
     logger.info('Charge server not started in dev mode')

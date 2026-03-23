@@ -17,6 +17,10 @@ export async function getTwitchToken(): Promise<TwitchToken> {
     return _token
   }
 
+  return reloadTwitchToken()
+}
+
+export async function reloadTwitchToken(): Promise<TwitchToken> {
   const { twitchChannelId } = useRuntimeConfig()
   const userId = twitchChannelId.toString()
 
@@ -48,7 +52,7 @@ export async function refreshTwitchToken(): Promise<TwitchToken> {
   const data = await res.json()
 
   if (!data.access_token) {
-    logger.error('Token refresh failed', data)
+    logger.error('Token refresh failed, status keys:', Object.keys(data))
     throw new Error('Failed to refresh Twitch token')
   }
 

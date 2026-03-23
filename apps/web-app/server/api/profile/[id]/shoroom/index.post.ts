@@ -4,11 +4,19 @@ import { createId } from '@paralleldrive/cuid2'
 export default defineEventHandler<EventHandlerRequest, Promise<{ ok: boolean }>>(async (event) => {
   const profileId = getRouterParam(event, 'id')
   const body = await readBody(event)
+  const session = await getUserSession(event)
 
-  if (!body.characterId) {
+  if (!body.characterId || !session?.user) {
     throw createError({
       statusCode: 400,
       message: 'You must provide data',
+    })
+  }
+
+  if (session.user.id !== profileId) {
+    throw createError({
+      statusCode: 403,
+      message: 'Forbidden',
     })
   }
 
@@ -52,33 +60,6 @@ export default defineEventHandler<EventHandlerRequest, Promise<{ ok: boolean }>>
     amount: character.price,
     type: 'CHARACTER_UNLOCK',
   })
-
-  await db.transaction.create({
-    id: createId(),
-    profileId: profile.id,
-    entityId: edition!.id,
-    amount: character.price,
-    type: 'POINTS_FROM_CHARACTER_UNLOCK',
-  })
-
-  await db.profile.addCollectorPoints(profile.id, character.price)
-
-  // Check trophy
-  const trophyEditions = await db.trophyEdition.findByProfile(profile.id)
-  if (
-    !trophyEditions.some((progress: { trophyId: string }) => progress.trophyId === 'h09eur7whn4nyjr0bereyb5l')
-  ) {
-    await db.trophyEdition.create({
-      id: createId(),
-      profileId: profile.id,
-      trophyId: 'h09eur7whn4nyjr0bereyb5l',
-    })
-
-    await db.profile.addTrophyHunterPoints(profile.id, 50)
-  }
-
-  // Donate points
-  await db.profile.addPatronPoints(profile.id, (character.price / 2) * 10)
 
   return {
     ok: true,

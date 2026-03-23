@@ -3,7 +3,7 @@
  * Replaces @twurple/easy-bot Bot and @twurple/chat ChatClient.
  */
 
-import { getTwitchToken } from './twitch.auth'
+import { reloadTwitchToken } from './twitch.auth'
 
 const logger = useLogger('twitch:chat')
 
@@ -28,9 +28,17 @@ export class TwitchChat {
   }
 
   async connect() {
+    // Clean up existing connection to prevent WS leak on double-connect
+    if (this.#ws) {
+      this.#isDestroyed = true
+      this.#cleanup()
+      this.#ws.close()
+      this.#ws = null
+    }
+
     this.#isDestroyed = false
 
-    const token = await getTwitchToken()
+    const token = await reloadTwitchToken()
 
     this.#ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443')
 
@@ -73,19 +81,17 @@ export class TwitchChat {
       }
     })
 
-    this.#ws.addEventListener('error', () => {
-      logger.error('Chat WebSocket error')
+    this.#ws.addEventListener('error', (event) => {
+      logger.error('Chat WebSocket error:', event)
     })
   }
 
   say(message: string) {
     if (this.#ws?.readyState === WebSocket.OPEN) {
       this.#ws.send(`PRIVMSG #${this.#channel} :${message}`)
+    } else {
+      logger.warn(`Message dropped (WS not open): ${message.slice(0, 80)}`)
     }
-  }
-
-  announce(message: string) {
-    this.say(`/announce ${message}`)
   }
 
   /** Soft disconnect — can reconnect later */

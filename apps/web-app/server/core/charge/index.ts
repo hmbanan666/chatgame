@@ -5,7 +5,7 @@ import { StreamCharge } from './stream'
 export const chargeRooms: StreamCharge[] = []
 
 export async function initCharges() {
-  const logger = useLogger('stream-charge')
+  const logger = useLogger('charge:init')
 
   const streamers = await db.streamer.findAll()
   if (streamers.length === 0) {

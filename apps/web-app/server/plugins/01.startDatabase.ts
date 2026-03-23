@@ -3,7 +3,7 @@ import { useCreateDatabase, useMigrateDatabase } from '@chatgame/database'
 
 export default defineNitroPlugin(async () => {
   const config = useRuntimeConfig()
-  const logger = useLogger('plugin-start-database')
+  const logger = useLogger('plugin:database')
 
   const url = config.databaseUrl || process.env.DATABASE_URL
   if (!url) {

@@ -1,5 +1,5 @@
 import { createId } from '@paralleldrive/cuid2'
-import { and, count, desc, eq, gt, lt, sql } from 'drizzle-orm'
+import { and, count, eq, lt, sql } from 'drizzle-orm'
 import { useDatabase } from '../database'
 import * as tables from '../tables'
 
@@ -104,46 +104,6 @@ export class Profile {
       .where(eq(tables.profiles.id, id))
   }
 
-  static addTrophyHunterPoints(id: string, points: number) {
-    const db = useDatabase()
-    return db.update(tables.profiles)
-      .set({ trophyHunterPoints: sql`${tables.profiles.trophyHunterPoints} + ${points}` })
-      .where(eq(tables.profiles.id, id))
-      .returning()
-  }
-
-  static addRangerPoints(id: string, points: number) {
-    const db = useDatabase()
-    return db.update(tables.profiles)
-      .set({ rangerPoints: sql`${tables.profiles.rangerPoints} + ${points}` })
-      .where(eq(tables.profiles.id, id))
-      .returning()
-  }
-
-  static addCollectorPoints(id: string, points: number) {
-    const db = useDatabase()
-    return db.update(tables.profiles)
-      .set({ collectorPoints: sql`${tables.profiles.collectorPoints} + ${points}` })
-      .where(eq(tables.profiles.id, id))
-      .returning()
-  }
-
-  static addPatronPoints(id: string, points: number) {
-    const db = useDatabase()
-    return db.update(tables.profiles)
-      .set({ patronPoints: sql`${tables.profiles.patronPoints} + ${points}` })
-      .where(eq(tables.profiles.id, id))
-      .returning()
-  }
-
-  static addPoints(id: string, points: number) {
-    const db = useDatabase()
-    return db.update(tables.profiles)
-      .set({ points: sql`${tables.profiles.points} + ${points}` })
-      .where(eq(tables.profiles.id, id))
-      .returning()
-  }
-
   static deductMana(id: string, amount: number) {
     const db = useDatabase()
     return db.update(tables.profiles)
@@ -156,11 +116,6 @@ export class Profile {
     return db.update(tables.profiles)
       .set({ coupons: sql`${tables.profiles.coupons} - ${amount}` })
       .where(eq(tables.profiles.id, id))
-  }
-
-  static findAllWithPointsDesc() {
-    const db = useDatabase()
-    return db.select().from(tables.profiles).where(gt(tables.profiles.points, 0)).orderBy(desc(tables.profiles.points))
   }
 
   static async getPlaceInTopByCoupons(profileId: string) {

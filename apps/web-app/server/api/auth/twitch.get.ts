@@ -1,4 +1,4 @@
-const logger = useLogger('twitch-auth')
+const logger = useLogger('auth:twitch')
 
 interface TwitchUser {
   id: string
@@ -19,7 +19,7 @@ export default defineOAuthTwitchEventHandler({
     emailRequired: true,
   },
   async onSuccess(event, result: { user: TwitchUser }) {
-    logger.success(JSON.stringify(result.user))
+    logger.success(`User authenticated: ${result.user.login} (${result.user.id})`)
 
     const profileInDB = await db.profile.findOrCreate({
       userId: result.user.id,
@@ -38,8 +38,8 @@ export default defineOAuthTwitchEventHandler({
     return sendRedirect(event, '/redirect')
   },
   // Optional, will return a json error and 401 status code by default
-  onError(event, error) {
-    logger.error('Twitch OAuth error:', JSON.stringify(error))
+  onError(event, _error) {
+    logger.error('Twitch OAuth error')
     return sendRedirect(event, '/')
   },
 })

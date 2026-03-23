@@ -1,14 +1,6 @@
 import { createId } from '@paralleldrive/cuid2'
 
 export async function activateProduct({ profileId, productId }: { profileId: string, productId: string }) {
-  const product = await db.product.findWithItems(productId)
-
-  // Patron points
-  const itemPatronPoints = product?.items.find(({ type }: { type: string }) => type === 'PATRON_POINT')
-  if (itemPatronPoints) {
-    await db.profile.addPatronPoints(profileId, itemPatronPoints.amount)
-  }
-
   switch (productId) {
     case 'jehj4mxo0g6fp1eopf3jg641':
       return activateProduct1(profileId) // 10 coins
@@ -64,17 +56,6 @@ async function activateProduct5(profileId: string) {
 async function activateProduct6(profileId: string) {
   // 50 coins
   await db.profile.addCoins(profileId, 50)
-
-  // Trophy
-  const trophyEditions = await db.trophyEdition.findByProfile(profileId)
-  const hasTrophy = trophyEditions.some((te: { trophyId: string }) => te.trophyId === 'iadp4l86kc84hwz0culhig91')
-  if (!hasTrophy) {
-    await db.trophyEdition.create({
-      id: createId(),
-      profileId,
-      trophyId: 'iadp4l86kc84hwz0culhig91',
-    })
-  }
 
   // Santa: check if already have char
   const profileWithEditions = await db.profile.findWithCharacterEditions(profileId)

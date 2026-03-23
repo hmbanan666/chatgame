@@ -111,7 +111,6 @@ export default defineNuxtConfig({
       tasks: true,
     },
     scheduledTasks: {
-      '*/10 * * * *': ['game:leaderboard'],
       '*/2 * * * *': ['payment:status'],
     },
   },

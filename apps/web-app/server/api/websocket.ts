@@ -4,21 +4,16 @@ import { createId } from '@paralleldrive/cuid2'
 
 const logger = useLogger('ws')
 
-interface AddonRoom {
-  id: string
-  peer: WebSocketPeer | null
-}
-
-const addonRooms: AddonRoom[] = []
+const addonRooms = new Map<string, WebSocketPeer>()
 
 export function sendAddonMessage(message: WebSocketEvents, roomId: string) {
-  const room = addonRooms.find((r) => r.id === roomId)
-  if (!room?.peer?.id) {
+  const peer = addonRooms.get(roomId)
+  if (!peer) {
     return
   }
 
   const preparedMessage = JSON.stringify({ id: createId(), ...message })
-  room.peer.publish(room.id, preparedMessage)
+  peer.publish(roomId, preparedMessage)
 }
 
 export default defineWebSocketHandler({
@@ -37,26 +32,33 @@ export default defineWebSocketHandler({
       return
     }
 
-    const parsed = JSON.parse(text)
+    let parsed: WebSocketMessage
+    try {
+      parsed = JSON.parse(text)
+    } catch {
+      return
+    }
+
     if (!parsed?.id || !parsed?.type) {
       return
     }
 
-    return handleMessage(parsed as WebSocketMessage, peer)
+    return handleMessage(parsed, peer)
   },
 
   close(peer, event) {
     logger.log('close', peer.id, JSON.stringify(event))
 
     // Remove closed peer from addon rooms
-    const roomIndex = addonRooms.findIndex((r) => r.peer?.id === peer.id)
-    if (roomIndex !== -1) {
-      addonRooms.splice(roomIndex, 1)
+    for (const [roomId, roomPeer] of addonRooms) {
+      if (roomPeer.id === peer.id) {
+        addonRooms.delete(roomId)
+      }
     }
   },
 
   error(peer, error) {
-    logger.error('error', peer.id, JSON.stringify(error))
+    logger.error(`WebSocket error, peer ${peer.id}:`, error)
   },
 })
 
@@ -70,13 +72,7 @@ function handleMessage(message: WebSocketMessage, peer: WebSocketPeer) {
 function handleConnectAddon(message: WebSocketConnectAddon, peer: WebSocketPeer) {
   const token = message.data.token
 
-  if (!addonRooms.some((r) => r.id === token)) {
-    addonRooms.push({ id: token, peer: null })
-  }
-
-  const room = addonRooms.find((r) => r.id === token)!
-  room.peer = peer
-
-  peer.subscribe(room.id)
-  logger.log(`Peer ${peer.id} subscribed to AddonRoom ${room.id}`)
+  addonRooms.set(token, peer)
+  peer.subscribe(token)
+  logger.log(`Peer ${peer.id} subscribed to AddonRoom ${token}`)
 }

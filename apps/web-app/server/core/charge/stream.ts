@@ -77,6 +77,8 @@ export class StreamCharge implements ChargeInstance {
 
     this.event = new EventService(this)
 
+    this.donate?.onDonation(this.handleDonation.bind(this))
+
     this.initEnergyTicker()
     this.initDifficultyTicker()
     this.initMessagesTicker()
@@ -198,14 +200,13 @@ export class StreamCharge implements ChargeInstance {
     if (!this.donate) {
       return
     }
-    this.donate.onDonation(this.handleDonation.bind(this))
     this.donate.init().catch((err) => {
       this.#logger.error('Failed to init DonationAlerts client', err)
     })
   }
 
   disconnectDonateClient() {
-    this.donate?.destroy()
+    this.donate?.disconnect()
   }
 
   destroy() {

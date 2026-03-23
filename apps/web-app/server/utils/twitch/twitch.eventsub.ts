@@ -3,7 +3,7 @@
  * Replaces @twurple/eventsub-ws EventSubWsListener.
  */
 
-import { getClientId, getTwitchToken, refreshTwitchToken } from './twitch.auth'
+import { twitchFetch } from './twitch.api'
 
 const logger = useLogger('twitch:eventsub')
 
@@ -26,15 +26,22 @@ export class TwitchEventSub {
     this.#redemptionHandlers.push(handler)
   }
 
-  connect() {
+  connect(url = 'wss://eventsub.wss.twitch.tv/ws') {
     this.#isDestroyed = false
+    this.#initWs(url)
+  }
 
-    this.#ws = new WebSocket('wss://eventsub.wss.twitch.tv/ws')
+  #initWs(url: string) {
+    this.#ws = new WebSocket(url)
 
     this.#ws.addEventListener('message', (event) => {
-      const data = typeof event.data === 'string' ? event.data : event.data.toString()
-      const msg = JSON.parse(data)
-      this.#handleMessage(msg)
+      try {
+        const data = typeof event.data === 'string' ? event.data : event.data.toString()
+        const msg = JSON.parse(data)
+        this.#handleMessage(msg)
+      } catch (err) {
+        logger.error('EventSub message parse error:', err)
+      }
     })
 
     this.#ws.addEventListener('close', () => {
@@ -45,8 +52,8 @@ export class TwitchEventSub {
       }
     })
 
-    this.#ws.addEventListener('error', () => {
-      logger.error('EventSub WebSocket error')
+    this.#ws.addEventListener('error', (event) => {
+      logger.error('EventSub WebSocket error:', event)
     })
   }
 
@@ -97,12 +104,11 @@ export class TwitchEventSub {
     if (type === 'session_reconnect') {
       const reconnectUrl = msg.payload.session.reconnect_url
       logger.info(`EventSub reconnecting to ${reconnectUrl}`)
+      // Close old WS as destroyed so its close handler doesn't trigger a parallel reconnect
+      this.#isDestroyed = true
       this.#ws?.close()
-      this.#ws = new WebSocket(reconnectUrl)
-      this.#ws.addEventListener('message', (event) => {
-        const data = typeof event.data === 'string' ? event.data : event.data.toString()
-        this.#handleMessage(JSON.parse(data))
-      })
+      this.#isDestroyed = false
+      this.#initWs(reconnectUrl)
     }
   }
 
@@ -132,43 +138,22 @@ export class TwitchEventSub {
       return
     }
 
-    const token = await getTwitchToken()
-
-    const body = {
-      type,
-      version: '1',
-      condition: { broadcaster_user_id: this.#userId },
-      transport: { method: 'websocket', session_id: this.#sessionId },
-    }
-
-    let res = await fetch('https://api.twitch.tv/helix/eventsub/subscriptions', {
+    const res = await twitchFetch('/eventsub/subscriptions', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token.accessToken}`,
-        'Client-Id': getClientId(),
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type,
+        version: '1',
+        condition: { broadcaster_user_id: this.#userId },
+        transport: { method: 'websocket', session_id: this.#sessionId },
+      }),
     })
-
-    if (res.status === 401) {
-      const newToken = await refreshTwitchToken()
-      res = await fetch('https://api.twitch.tv/helix/eventsub/subscriptions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${newToken.accessToken}`,
-          'Client-Id': getClientId(),
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      })
-    }
 
     if (res.ok) {
       logger.info(`Subscribed to ${type}`)
     } else {
-      const err = await res.json()
-      logger.error(`Failed to subscribe to ${type}`, err)
+      const err = await res.text()
+      logger.error(`Failed to subscribe to ${type}: ${err}`)
     }
   }
 }

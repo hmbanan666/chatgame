@@ -36,6 +36,9 @@ export class TwitchService {
     }
 
     const player = await db.player.findOrCreate({ profileId: profile.id, userName })
+    if (!player) {
+      return
+    }
 
     // Stream Journey
     const room = rooms.get(this.#roomId)
@@ -64,10 +67,10 @@ export class TwitchService {
       switch (possibleCommand) {
         case 'купон':
         case 'coupon':
-          return this.handleCouponActivation(firstParam, player!.profileId)
+          return this.handleCouponActivation(firstParam, player.profileId)
         case 'инвентарь':
         case 'inventory':
-          return this.handleInventoryCommand(player!.profileId)
+          return this.handleInventoryCommand(player.profileId)
         case 'гитхаб':
         case 'github':
         case 'git':

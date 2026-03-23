@@ -3,7 +3,7 @@ import { initStreamJourneyRoom } from '../core/stream-journey'
 import { getTwitchController } from '../utils/twitch/twitch.controller'
 
 export default defineNitroPlugin(async (nitroApp) => {
-  const logger = useLogger('plugin-start-twitch')
+  const logger = useLogger('plugin:twitch')
 
   if (import.meta.dev) {
     logger.info('Twitch server not started in dev mode')

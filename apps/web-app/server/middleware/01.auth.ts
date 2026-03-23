@@ -12,8 +12,7 @@ export default defineEventHandler(async (event) => {
   }
 
   if (event.method !== 'GET') {
-    // Secured, but without auth
-    return createError({
+    throw createError({
       statusCode: 401,
       statusMessage: 'Unauthorized',
     })

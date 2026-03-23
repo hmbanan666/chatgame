@@ -2,6 +2,8 @@ import type { TokenCreateResponse, TwitchAccessTokenResponse, TwitchToken } from
 import type { EventHandlerRequest } from 'h3'
 import { createId } from '@paralleldrive/cuid2'
 
+const logger = useLogger('twitch:code')
+
 export default defineEventHandler<EventHandlerRequest, Promise<TokenCreateResponse>>(
   async (event) => {
     const { public: publicEnv } = useRuntimeConfig()
@@ -68,7 +70,7 @@ async function obtainTwitchAccessToken(code: string, redirectUrl: string) {
     )
     return (await response.json()) as TwitchAccessTokenResponse
   } catch (err) {
-    console.error('obtainTwitchAccessToken', err)
+    logger.error('obtainTwitchAccessToken', err)
     return null
   }
 }

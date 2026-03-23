@@ -9,12 +9,6 @@ export interface Profile {
   coins: number
   level: number
   mana: number
-  points: number
-  patronPoints: number
-  trophyHunterPoints: number
-  rangerPoints: number
-  storytellerPoints: number
-  collectorPoints: number
   activeEditionId: string
 }
 
@@ -164,52 +158,6 @@ export interface CharacterEditionCreateRequest {
   data: {
     profileId: string
   }
-}
-
-export interface Trophy {
-  id: string
-  createdAt: Date
-  updatedAt: Date
-  name: string
-  description: string
-  points: number
-  rarity: number
-  isShown: boolean
-  hasImage: boolean
-}
-
-export interface TrophyEdition {
-  id: string
-  createdAt: Date
-  updatedAt: Date
-  profileId: string
-  trophyId: string
-}
-
-export interface TrophyWithEditions extends Trophy {
-  profile: Profile
-  editions: TrophyEditionWithProfile[]
-}
-
-export interface TrophyEditionWithTrophy extends TrophyEdition {
-  trophy: Trophy
-}
-
-export interface TrophyEditionWithProfile extends TrophyEdition {
-  profile: Profile
-}
-
-export interface TrophyCreateRequest {
-  data: {
-    profileId: string
-    name: string
-    description: string
-  }
-}
-
-export interface TrophyCreateResponse {
-  ok: boolean
-  result: Trophy
 }
 
 export interface Quest {
@@ -389,31 +337,6 @@ export interface PaymentCreateResponse {
     payment: Payment
     redirectUrl: string
   }
-}
-
-export interface Leaderboard {
-  id: string
-  createdAt: Date
-  updatedAt: Date
-  finishedAt: Date | null
-  title: string
-  description: string | null
-}
-
-export interface LeaderboardMember {
-  id: string
-  createdAt: Date
-  updatedAt: Date
-  position: number
-  points: number
-  leaderboardId: string
-  profileId: string
-}
-
-export type LeaderboardData = Leaderboard & {
-  members: (LeaderboardMember & {
-    profile: Profile
-  })[]
 }
 
 export interface TwitchAccessTokenResponse {

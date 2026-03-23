@@ -24,12 +24,6 @@ export type CharacterLevel = InferSelectModel<typeof tables.characterLevels>
 
 export type Coupon = InferSelectModel<typeof tables.coupons>
 
-export type Trophy = InferSelectModel<typeof tables.trophies>
-export type TrophyEdition = InferSelectModel<typeof tables.trophyEditions>
-
-export type Leaderboard = InferSelectModel<typeof tables.leaderboards>
-export type LeaderboardMember = InferSelectModel<typeof tables.leaderboardMembers>
-
 export type Quest = InferSelectModel<typeof tables.quests>
 export type QuestEdition = InferSelectModel<typeof tables.questEditions>
 export type QuestReward = InferSelectModel<typeof tables.questRewards>

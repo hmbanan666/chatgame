@@ -12,8 +12,14 @@ export class RoomEventService implements ServerEventService {
       return
     }
 
-    this.streams.forEach((stream) => {
-      stream.push(JSON.stringify(event))
-    })
+    const data = JSON.stringify(event)
+
+    for (const [id, stream] of this.streams) {
+      try {
+        stream.push(data)
+      } catch {
+        this.streams.delete(id)
+      }
+    }
   }
 }

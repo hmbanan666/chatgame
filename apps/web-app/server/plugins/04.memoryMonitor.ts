@@ -1,6 +1,6 @@
 import process from 'node:process'
 
-export default defineNitroPlugin(() => {
+export default defineNitroPlugin((nitroApp) => {
   const logger = useLogger('memory')
 
   const logMemory = () => {
@@ -14,7 +14,10 @@ export default defineNitroPlugin(() => {
     logger.info(`RSS=${rss}MB heap=${heapUsed}/${heapTotal}MB ext=${external}MB uptime=${uptime}s`)
   }
 
-  // Log every 10 seconds to catch spikes
   logMemory()
-  setInterval(logMemory, 10_000)
+  const intervalId = setInterval(logMemory, 60_000)
+
+  nitroApp.hooks.hook('close', () => {
+    clearInterval(intervalId)
+  })
 })

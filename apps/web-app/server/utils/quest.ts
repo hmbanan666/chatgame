@@ -37,8 +37,6 @@ export class QuestService {
         status: 'COMPLETED',
       })
 
-      await db.profile.addRangerPoints(profileId, quest.points)
-
       // Rewards
       for (const reward of questRewards) {
         if (reward.type === 'COINS') {
@@ -51,30 +49,6 @@ export class QuestService {
           })
           await db.profile.addCoins(profileId, reward.amount)
         }
-        if (reward.type === 'TROPHY' && reward.entityId) {
-          await this.#addTrophyToProfile(reward.entityId, profileId)
-        }
-      }
-    }
-  }
-
-  async #addTrophyToProfile(trophyId: string, profileId: string) {
-    const trophyEdition = await db.trophyEdition.findByIdAndProfile(trophyId, profileId)
-    if (trophyEdition?.id) {
-      // Already added
-      return
-    }
-
-    const [newEdition] = await db.trophyEdition.create({
-      id: createId(),
-      profileId,
-      trophyId,
-    })
-
-    if (newEdition) {
-      const editionWithTrophy = await db.trophyEdition.findByIdAndProfile(newEdition.id, profileId)
-      if (editionWithTrophy?.trophy) {
-        await db.profile.addTrophyHunterPoints(profileId, editionWithTrophy.trophy.points)
       }
     }
   }

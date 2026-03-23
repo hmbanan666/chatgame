@@ -1,6 +1,13 @@
 import process from 'node:process'
 
-export default defineEventHandler(() => {
+export default defineEventHandler(async (event) => {
+  if (!import.meta.dev) {
+    const session = await getUserSession(event)
+    if (!session?.user) {
+      throw createError({ statusCode: 401 })
+    }
+  }
+
   const mem = process.memoryUsage()
   return {
     rss: `${Math.round(mem.rss / 1024 / 1024)}MB`,

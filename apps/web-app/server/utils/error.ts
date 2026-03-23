@@ -7,8 +7,8 @@ export function errorResolver(exception: unknown) {
     throw exception
   }
 
-  // Ok, something intereresting happened
-  logger.error(exception)
+  // Ok, something interesting happened
+  logger.error('Unhandled error:', exception)
 
   return createError({
     statusCode: 500,

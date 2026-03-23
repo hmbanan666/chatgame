@@ -1,10 +1,8 @@
 import { bots } from './bots'
 import { characters } from './characters'
 import { items } from './items'
-import { leaderboards } from './leaderboards'
 import { products } from './products'
 import { rooms } from './rooms'
-import { trophies } from './trophies'
 
 export type Dictionary = typeof en
 
@@ -103,11 +101,9 @@ export const en = {
   connect: 'Connect',
   activate: 'Activate',
   reward: 'Reward',
-  leaderboards,
   characters,
   rooms,
   products,
   items,
-  trophies,
   bots,
 }

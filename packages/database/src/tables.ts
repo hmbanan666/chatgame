@@ -15,12 +15,6 @@ export const profiles = pgTable('profile', {
   coins: integer('coins').notNull().default(0),
   mana: integer('mana').notNull().default(0),
   level: integer('level').notNull().default(1),
-  points: integer('points').notNull().default(0),
-  patronPoints: integer('patron_points').notNull().default(0),
-  trophyHunterPoints: integer('trophy_hunter_points').notNull().default(0),
-  rangerPoints: integer('ranger_points').notNull().default(0),
-  storytellerPoints: integer('storyteller_points').notNull().default(0),
-  collectorPoints: integer('collector_points').notNull().default(0),
   activeEditionId: text('active_edition_id'),
 })
 
@@ -28,10 +22,8 @@ export const profilesRelations = relations(profiles, ({ many }) => ({
   twitchTokens: many(twitchTokens),
   characterEditions: many(characterEditions),
   transactions: many(transactions),
-  trophyEditions: many(trophyEditions),
   itemEditions: many(inventoryItemEditions),
   payments: many(payments),
-  leaderboardMembers: many(leaderboardMembers),
   quests: many(quests),
   questEditions: many(questEditions),
 }))
@@ -284,67 +276,6 @@ export const coupons = pgTable('coupon', {
   status: text('status').notNull(),
   profileId: text('profile_id'),
 })
-
-// ── Trophy ───────────────────────────────────────────────
-
-export const trophies = pgTable('trophy', {
-  id: cuid2('id').defaultRandom().primaryKey(),
-  createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-  name: text('name').notNull(),
-  description: text('description').notNull(),
-  points: integer('points').notNull(),
-  rarity: integer('rarity').notNull().default(0),
-  isShown: boolean('is_shown').notNull().default(false),
-  hasImage: boolean('has_image').notNull().default(false),
-})
-
-export const trophiesRelations = relations(trophies, ({ many }) => ({
-  editions: many(trophyEditions),
-}))
-
-export const trophyEditions = pgTable('trophy_edition', {
-  id: cuid2('id').defaultRandom().primaryKey(),
-  createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-  profileId: text('profile_id').notNull(),
-  trophyId: text('trophy_id').notNull(),
-})
-
-export const trophyEditionsRelations = relations(trophyEditions, ({ one }) => ({
-  profile: one(profiles, { fields: [trophyEditions.profileId], references: [profiles.id] }),
-  trophy: one(trophies, { fields: [trophyEditions.trophyId], references: [trophies.id] }),
-}))
-
-// ── Leaderboard ──────────────────────────────────────────
-
-export const leaderboards = pgTable('leaderboard', {
-  id: cuid2('id').defaultRandom().primaryKey(),
-  createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-  finishedAt: timestamp('finished_at', { precision: 3, withTimezone: true, mode: 'date' }),
-  title: text('title').notNull(),
-  description: text('description'),
-})
-
-export const leaderboardsRelations = relations(leaderboards, ({ many }) => ({
-  members: many(leaderboardMembers),
-}))
-
-export const leaderboardMembers = pgTable('leaderboard_member', {
-  id: cuid2('id').defaultRandom().primaryKey(),
-  createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-  position: integer('position').notNull().default(0),
-  points: integer('points').notNull().default(0),
-  profileId: text('profile_id').notNull(),
-  leaderboardId: text('leaderboard_id').notNull(),
-})
-
-export const leaderboardMembersRelations = relations(leaderboardMembers, ({ one }) => ({
-  profile: one(profiles, { fields: [leaderboardMembers.profileId], references: [profiles.id] }),
-  leaderboard: one(leaderboards, { fields: [leaderboardMembers.leaderboardId], references: [leaderboards.id] }),
-}))
 
 // ── Quest ────────────────────────────────────────────────
 
