@@ -17,7 +17,6 @@ const { params } = useRoute('stream-journey-id')
 
 const stage = ref<HTMLElement>()
 const game = shallowRef<StreamJourneyGame>()
-let biomeInterval: ReturnType<typeof setInterval>
 
 watch(stage, async () => {
   if (!stage.value) {
@@ -25,28 +24,16 @@ watch(stage, async () => {
   }
 
   try {
-    game.value = new StreamJourneyGame({ eventsUrl: `/api/stream-journey/${params.id}/sse` })
+    game.value = new StreamJourneyGame({ roomId: params.id as string })
     await game.value.init({ width: stage.value.clientWidth })
 
     stage.value.appendChild(game.value.app.canvas)
-
-    biomeInterval = setInterval(() => {
-      if (!game.value) {
-        return
-      }
-      const biome = game.value.currentBiome
-      $fetch(`/api/charge/${params.id}/biome`, {
-        method: 'POST',
-        body: { biome },
-      }).catch(() => {})
-    }, 2000)
   } catch (error) {
     console.error(error)
   }
 })
 
 onUnmounted(() => {
-  clearInterval(biomeInterval)
   game.value?.destroy()
 })
 </script>

@@ -46,8 +46,7 @@
         to="/#profile"
         size="xl"
         icon="lucide:user"
-        variant="outline"
-        class="border-site-text/30! text-site-text! hover:bg-site-text/10! px-7! py-3.5!"
+        class="bg-[#3E3546]! hover:bg-[#625565]! text-site-text! px-7! py-3.5!"
       >
         Мой профиль
       </UButton>
@@ -57,7 +56,7 @@
         external
         size="xl"
         icon="simple-icons:twitch"
-        class="bg-[#2E222F]! hover:bg-[#3E3546]! text-site-text! px-7! py-3.5!"
+        class="bg-[#3E3546]! hover:bg-[#625565]! text-site-text! px-7! py-3.5!"
       >
         Войти
       </UButton>
@@ -153,7 +152,7 @@
             <button
               v-if="loggedIn"
               :disabled="isLoading"
-              class="px-6 py-3 w-full bg-site-accent border-b-4 border-site-bg-alt text-site-text text-xl tracking-wide rounded-lg cursor-pointer hover:opacity-85 active:scale-95 duration-200 flex flex-row justify-center items-center gap-3"
+              class="px-6 py-3 w-full bg-[#0EAF9B] border-b-4 border-[#0B8A8F] text-white text-xl tracking-wide rounded-lg cursor-pointer hover:opacity-85 active:scale-95 duration-200 flex flex-row justify-center items-center gap-3"
               @click="buyProduct(product.id)"
             >
               <UIcon
@@ -206,7 +205,7 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
         <ActiveCard
-          class="px-4 py-0 flex flex-row gap-0 items-center justify-center"
+          class="px-4 py-0 flex flex-row gap-0 items-center justify-center text-[#3E3546]"
         >
           <Image
             :src="`/units/${profile?.activeCharacter?.character.codename}/idle.gif`"
@@ -214,14 +213,14 @@
           />
           <div>
             <p>Активный персонаж</p>
-            <p class="font-semibold text-lg text-site-accent">
+            <p class="font-semibold text-lg text-[#2E222F]">
               {{ profile?.activeCharacter?.character.nickname }}
             </p>
           </div>
         </ActiveCard>
 
         <ActiveCard
-          class="px-4 py-6 flex flex-row gap-8 items-center justify-center"
+          class="px-4 py-6 flex flex-row gap-8 items-center justify-center text-[#3E3546]"
         >
           <div class="flex flex-row gap-2 items-center justify-center">
             <Image src="/coin.png" class="h-12 w-12" />

@@ -5,7 +5,7 @@ import { PALETTE } from './palette'
 import { GameAssetService, GameEventService, GamePlayerService, GameTreeService, GameWagonService } from './services'
 
 interface StreamJourneyGameOptions {
-  eventsUrl?: string
+  roomId?: string
   demo?: boolean
 }
 
@@ -54,7 +54,7 @@ export class StreamJourneyGame extends Container implements Game {
   private demoInterval: ReturnType<typeof setInterval> | undefined
   private groundGraphics: Container | undefined
 
-  constructor({ eventsUrl, demo }: StreamJourneyGameOptions) {
+  constructor({ roomId, demo }: StreamJourneyGameOptions) {
     super()
 
     this.id = createId()
@@ -62,7 +62,7 @@ export class StreamJourneyGame extends Container implements Game {
     this.worldContainer = new Container()
     this.demoMode = demo ?? false
 
-    this.eventService = new GameEventService(this, eventsUrl ?? '')
+    this.eventService = new GameEventService(this, roomId ?? '')
     this.assetService = new GameAssetService(this)
     this.treeService = new GameTreeService(this)
     this.wagonService = new GameWagonService(this)

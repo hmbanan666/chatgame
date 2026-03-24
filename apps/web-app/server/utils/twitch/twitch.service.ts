@@ -1,9 +1,9 @@
 import { getDateMinusMinutes } from '#shared/utils/date'
 import { createId } from '@paralleldrive/cuid2'
+import { sendGameMessage } from '~~/server/api/websocket'
 import { getAlertService } from '~~/server/core/alerts'
 import { dictionary } from '~~/server/core/locale'
 import { getViewerQuestService } from '~~/server/core/quest'
-import { rooms } from '~~/server/core/stream-journey'
 
 export class TwitchService {
   readonly #roomId: string
@@ -57,20 +57,17 @@ export class TwitchService {
     }
 
     // Stream Journey
-    const room = rooms.get(this.#roomId)
-    if (room) {
-      room.send({
-        event: 'newPlayerMessage',
-        data: {
-          text,
-          player: {
-            id: userId,
-            name: userName,
-            codename,
-          },
+    sendGameMessage(this.#roomId, {
+      event: 'newPlayerMessage',
+      data: {
+        text,
+        player: {
+          id: userId,
+          name: userName,
+          codename,
         },
-      })
-    }
+      },
+    })
 
     if (firstChar === '!' && possibleCommand) {
       switch (possibleCommand) {

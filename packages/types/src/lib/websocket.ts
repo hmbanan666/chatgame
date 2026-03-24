@@ -37,6 +37,7 @@ export type WebSocketMessage = { id: string } & WebSocketEvents
 export type WebSocketEvents
   = | WebSocketConnect
     | WebSocketConnectAddon
+    | WebSocketConnectGame
     | WebSocketConnectedToWagonRoom
     | WebSocketDisconnectedFromWagonRoom
     | WebSocketEventCommand
@@ -47,11 +48,19 @@ export type WebSocketEvents
     | WebSocketNewWagonTarget
     | WebSocketNewPlayerTarget
     | WebSocketWagonRoomDestroy
+    | WebSocketUpdateBiome
 
 export interface WebSocketConnectAddon {
   type: 'CONNECT_ADDON'
   data: {
     token: string
+  }
+}
+
+export interface WebSocketConnectGame {
+  type: 'CONNECT_GAME'
+  data: {
+    roomId: string
   }
 }
 
@@ -149,5 +158,13 @@ export interface WebSocketWagonRoomDestroy {
   type: 'ROOM_DESTROYED'
   data: {
     id: string
+  }
+}
+
+export interface WebSocketUpdateBiome {
+  type: 'UPDATE_BIOME'
+  data: {
+    roomId: string
+    biome: string
   }
 }

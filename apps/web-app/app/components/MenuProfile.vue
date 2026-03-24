@@ -1,5 +1,5 @@
 <template>
-  <div class="min-w-32 flex flex-row justify-end">
+  <div class="flex flex-row justify-end">
     <a
       v-if="loggedIn"
       href="/#profile"

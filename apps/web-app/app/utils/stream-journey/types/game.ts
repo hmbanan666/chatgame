@@ -175,4 +175,5 @@ export interface TreeServiceCreateOptions {
 export interface TreeService {
   create: (options: TreeServiceCreateOptions) => GameObjectTree
   update: () => void
+  getBiomeAt: (x: number) => string
 }
