@@ -1,7 +1,25 @@
 <template>
+  <!-- Desktop: live demo -->
+  <ClientOnly>
+    <div class="w-full relative hidden md:block">
+      <div ref="demoStage" class="w-full h-75 bg-[#8FD3FF]" />
+    </div>
+  </ClientOnly>
+
+  <!-- Mobile: static image -->
+  <div class="py-8 w-full md:hidden" style="background-image: url('/img/background-green.webp')">
+    <div class="my-0 mx-auto w-fit text-center">
+      <img
+        src="/img/wagon-full.png"
+        class="w-auto max-h-64"
+        alt=""
+      >
+    </div>
+  </div>
+
   <div
     v-element-visibility="[onVisibilityChangeGame, observerOptions]"
-    class="my-24 md:my-30 px-4 max-w-4xl mx-auto text-center"
+    class="my-24 md:my-16 px-4 max-w-4xl mx-auto text-center"
   >
     <div class="mb-8 space-y-4">
       <h1 class="text-3xl md:text-3xl lg:text-4xl">
@@ -27,7 +45,7 @@
         size="xl"
         icon="simple-icons:twitch"
         trailing-icon="lucide:radio"
-        class="bg-[#2E222F]! hover:bg-[#3E3546]! text-site-text! px-7! py-3.5!"
+        class="bg-[#2E222F]! hover:bg-[#3E3546]! text-site-text! px-7! py-3.5! rounded-none!"
       >
         Смотреть стрим
       </UButton>
@@ -36,7 +54,7 @@
         to="/playground"
         size="xl"
         icon="lucide:play"
-        class="bg-[#2E222F]! hover:bg-[#3E3546]! text-site-text! px-7! py-3.5!"
+        class="bg-[#2E222F]! hover:bg-[#3E3546]! text-site-text! px-7! py-3.5! rounded-none!"
       >
         Посмотреть демо
       </UButton>
@@ -46,7 +64,7 @@
         to="/#profile"
         size="xl"
         icon="lucide:user"
-        class="bg-[#3E3546]! hover:bg-[#625565]! text-site-text! px-7! py-3.5!"
+        class="bg-[#3E3546]! hover:bg-[#625565]! text-site-text! px-7! py-3.5! rounded-none!"
       >
         Мой профиль
       </UButton>
@@ -56,69 +74,53 @@
         external
         size="xl"
         icon="simple-icons:twitch"
-        class="bg-[#3E3546]! hover:bg-[#625565]! text-site-text! px-7! py-3.5!"
+        class="bg-[#3E3546]! hover:bg-[#625565]! text-site-text! px-7! py-3.5! rounded-none!"
       >
         Войти
       </UButton>
     </div>
   </div>
 
-  <!-- Mobile: static image -->
-  <div class="my-2 py-8 w-full md:hidden" style="background-image: url('/img/background-green.webp')">
-    <div class="my-0 mx-auto w-fit text-center">
-      <img
-        src="/img/wagon-full.png"
-        class="w-auto max-h-64"
-        alt=""
-      >
-    </div>
-  </div>
-
-  <!-- Desktop: live demo -->
-  <ClientOnly>
-    <div class="my-2 w-full relative hidden md:block">
-      <div ref="demoStage" class="w-full h-75 bg-[#8FD3FF]" />
-    </div>
-  </ClientOnly>
-
   <div
     id="characters"
     v-element-visibility="[onVisibilityChangeCharacters, observerOptions]"
-    class="max-w-4xl my-24 md:my-30 px-4 mx-auto text-center space-y-6"
+    class="my-24 md:my-30 px-4 py-12 text-center space-y-6 bg-[#2E222F]"
   >
-    <div class="space-y-2">
-      <h2 class="text-2xl md:text-2xl lg:text-3xl">
-        Персонажи из игры
-      </h2>
-      <p>
-        Создаются вручную. Разблокируются за Монеты и за участие в событиях.
-      </p>
-    </div>
-
-    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-      <ActiveCard
-        v-for="char in characters"
-        :key="char.id"
-        class="px-2 py-2 md:aspect-square flex flex-col items-center justify-center cursor-pointer"
-        @click="
-          () => {
-            isCharacterOpened = true;
-            selectedCharacterId = char.id;
-          }
-        "
-      >
-        <Image
-          :src="`/units/${char.codename}/128.png`"
-          class="w-20 h-20 block group-hover:hidden"
-        />
-        <Image
-          :src="`/units/${char.codename}/idle.gif`"
-          class="w-20 h-20 hidden group-hover:block"
-        />
-        <p class="mt-2 text-site-bg-alt font-semibold">
-          {{ char.nickname }}
+    <div class="max-w-4xl mx-auto space-y-6">
+      <div class="space-y-2">
+        <h2 class="text-2xl md:text-2xl lg:text-3xl">
+          Персонажи из игры
+        </h2>
+        <p>
+          Создаются вручную. Разблокируются за Монеты и за участие в событиях.
         </p>
-      </ActiveCard>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <ActiveCard
+          v-for="char in characters"
+          :key="char.id"
+          class="px-2 py-2 md:aspect-square flex flex-col items-center justify-center cursor-pointer"
+          @click="
+            () => {
+              isCharacterOpened = true;
+              selectedCharacterId = char.id;
+            }
+          "
+        >
+          <Image
+            :src="`/units/${char.codename}/128.png`"
+            class="w-20 h-20 block group-hover:hidden"
+          />
+          <Image
+            :src="`/units/${char.codename}/idle.gif`"
+            class="w-20 h-20 hidden group-hover:block"
+          />
+          <p class="mt-2 text-site-bg-alt font-semibold">
+            {{ char.nickname }}
+          </p>
+        </ActiveCard>
+      </div>
     </div>
   </div>
 
@@ -152,7 +154,7 @@
             <button
               v-if="loggedIn"
               :disabled="isLoading"
-              class="px-6 py-3 w-full bg-[#0EAF9B] border-b-4 border-[#0B8A8F] text-white text-xl tracking-wide rounded-lg cursor-pointer hover:opacity-85 active:scale-95 duration-200 flex flex-row justify-center items-center gap-3"
+              class="px-6 py-3 w-full bg-[#0EAF9B] border-b-4 border-[#0B8A8F] text-white text-xl tracking-wide rounded-none cursor-pointer hover:opacity-85 active:scale-95 duration-200 flex flex-row justify-center items-center gap-3"
               @click="buyProduct(product.id)"
             >
               <UIcon
@@ -232,7 +234,7 @@
                 {{
                   pluralizationRu(profile?.coins ?? 0, [
                     "Монета",
-                    "Монет",
+                    "Монеты",
                     "Монет",
                   ])
                 }}
@@ -281,7 +283,7 @@
   <UModal
     v-model:open="isCharacterOpened"
     :close="{ color: 'neutral', variant: 'ghost', class: 'text-site-text! hover:bg-[#3E3546]!' }"
-    :ui="{ content: 'bg-[#2E222F]! text-site-text ring-[#3E3546]! divide-[#3E3546]!', overlay: 'bg-[#2E222F]/80! backdrop-blur-sm' }"
+    :ui="{ content: 'bg-[#2E222F]! text-site-text ring-[#3E3546]! divide-[#3E3546]! rounded-none!', overlay: 'bg-[#2E222F]/80! backdrop-blur-sm' }"
   >
     <template #header>
       <div class="flex items-center gap-4 flex-1">
@@ -361,8 +363,11 @@ watch(demoStage, async () => {
   }
 
   try {
-    const { StreamJourneyGame } = await import('~/utils/stream-journey/game')
-    demoGame.value = new StreamJourneyGame({ demo: true })
+    const [{ StreamJourneyGame }, demoNames] = await Promise.all([
+      import('~/utils/stream-journey/game'),
+      $fetch('/api/game/demo-names').catch(() => [] as string[]),
+    ])
+    demoGame.value = new StreamJourneyGame({ demo: true, demoNames })
     await demoGame.value.init({ width: demoStage.value.clientWidth })
     demoStage.value.appendChild(demoGame.value.app.canvas)
   } catch (error) {

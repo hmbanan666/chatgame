@@ -10,6 +10,16 @@ export class PlayerRepository {
     })
   }
 
+  static async findRandomNames(limit = 20) {
+    const db = useDatabase()
+    const rows = await db.query.players.findMany({
+      columns: { name: true },
+      orderBy: (t, { desc }) => desc(t.lastActionAt),
+      limit,
+    })
+    return rows.map((r) => r.name)
+  }
+
   static async findOrCreate({ userName, profileId }: { userName: string, profileId: string }) {
     const db = useDatabase()
     let player = await db.query.players.findFirst({

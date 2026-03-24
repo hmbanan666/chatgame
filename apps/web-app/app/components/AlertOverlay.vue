@@ -28,7 +28,7 @@
         >
 
         <!-- Card body -->
-        <div class="relative -mt-6 flex flex-col items-center gap-3 px-16 py-8 pb-10 bg-game-bg-alt/95 min-w-[36rem]">
+        <div class="relative -mt-6 flex flex-col items-center gap-3 px-16 py-8 pb-10 bg-game-bg-alt min-w-[36rem]">
           <!-- Shimmer line -->
           <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-game-bright to-transparent animate-shimmer" />
 

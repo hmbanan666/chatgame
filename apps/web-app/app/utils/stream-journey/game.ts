@@ -7,9 +7,10 @@ import { GameAssetService, GameEventService, GamePlayerService, GameTreeService,
 interface StreamJourneyGameOptions {
   roomId?: string
   demo?: boolean
+  demoNames?: string[]
 }
 
-const DEMO_NAMES = ['kungfux010', 'sava5621', 'BezSovesty', 'flack_zombi', 'player_mmcm', 'PeregonStream', 'derailon', 'sloghniy']
+const FALLBACK_DEMO_NAMES = ['kungfux010', 'sava5621', 'BezSovesty', 'flack_zombi', 'player_mmcm', 'PeregonStream', 'derailon', 'sloghniy']
 const DEMO_CODENAMES: GameUnitCodename[] = ['twitchy', 'banana', 'burger', 'catchy', 'claw', 'gentleman', 'marshmallow', 'pioneer', 'pup', 'santa', 'shape', 'sharky', 'woody', 'wooly']
 const DEMO_MESSAGES = [
   'Привет всем! Как дела на стриме?',
@@ -51,17 +52,20 @@ export class StreamJourneyGame extends Container implements Game {
   }
 
   private demoMode: boolean
+  private demoNames: string[]
+  private demoCodenames = new Map<string, string>()
   private demoInterval: ReturnType<typeof setInterval> | undefined
 
   private groundGraphics: Container | undefined
 
-  constructor({ roomId, demo }: StreamJourneyGameOptions) {
+  constructor({ roomId, demo, demoNames }: StreamJourneyGameOptions) {
     super()
 
     this.id = createId()
     this.app = new Application()
     this.worldContainer = new Container()
     this.demoMode = demo ?? false
+    this.demoNames = demoNames?.length ? demoNames : FALLBACK_DEMO_NAMES
 
     this.eventService = new GameEventService(this, roomId ?? '')
     this.assetService = new GameAssetService(this)
@@ -161,11 +165,32 @@ export class StreamJourneyGame extends Container implements Game {
   }
 
   private async spawnDemoPlayer() {
-    const name = DEMO_NAMES[Math.floor(Math.random() * DEMO_NAMES.length)]!
-    const codename = DEMO_CODENAMES[Math.floor(Math.random() * DEMO_CODENAMES.length)]!
+    const activeIds = new Set(this.playerService.activePlayers.map((p) => p.id))
+    const available = this.demoNames.filter((n) => !activeIds.has(`demo-${n}`))
+    if (!available.length) {
+      return
+    }
+
+    // Clean up codenames of destroyed players
+    for (const [id, _] of this.demoCodenames) {
+      if (!activeIds.has(id)) {
+        this.demoCodenames.delete(id)
+      }
+    }
+
+    const usedCodenames = new Set(this.demoCodenames.values())
+    const availableCodenames = DEMO_CODENAMES.filter((c) => !usedCodenames.has(c))
+    if (!availableCodenames.length) {
+      return
+    }
+
+    const name = available[Math.floor(Math.random() * available.length)]!
+    const codename = availableCodenames[Math.floor(Math.random() * availableCodenames.length)]!
     const message = DEMO_MESSAGES[Math.floor(Math.random() * DEMO_MESSAGES.length)]!
 
-    const player = await this.playerService.init(`demo-${name}`, name, codename)
+    const playerId = `demo-${name}`
+    this.demoCodenames.set(playerId, codename)
+    const player = await this.playerService.init(playerId, name, codename)
     player.addMessage(message)
   }
 
