@@ -82,6 +82,7 @@ export class ViewerQuestService {
     }
 
     quest.progress++
+    logger.info(`Quest progress: ${quest.userName} ${quest.progress}/${quest.goal}`)
 
     if (quest.progress >= quest.goal) {
       await this.#completeQuest(quest)

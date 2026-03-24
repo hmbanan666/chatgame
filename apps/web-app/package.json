@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev",
+    "dev": "nuxt dev --host",
     "preview": "nuxt preview",
     "clean": "rm -rf dist",
     "clean:modules": "rm -rf .nuxt .output node_modules",

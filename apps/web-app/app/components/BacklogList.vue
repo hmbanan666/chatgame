@@ -19,7 +19,7 @@
     <div class="flex items-center gap-2 px-3 py-2 bg-game-bg-alt/80 shrink-0">
       <Icon name="lucide:sparkles" class="size-4! text-game-bright shrink-0" />
       <p class="text-sm text-white">
-        Пиши в чат — получай квест. Донат с идеей — появится здесь.
+        Пиши в чат — получай квест. Сообщение из доната появится здесь.
       </p>
     </div>
   </div>

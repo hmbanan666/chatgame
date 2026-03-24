@@ -18,7 +18,7 @@
         />
         <NumberFlow
           :value="energy / 100"
-          :format="{ style: 'percent', maximumFractionDigits: 0 }"
+          :format="{ style: 'percent', maximumFractionDigits: 1 }"
           locales="en-US"
           class="text-sm font-bold text-game-text"
         />
