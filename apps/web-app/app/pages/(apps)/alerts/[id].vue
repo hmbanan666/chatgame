@@ -11,6 +11,7 @@
 
 <script setup lang="ts">
 import type { EventMessage } from '@chat-game/types'
+import { createId } from '@paralleldrive/cuid2'
 
 definePageMeta({
   layout: 'game',
@@ -24,45 +25,44 @@ if (!params.id) {
 const alerts = reactive<EventMessage[]>([])
 const biome = ref('GREEN')
 
-let eventSource: EventSource | null = null
-let biomeInterval: ReturnType<typeof setInterval>
+let ws: WebSocket | null = null
 
-onMounted(() => {
-  eventSource = new EventSource(`/api/alerts/${params.id}/sse`)
+function connectWs() {
+  const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
+  ws = new WebSocket(`${protocol}://${location.host}/api/websocket`)
 
-  eventSource.onmessage = (event) => {
-    try {
-      const data = JSON.parse(event.data) as EventMessage
-      alerts.push(data)
-    } catch {
-      // Invalid event
-    }
+  ws.onopen = () => {
+    ws?.send(JSON.stringify({
+      id: createId(),
+      type: 'CONNECT_ALERTS',
+      data: { roomId: params.id },
+    }))
   }
 
-  eventSource.onerror = () => {
-    eventSource?.close()
-    setTimeout(() => {
-      eventSource = new EventSource(`/api/alerts/${params.id}/sse`)
-    }, 5000)
-  }
-
-  const updateBiome = async () => {
+  ws.onmessage = (event) => {
     try {
-      const charge = await $fetch<{ biome: string }>(`/api/charge/${params.id}`)
-      if (charge?.biome) {
-        biome.value = charge.biome
+      const data = JSON.parse(event.data)
+      if (data.type === 'BIOME_CHANGED') {
+        biome.value = data.data.biome
+      } else if (data.type) {
+        alerts.push(data as EventMessage)
       }
     } catch {
-      // Charge not available
+      // Invalid message
     }
   }
 
-  updateBiome()
-  biomeInterval = setInterval(updateBiome, 5000)
+  ws.onclose = () => {
+    ws = null
+    setTimeout(connectWs, 5000)
+  }
+}
+
+onMounted(() => {
+  connectWs()
 })
 
 onUnmounted(() => {
-  eventSource?.close()
-  clearInterval(biomeInterval)
+  ws?.close()
 })
 </script>

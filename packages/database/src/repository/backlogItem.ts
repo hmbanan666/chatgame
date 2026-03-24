@@ -65,6 +65,17 @@ export class BacklogItemRepository {
       .where(eq(tables.backlogItems.id, id))
   }
 
+  static findQuestByProfileSince(questProfileId: string, since: Date) {
+    const db = useDatabase()
+    return db.query.backlogItems.findFirst({
+      where: (t, { and, eq, gte }) => and(
+        eq(t.questProfileId, questProfileId),
+        eq(t.source, 'quest'),
+        gte(t.createdAt, since),
+      ),
+    })
+  }
+
   static expireQuest(id: string, finalProgress: number) {
     const db = useDatabase()
     return db.update(tables.backlogItems)

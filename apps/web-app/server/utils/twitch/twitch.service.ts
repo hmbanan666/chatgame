@@ -1,7 +1,5 @@
 import { getDateMinusMinutes } from '#shared/utils/date'
-import { createId } from '@paralleldrive/cuid2'
-import { sendGameMessage } from '~~/server/api/websocket'
-import { getAlertService } from '~~/server/core/alerts'
+import { sendAlertMessage, sendGameMessage } from '~~/server/api/websocket'
 import { dictionary } from '~~/server/core/locale'
 import { getViewerQuestService } from '~~/server/core/quest'
 
@@ -116,8 +114,7 @@ export class TwitchService {
     if (status === 'OK') {
       const profile = await db.profile.find(profileId)
 
-      getAlertService(this.#roomId).send({
-        id: createId(),
+      sendAlertMessage(this.#roomId, {
         type: 'COUPON_TAKEN',
         data: {
           userName,

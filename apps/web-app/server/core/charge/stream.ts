@@ -2,7 +2,7 @@ import type { ChargeEventService, ChargeInstance, ChargeModifier } from '#shared
 import type { CharacterEditionWithCharacter } from '@chat-game/types'
 import type { DonateController } from './donateClient'
 import { createId } from '@paralleldrive/cuid2'
-import { getAlertService } from '~~/server/core/alerts'
+import { sendAlertMessage } from '~~/server/api/websocket'
 import { EventService } from './event'
 
 interface StreamChargeOptions {
@@ -289,8 +289,7 @@ export class StreamCharge implements ChargeInstance {
       this.donations = this.donations.slice(-50)
     }
 
-    getAlertService(this.id).send({
-      id: createId(),
+    sendAlertMessage(this.id, {
       type: 'DONATION',
       data: {
         userName: event.username,

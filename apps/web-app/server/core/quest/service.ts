@@ -1,5 +1,5 @@
-import { createId } from '@paralleldrive/cuid2'
-import { getAlertService } from '~~/server/core/alerts'
+import { getDateMinusMinutes } from '#shared/utils/date'
+import { sendAlertMessage } from '~~/server/api/websocket'
 import { QUEST_TEMPLATES } from './templates'
 
 const logger = useLogger('quest:service')
@@ -18,6 +18,7 @@ interface ActiveQuest {
 
 export class ViewerQuestService {
   readonly #quests = new Map<string, ActiveQuest>()
+  readonly #completed = new Set<string>()
   readonly #streamerId: string
   readonly #channelId: string
 
@@ -27,7 +28,15 @@ export class ViewerQuestService {
   }
 
   async tryAssignQuest(profileId: string, userName: string, codename: string): Promise<void> {
-    if (this.#quests.has(profileId)) {
+    if (this.#quests.has(profileId) || this.#completed.has(profileId)) {
+      return
+    }
+
+    // Check DB — maybe quest was created before server restart
+    const cutoff = getDateMinusMinutes(60 * 10)
+    const existing = await db.backlogItem.findQuestByProfileSince(profileId, cutoff)
+    if (existing) {
+      this.#completed.add(profileId)
       return
     }
 
@@ -101,8 +110,7 @@ export class ViewerQuestService {
 
       const profile = await db.profile.find(quest.profileId)
 
-      getAlertService(this.#channelId).send({
-        id: createId(),
+      sendAlertMessage(this.#channelId, {
         type: 'QUEST_COMPLETE',
         data: {
           userName: quest.userName,
@@ -119,6 +127,7 @@ export class ViewerQuestService {
     }
 
     this.#quests.delete(quest.profileId)
+    this.#completed.add(quest.profileId)
   }
 
   async reset(): Promise<void> {
@@ -130,6 +139,7 @@ export class ViewerQuestService {
       }
     }
     this.#quests.clear()
+    this.#completed.clear()
     logger.info('Quest service reset')
   }
 }

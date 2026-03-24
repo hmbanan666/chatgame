@@ -38,6 +38,7 @@ export type WebSocketEvents
   = | WebSocketConnect
     | WebSocketConnectAddon
     | WebSocketConnectGame
+    | WebSocketConnectAlerts
     | WebSocketConnectedToWagonRoom
     | WebSocketDisconnectedFromWagonRoom
     | WebSocketEventCommand
@@ -59,6 +60,13 @@ export interface WebSocketConnectAddon {
 
 export interface WebSocketConnectGame {
   type: 'CONNECT_GAME'
+  data: {
+    roomId: string
+  }
+}
+
+export interface WebSocketConnectAlerts {
+  type: 'CONNECT_ALERTS'
   data: {
     roomId: string
   }
