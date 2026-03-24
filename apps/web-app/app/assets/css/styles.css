@@ -1,6 +1,85 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
 
+@theme {
+  /*
+   * Game UI tokens — all from Resurrect 64 palette
+   *
+   * Ground layer (constant across biomes):
+   *   darkBrown #4C3E24  — darkest, backgrounds
+   *   brown1    #9E4539  — mid-dark, charge bg
+   *   brown2    #CD683D  — mid, muted elements
+   *   brownOrng #E6904E  — warm accent
+   *   gold      #FBB954  — bright accent
+   *   cream     #FDCBB0  — lightest, text
+   *
+   * Biome layer: secondary-1..5 (switchable)
+   */
+  --color-game-bg: #4C3E24;
+  --color-game-bg-alt: #9E4539;
+  --color-game-muted: #CD683D;
+  --color-game-accent: #E6904E;
+  --color-game-bright: #FBB954;
+  --color-game-text: #FDCBB0;
+  --color-game-danger: #AE2334;
+
+  /* Secondary — biome-driven, defaults to GREEN */
+  --color-game-secondary-1: #165A4C;
+  --color-game-secondary-2: #239063;
+  --color-game-secondary-3: #1EBC73;
+  --color-game-secondary-4: #91DB69;
+  --color-game-secondary-5: #CDDF6C;
+}
+
+/* Biome presets (Resurrect 64) — apply on a parent element */
+.biome-green {
+  --color-game-secondary-1: #165A4C;
+  --color-game-secondary-2: #239063;
+  --color-game-secondary-3: #1EBC73;
+  --color-game-secondary-4: #91DB69;
+  --color-game-secondary-5: #CDDF6C;
+}
+
+.biome-blue {
+  --color-game-secondary-1: #323353;
+  --color-game-secondary-2: #484A77;
+  --color-game-secondary-3: #4D65B4;
+  --color-game-secondary-4: #4D9BE6;
+  --color-game-secondary-5: #8FD3FF;
+}
+
+.biome-stone {
+  --color-game-secondary-1: #313638;
+  --color-game-secondary-2: #374E4A;
+  --color-game-secondary-3: #547E64;
+  --color-game-secondary-4: #92A984;
+  --color-game-secondary-5: #B2BA90;
+}
+
+.biome-teal {
+  --color-game-secondary-1: #0B5E65;
+  --color-game-secondary-2: #0B8A8F;
+  --color-game-secondary-3: #0EAF9B;
+  --color-game-secondary-4: #30E1B9;
+  --color-game-secondary-5: #8FF8E2;
+}
+
+.biome-toxic {
+  --color-game-secondary-1: #4C3E24;
+  --color-game-secondary-2: #676633;
+  --color-game-secondary-3: #A2A947;
+  --color-game-secondary-4: #D5E04B;
+  --color-game-secondary-5: #FBFF86;
+}
+
+.biome-violet {
+  --color-game-secondary-1: #45293F;
+  --color-game-secondary-2: #6B3E75;
+  --color-game-secondary-3: #905EA9;
+  --color-game-secondary-4: #A884F3;
+  --color-game-secondary-5: #EAADED;
+}
+
 html,
 body {
   font-family: 'Roboto Serif', 'Times New Roman', 'Georgia', serif;

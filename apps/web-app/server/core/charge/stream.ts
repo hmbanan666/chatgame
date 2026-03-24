@@ -2,6 +2,7 @@ import type { ChargeEventService, ChargeInstance, ChargeModifier } from '#shared
 import type { CharacterEditionWithCharacter } from '@chat-game/types'
 import type { DonateController } from './donateClient'
 import { createId } from '@paralleldrive/cuid2'
+import { getAlertService } from '~~/server/core/alerts'
 import { EventService } from './event'
 
 interface StreamChargeOptions {
@@ -41,6 +42,7 @@ export class StreamCharge implements ChargeInstance {
   twitchChannelId: string
   twitchChannelName: string
 
+  biome: string = 'GREEN'
   messages: StreamChargeMessage[] = []
   donations: StreamChargeDonation[] = []
   modifiers: ChargeModifier[] = []
@@ -286,6 +288,18 @@ export class StreamCharge implements ChargeInstance {
     if (this.donations.length > 50) {
       this.donations = this.donations.slice(-50)
     }
+
+    getAlertService(this.id).send({
+      id: createId(),
+      type: 'DONATION',
+      data: {
+        userName: event.username,
+        codename: 'twitchy',
+        amount: Math.round(event.amount),
+        currency: event.currency,
+        message: event.message ?? '',
+      },
+    })
 
     if (event.message?.trim()) {
       db.backlogItem.create({

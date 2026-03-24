@@ -46,6 +46,10 @@ export class StreamJourneyGame extends Container implements Game {
   /** Container that holds everything in the world — camera moves this */
   worldContainer: Container
 
+  get currentBiome(): string {
+    return this.treeService.getBiomeAt(this.wagonService.wagon?.x ?? 0)
+  }
+
   private demoMode: boolean
   private demoInterval: ReturnType<typeof setInterval> | undefined
   private groundGraphics: Container | undefined

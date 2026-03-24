@@ -22,5 +22,6 @@ export default defineEventHandler(async (event) => {
     difficulty: chargeRoom.difficulty,
     messagesCount: chargeRoom.messages.length,
     modifiers,
+    biome: chargeRoom.biome,
   }
 })

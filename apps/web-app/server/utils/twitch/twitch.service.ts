@@ -1,4 +1,6 @@
 import { getDateMinusMinutes } from '#shared/utils/date'
+import { createId } from '@paralleldrive/cuid2'
+import { getAlertService } from '~~/server/core/alerts'
 import { dictionary } from '~~/server/core/locale'
 import { getViewerQuestService } from '~~/server/core/quest'
 import { rooms } from '~~/server/core/stream-journey'
@@ -38,21 +40,23 @@ export class TwitchService {
       return
     }
 
+    // Resolve character
+    let codename = 'twitchy'
+    if (profile.activeEditionId) {
+      const edition = await db.characterEdition.findWithCharacter(profile.activeEditionId)
+      if (edition?.character?.codename) {
+        codename = edition.character.codename
+      }
+    }
+
     // Viewer quest
-    const questService = getViewerQuestService(this.#streamerId)
-    await questService.tryAssignQuest(profile.id, userName)
+    const questService = getViewerQuestService(this.#streamerId, this.#roomId)
+    await questService.tryAssignQuest(profile.id, userName, codename)
     await questService.trackMessage(profile.id)
 
     // Stream Journey
     const room = rooms.get(this.#roomId)
     if (room) {
-      let codename = 'twitchy'
-      if (profile.activeEditionId) {
-        const edition = await db.characterEdition.findWithCharacter(profile.activeEditionId)
-        if (edition?.character?.codename) {
-          codename = edition.character.codename
-        }
-      }
       room.send({
         event: 'newPlayerMessage',
         data: {
@@ -70,7 +74,7 @@ export class TwitchService {
       switch (possibleCommand) {
         case 'купон':
         case 'coupon':
-          return this.handleCouponActivation(firstParam, player.profileId)
+          return this.handleCouponActivation(firstParam, player.profileId, userName, codename)
         case 'инвентарь':
         case 'inventory':
           return this.handleInventoryCommand(player.profileId)
@@ -106,11 +110,23 @@ export class TwitchService {
     }
   }
 
-  async handleCouponActivation(id: string, profileId: string) {
+  async handleCouponActivation(id: string, profileId: string, userName: string, codename: string) {
     const status = await this.#activateCouponByCommand(id, profileId)
 
     const t = dictionary('ru')
     if (status === 'OK') {
+      const profile = await db.profile.find(profileId)
+
+      getAlertService(this.#roomId).send({
+        id: createId(),
+        type: 'COUPON_TAKEN',
+        data: {
+          userName,
+          codename,
+          totalCoupons: profile?.coupons ?? 0,
+        },
+      })
+
       return {
         ok: true,
         message: t.twitch.coupon.success,

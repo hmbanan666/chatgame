@@ -1,10 +1,10 @@
 <template>
-  <div class="flex flex-row justify-start items-center gap-1 w-14 h-6 px-1 rounded-md" :class="getEffectColor(modifier.code)">
-    <Icon :name="getEffectIcon(modifier.code)" class="!size-4 shrink-0 opacity-50" />
+  <div class="flex flex-row justify-start items-center gap-1 w-14 h-6 px-1" :class="getEffectColor(modifier.code)">
+    <Icon :name="getEffectIcon(modifier.code)" class="size-4! shrink-0 opacity-50" />
 
     <NumberFlow
       :value="remaining"
-      :format="{ style: 'decimal', maximumFractionDigits: 1 }"
+      :format="{ style: 'decimal', maximumFractionDigits: 0 }"
       locales="en-US"
       class="text-sm font-semibold"
     />
@@ -19,20 +19,28 @@ const { modifier } = defineProps<{
   modifier: ChargeModifier
 }>()
 
-const { start, remaining } = useCountdown(Math.round(Math.abs(modifier.expiredAt - Date.now()) / 1000))
+const remaining = ref(calcRemaining())
 
-onMounted(() => {
-  start()
+function calcRemaining() {
+  return Math.max(0, Math.ceil((modifier.expiredAt - Date.now()) / 1000))
+}
+
+const interval = setInterval(() => {
+  remaining.value = calcRemaining()
+}, 500)
+
+onUnmounted(() => {
+  clearInterval(interval)
 })
 
 function getEffectColor(code: string) {
   if (code.startsWith('positive')) {
-    return 'bg-orange-200'
+    return 'bg-game-bright'
   }
   if (code.startsWith('negative')) {
-    return 'bg-rose-300'
+    return 'bg-game-accent text-game-bg'
   }
-  return 'bg-orange-200'
+  return 'bg-game-bright'
 }
 
 function getEffectIcon(code: string) {
