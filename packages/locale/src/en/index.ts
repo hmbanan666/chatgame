@@ -96,6 +96,23 @@ export const en = {
     description: 'Tap anywhere to move around. Tap trees to cut them down.',
     hint: 'What\'s next: level up your character, get rewards for levels. Unlock new characters.',
   },
+  twitch: {
+    coupon: {
+      success: 'Well done! +1 coupon 🎟️',
+      timeLimit: 'Nope, already claimed one. New one on the next stream 🍌',
+      takenAlready: 'Someone was faster 🔥',
+      newCoupon: 'A new Coupon appeared! Grab it: type "!coupon {command}" :D',
+    },
+    inventory: 'You have {n} coupon(s). Exchange them for rewards in the game.',
+    github: '👨‍💻 https://chatgame.space | ⭐ https://github.com/chat-game',
+    info: {
+      supportStreamer: 'Support the streamer: https://chatgame.space/donate',
+      buyCoins: 'Buy Coins in ChatGame: https://chatgame.space/#shop. Unlock hand-crafted characters. Thanks for the support!',
+      followChannel: 'Not subscribed yet? Become a follower, subscribe to the channel!',
+      channelPoints: 'Activate different modifiers with Channel Points! Influence the Charge level.',
+      donateEffect: 'Donations have a strong influence on Charge: instant boost and random effects.',
+    },
+  },
   availableUntil: 'Available until',
   close: 'Close',
   connect: 'Connect',

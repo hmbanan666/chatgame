@@ -43,6 +43,13 @@
       "when": 1774299973817,
       "tag": "0005_unusual_bug",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1774339220591,
+      "tag": "0006_known_mad_thinker",
+      "breakpoints": true
     }
   ]
 }

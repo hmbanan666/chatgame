@@ -1,17 +1,15 @@
+import { getDateMinusMinutes } from '#shared/utils/date'
+import { dictionary } from '~~/server/core/locale'
+import { getViewerQuestService } from '~~/server/core/quest'
 import { rooms } from '~~/server/core/stream-journey'
-import { getDateMinusMinutes } from '../date'
-import { QuestService } from '../quest'
-
-// TODO: move to quest config
-const COUPON_QUEST_ID = 'xu44eon7teobb4a74cd4yvuh'
 
 export class TwitchService {
-  readonly #quest: QuestService
   readonly #roomId: string
+  readonly #streamerId: string
 
-  constructor(roomId: string) {
-    this.#quest = new QuestService()
+  constructor(roomId: string, streamerId: string) {
     this.#roomId = roomId
+    this.#streamerId = streamerId
   }
 
   async handleMessage({
@@ -39,6 +37,11 @@ export class TwitchService {
     if (!player) {
       return
     }
+
+    // Viewer quest
+    const questService = getViewerQuestService(this.#streamerId)
+    await questService.tryAssignQuest(profile.id, userName)
+    await questService.trackMessage(profile.id)
 
     // Stream Journey
     const room = rooms.get(this.#roomId)
@@ -88,42 +91,41 @@ export class TwitchService {
       }
     }
 
-    // TODO: i18n
+    const t = dictionary('ru')
     return {
       ok: true,
-      message: `У тебя есть ${profile.coupons} купон(а/ов). Обменивай их на награды в игре.`,
+      message: t.twitch.inventory.replace('{n}', String(profile.coupons)),
     }
   }
 
   handleGitHubCommand() {
+    const t = dictionary('ru')
     return {
       ok: true,
-      message: '👨‍💻 https://chatgame.space | ⭐ https://github.com/chat-game',
+      message: t.twitch.github,
     }
   }
 
   async handleCouponActivation(id: string, profileId: string) {
     const status = await this.#activateCouponByCommand(id, profileId)
 
-    // TODO: i18n
+    const t = dictionary('ru')
     if (status === 'OK') {
-      await this.#quest.completeQuest(COUPON_QUEST_ID, profileId)
-
       return {
         ok: true,
-        message: 'А ты молодец! +1 купон 🎟️',
+        message: t.twitch.coupon.success,
       }
     }
     if (status === 'TIME_LIMIT') {
       return {
         ok: false,
-        message: 'Неа, один уже взят. Новый - на следующем стриме 🍌',
+        message: t.twitch.coupon.timeLimit,
       }
     }
     if (status === 'TAKEN_ALREADY') {
       return {
         ok: false,
-        message: 'Тебя опередили 🔥',
+        message: t.twitch.coupon.takenAlready,
       }
     }
     if (status === 'NOT_FOUND') {

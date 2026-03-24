@@ -1,3 +1,4 @@
+import { getViewerQuestService } from '~~/server/core/quest'
 import { getTwitchController } from '../../utils/twitch/twitch.controller'
 import { DonateController } from './donateClient'
 import { StreamCharge } from './stream'
@@ -48,6 +49,7 @@ export async function initCharges() {
 
     controller.onStreamOffline(() => {
       chargeInstance.disconnectDonateClient()
+      getViewerQuestService(streamer.id).reset()
     })
 
     chargeRooms.push(chargeInstance)

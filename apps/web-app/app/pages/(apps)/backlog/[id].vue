@@ -7,23 +7,46 @@
           <div
             v-for="item in items"
             :key="item.id"
-            class="flex flex-col gap-1 p-3 bg-orange-950 rounded-lg border border-orange-800/50"
-            :class="{ 'border-orange-500/60': item.source === 'donation' }"
+            class="flex flex-col gap-1 p-3 rounded-lg border"
+            :class="cardClass(item)"
           >
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-1.5">
-                <Icon
-                  v-if="item.source === 'donation'"
-                  name="lucide:heart"
-                  class="!size-3 text-orange-400"
-                />
-                <span class="text-sm font-bold text-orange-200">{{ item.authorName }}</span>
+            <!-- Donation card -->
+            <template v-if="item.source === 'donation'">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-1.5">
+                  <Icon name="lucide:heart" class="!size-3 text-orange-400" />
+                  <span class="text-sm font-bold text-orange-200">{{ item.authorName }}</span>
+                </div>
+                <span v-if="item.amount" class="text-xs font-medium text-orange-400">{{ item.amount }} ₽</span>
               </div>
-              <span v-if="item.amount" class="text-xs font-medium text-orange-400">{{ item.amount }} ₽</span>
-            </div>
-            <p class="text-base text-orange-100">
-              {{ item.text }}
-            </p>
+              <p class="text-base text-orange-100">
+                {{ item.text }}
+              </p>
+            </template>
+
+            <!-- Quest card -->
+            <template v-else-if="item.source === 'quest'">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-1.5">
+                  <Icon name="lucide:target" class="!size-3 text-violet-400" />
+                  <span class="text-sm font-bold text-violet-200">{{ item.authorName }}</span>
+                </div>
+                <span v-if="item.questReward" class="text-xs font-medium text-amber-400">+{{ item.questReward }} 🪙</span>
+              </div>
+              <p class="text-base text-violet-100">
+                {{ item.text }}
+              </p>
+              <div v-if="item.questGoal" class="flex items-center gap-2 mt-1">
+                <div class="flex-1 h-1.5 rounded-full bg-violet-900/50 overflow-hidden">
+                  <div
+                    class="h-full rounded-full transition-all duration-500"
+                    :class="item.status === 'done' ? 'bg-green-400' : 'bg-violet-400'"
+                    :style="{ width: `${Math.min((item.questProgress / item.questGoal) * 100, 100)}%` }"
+                  />
+                </div>
+                <span class="text-xs text-violet-300 tabular-nums">{{ item.questProgress }}/{{ item.questGoal }}</span>
+              </div>
+            </template>
           </div>
         </TransitionGroup>
 
@@ -31,7 +54,7 @@
         <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-orange-950 border border-orange-800/50 shrink-0">
           <Icon name="lucide:sparkles" class="!size-4 text-orange-400 shrink-0" />
           <p class="text-sm text-orange-300">
-            Отправь донат с идеей — она появится здесь
+            Пиши в чат — получай квест. Донат с идеей — появится здесь.
           </p>
         </div>
       </div>
@@ -48,9 +71,12 @@ interface BacklogItem {
   id: string
   text: string
   authorName: string
-  source: string
+  source: 'donation' | 'quest'
   status: string
   amount: number | null
+  questProgress: number
+  questGoal: number | null
+  questReward: number | null
   createdAt: string
 }
 
@@ -61,11 +87,21 @@ if (!params.id) {
 
 const items = ref<BacklogItem[]>([])
 
+function cardClass(item: BacklogItem) {
+  if (item.source === 'quest') {
+    if (item.status === 'done') {
+      return 'bg-green-950 border-green-500/60'
+    }
+    return 'bg-violet-950 border-violet-500/60'
+  }
+  return 'bg-orange-950 border-orange-500/60'
+}
+
 async function update(id: string) {
   try {
     const data = await $fetch<BacklogItem[]>(`/api/backlog/${id}`)
     if (data) {
-      items.value = [...data].reverse()
+      items.value = data
     }
   } catch {
     // Backlog not found or server error

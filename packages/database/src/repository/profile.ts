@@ -3,7 +3,7 @@ import { and, count, eq, lt, sql } from 'drizzle-orm'
 import { useDatabase } from '../database'
 import * as tables from '../tables'
 
-export class Profile {
+export class ProfileRepository {
   static find(id: string) {
     const db = useDatabase()
     return db.query.profiles.findFirst({

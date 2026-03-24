@@ -126,52 +126,6 @@ export interface ActiveCharacter extends CharacterEditionWithCharacter {
   playerId: string
 }
 
-export interface Quest {
-  id: string
-  createdAt: Date
-  updatedAt: Date
-  name: string
-  description: string
-  profileId: string
-  points: number
-  progressCompleted: number
-}
-
-export interface QuestEdition {
-  id: string
-  createdAt: Date
-  updatedAt: Date
-  completedAt: Date | null
-  profileId: string
-  questId: string
-  progress: number
-  status: 'IN_PROGRESS' | 'COMPLETED'
-}
-
-export interface QuestReward {
-  id: string
-  createdAt: Date
-  updatedAt: Date
-  questId: string
-  type: 'COINS' | 'TROPHY'
-  amount: number
-  entityId: string | null
-}
-
-export interface QuestEditionWithProfile extends QuestEdition {
-  profile: Profile
-}
-
-export interface QuestWithEditions extends Quest {
-  editions: QuestEditionWithProfile[]
-  rewards: QuestReward[]
-  profile: Profile
-}
-
-export interface QuestWithRewards extends Quest {
-  rewards: QuestReward[]
-}
-
 export interface Coupon {
   id: string
   createdAt: Date
@@ -234,7 +188,6 @@ export interface Transaction {
     | 'CHARACTER_UNLOCK'
     | 'COIN_FROM_LVL_UP'
     | 'COINS_FROM_COUPON'
-    | 'COINS_FROM_QUEST'
     | 'POINTS_FROM_LEVEL_UP'
     | 'POINTS_FROM_CHARACTER_UNLOCK'
   text: string | null

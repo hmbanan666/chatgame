@@ -1,19 +1,11 @@
-import { getDateMinusMinutes } from '../date'
+import { getDateMinusMinutes } from '#shared/utils/date'
+import { dictionary } from '~~/server/core/locale'
 import { getStreamByUserId, sendChatAnnouncement } from './twitch.api'
 import { TwitchChat } from './twitch.chat'
 import { TwitchEventSub } from './twitch.eventsub'
 import { TwitchService } from './twitch.service'
 
 const logger = useLogger('twitch:controller')
-
-// TODO: i18n — move to locale files
-const INFO_MESSAGES = [
-  'Поддержи стримера: https://chatgame.space/donate',
-  'Приобретай Монеты в ChatGame: https://chatgame.space/#shop. Разблокируй вручную созданных персонажей. Спасибо за поддержку!',
-  'Еще не подписан? Стань фолловером, подпишись на канал!',
-  'Активируй разные модификаторы за Баллы Канала! Влияй на изменение Заряженности.',
-  'Донаты имеют сильное влияние на Заряженность: разовый буст и рандомные эффекты.',
-]
 
 type MessageHandler = (channel: string, userName: string, text: string) => void
 type RedemptionHandler = (userId: string, rewardId: string) => void
@@ -93,7 +85,7 @@ class TwitchController {
 
     this.#channel = streamer.twitchChannelName
     this.#userId = streamer.twitchChannelId
-    this.#service = new TwitchService(streamer.twitchChannelId)
+    this.#service = new TwitchService(streamer.twitchChannelId, streamer.id)
 
     // Chat
     this.#chat = new TwitchChat(this.#channel)
@@ -168,8 +160,9 @@ class TwitchController {
           return
         }
 
+        const t = dictionary('ru')
         this.#chat.say(
-          `Появился новый Купон! Забирай: пиши команду "!купон ${coupon.activationCommand}" :D`,
+          t.twitch.coupon.newCoupon.replace('{command}', coupon.activationCommand),
         )
       } catch (err) {
         logger.error('Coupon generation failed', err)
@@ -232,7 +225,9 @@ class TwitchController {
   }
 
   #getRandomInfoMessage(): string {
-    return INFO_MESSAGES[Math.floor(Math.random() * INFO_MESSAGES.length)] as string
+    const t = dictionary('ru')
+    const messages = Object.values(t.twitch.info)
+    return messages[Math.floor(Math.random() * messages.length)] as string
   }
 }
 

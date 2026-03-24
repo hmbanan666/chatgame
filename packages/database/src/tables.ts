@@ -24,8 +24,6 @@ export const profilesRelations = relations(profiles, ({ many }) => ({
   transactions: many(transactions),
   itemEditions: many(inventoryItemEditions),
   payments: many(payments),
-  quests: many(quests),
-  questEditions: many(questEditions),
 }))
 
 // ── Payment ──────────────────────────────────────────────
@@ -107,6 +105,11 @@ export const backlogItems = pgTable('backlog_item', {
   status: text('status').notNull().default('new'),
   amount: integer('amount'),
   streamerId: text('streamer_id').notNull(),
+  questProfileId: text('quest_profile_id'),
+  questTemplateId: text('quest_template_id'),
+  questProgress: integer('quest_progress').notNull().default(0),
+  questGoal: integer('quest_goal'),
+  questReward: integer('quest_reward'),
 })
 
 export const backlogItemsRelations = relations(backlogItems, ({ one }) => ({
@@ -255,55 +258,6 @@ export const coupons = pgTable('coupon', {
   status: text('status').notNull(),
   profileId: text('profile_id'),
 })
-
-// ── Quest ────────────────────────────────────────────────
-
-export const quests = pgTable('quest', {
-  id: cuid2('id').defaultRandom().primaryKey(),
-  createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-  name: text('name').notNull(),
-  description: text('description').notNull(),
-  points: integer('points').notNull(),
-  progressCompleted: integer('progress_completed').notNull().default(1),
-  profileId: text('profile_id').notNull(),
-})
-
-export const questsRelations = relations(quests, ({ one, many }) => ({
-  profile: one(profiles, { fields: [quests.profileId], references: [profiles.id] }),
-  editions: many(questEditions),
-  rewards: many(questRewards),
-}))
-
-export const questEditions = pgTable('quest_edition', {
-  id: cuid2('id').defaultRandom().primaryKey(),
-  createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-  completedAt: timestamp('completed_at', { precision: 3, withTimezone: true, mode: 'date' }),
-  status: text('status').notNull(),
-  progress: integer('progress').notNull().default(0),
-  profileId: text('profile_id').notNull(),
-  questId: text('quest_id').notNull(),
-})
-
-export const questEditionsRelations = relations(questEditions, ({ one }) => ({
-  profile: one(profiles, { fields: [questEditions.profileId], references: [profiles.id] }),
-  quest: one(quests, { fields: [questEditions.questId], references: [quests.id] }),
-}))
-
-export const questRewards = pgTable('quest_reward', {
-  id: cuid2('id').defaultRandom().primaryKey(),
-  createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-  type: text('type').notNull(),
-  amount: integer('amount').notNull().default(0),
-  entityId: text('entity_id'),
-  questId: text('quest_id').notNull(),
-})
-
-export const questRewardsRelations = relations(questRewards, ({ one }) => ({
-  quest: one(quests, { fields: [questRewards.questId], references: [quests.id] }),
-}))
 
 // ── Transaction ──────────────────────────────────────────
 

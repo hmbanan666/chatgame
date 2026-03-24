@@ -1,5 +1,5 @@
 import type { Game, GameObjectPlayer, PlayerService } from '../types'
-import { getDateMinusMinutes } from '~/utils/date'
+import { getDateMinusMinutes } from '#shared/utils/date'
 import { TargetPoint } from '../objects/targetPoint'
 import { PlayerObject } from '../objects/unit/playerObject'
 import { MoveOffScreenAndSelfDestroyScript } from '../scripts/moveOffScreenAndSelfDestroyScript'
