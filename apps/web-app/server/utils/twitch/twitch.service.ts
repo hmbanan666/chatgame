@@ -49,10 +49,12 @@ export class TwitchService {
       }
     }
 
-    // Viewer quest
-    const questService = getViewerQuestService(this.#streamerId, this.#roomId)
-    await questService.tryAssignQuest(profile.id, userName, codename)
-    await questService.trackMessage(profile.id)
+    // Viewer quest (skip for streamer)
+    if (userId !== this.#roomId) {
+      const questService = getViewerQuestService(this.#streamerId, this.#roomId)
+      await questService.tryAssignQuest(profile.id, userName, codename)
+      await questService.trackMessage(profile.id)
+    }
 
     // Stream Journey
     const room = rooms.get(this.#roomId)

@@ -14,7 +14,6 @@ interface ActiveQuest {
   progress: number
   goal: number
   reward: number
-  lastPersistedProgress: number
 }
 
 export class ViewerQuestService {
@@ -66,7 +65,6 @@ export class ViewerQuestService {
         progress: 0,
         goal,
         reward,
-        lastPersistedProgress: 0,
       })
 
       logger.info(`Quest assigned: ${template.id} (goal=${goal}, reward=${reward}) to ${userName}`)
@@ -89,14 +87,10 @@ export class ViewerQuestService {
       return
     }
 
-    // Persist progress every 5 messages
-    if (quest.progress - quest.lastPersistedProgress >= 5) {
-      quest.lastPersistedProgress = quest.progress
-      try {
-        await db.backlogItem.updateQuestProgress(quest.backlogItemId, quest.progress)
-      } catch (err) {
-        logger.error('Failed to persist quest progress', err)
-      }
+    try {
+      await db.backlogItem.updateQuestProgress(quest.backlogItemId, quest.progress)
+    } catch (err) {
+      logger.error('Failed to persist quest progress', err)
     }
   }
 

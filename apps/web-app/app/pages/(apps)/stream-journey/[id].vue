@@ -18,7 +18,6 @@ const { params } = useRoute('stream-journey-id')
 const stage = ref<HTMLElement>()
 const game = shallowRef<StreamJourneyGame>()
 let biomeInterval: ReturnType<typeof setInterval>
-let lastBiome = ''
 
 watch(stage, async () => {
   if (!stage.value) {
@@ -36,15 +35,10 @@ watch(stage, async () => {
         return
       }
       const biome = game.value.currentBiome
-      if (biome !== lastBiome) {
-        lastBiome = biome
-        $fetch(`/api/charge/${params.id}/biome`, {
-          method: 'POST',
-          body: { biome },
-        }).catch((err) => {
-          console.warn('Biome sync failed:', err.statusCode ?? err.message)
-        })
-      }
+      $fetch(`/api/charge/${params.id}/biome`, {
+        method: 'POST',
+        body: { biome },
+      }).catch(() => {})
     }, 2000)
   } catch (error) {
     console.error(error)
