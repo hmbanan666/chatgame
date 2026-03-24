@@ -17,6 +17,11 @@ export class WagonObject extends BaseObject implements GameObjectWagon {
   engineClouds!: Container
   engineCloudsOffset = 0
 
+  private flipping = false
+  private flipProgress = 0
+  private flipDuration = 90 // frames (~1.5 seconds at 60fps)
+  private baseY = 0
+
   constructor({ game, x, y }: WagonObjectOptions) {
     super({ game, x, y, type: 'WAGON' })
 
@@ -41,8 +46,40 @@ export class WagonObject extends BaseObject implements GameObjectWagon {
   override animate() {
     super.animate()
 
+    this.animateFlip()
     this.drawWheels()
     this.drawEngineClouds()
+  }
+
+  startFlip() {
+    if (this.flipping) {
+      return
+    }
+    this.flipping = true
+    this.flipProgress = 0
+    this.baseY = this.y
+  }
+
+  private animateFlip() {
+    if (!this.flipping) {
+      return
+    }
+
+    this.flipProgress++
+    const t = this.flipProgress / this.flipDuration
+
+    // Rotation: full 360°
+    this.angle = t * 360
+
+    // Jump arc: sine curve, peak at ~80px up
+    this.y = this.baseY - Math.sin(t * Math.PI) * 80
+
+    if (this.flipProgress >= this.flipDuration) {
+      this.flipping = false
+      this.flipProgress = 0
+      this.angle = 0
+      this.y = this.baseY
+    }
   }
 
   initVisual() {

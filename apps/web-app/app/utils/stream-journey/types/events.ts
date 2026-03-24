@@ -1,5 +1,6 @@
 export type EventMessage
   = | NewPlayerMessage
+    | WagonFlipMessage
 
 export type NewPlayerMessage = {
   event: 'newPlayerMessage'
@@ -11,4 +12,8 @@ export type NewPlayerMessage = {
     }
     text: string
   }
+}
+
+export type WagonFlipMessage = {
+  event: 'wagonFlip'
 }

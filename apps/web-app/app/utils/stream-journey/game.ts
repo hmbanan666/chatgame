@@ -52,6 +52,7 @@ export class StreamJourneyGame extends Container implements Game {
 
   private demoMode: boolean
   private demoInterval: ReturnType<typeof setInterval> | undefined
+
   private groundGraphics: Container | undefined
 
   constructor({ roomId, demo }: StreamJourneyGameOptions) {
@@ -124,6 +125,7 @@ export class StreamJourneyGame extends Container implements Game {
     if (this.demoInterval) {
       clearInterval(this.demoInterval)
     }
+
     this.eventService.destroy()
     this.app.destroy()
     super.destroy()

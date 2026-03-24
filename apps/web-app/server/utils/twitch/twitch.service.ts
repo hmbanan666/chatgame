@@ -79,6 +79,9 @@ export class TwitchService {
         case 'github':
         case 'git':
           return this.handleGitHubCommand()
+        case 'сальто':
+        case 'flip':
+          return this.handleFlipCommand()
       }
     }
   }
@@ -105,6 +108,10 @@ export class TwitchService {
       ok: true,
       message: t.twitch.github,
     }
+  }
+
+  handleFlipCommand() {
+    sendGameMessage(this.#roomId, { event: 'wagonFlip' })
   }
 
   async handleCouponActivation(id: string, profileId: string, userName: string, codename: string) {

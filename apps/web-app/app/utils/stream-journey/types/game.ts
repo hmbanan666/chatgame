@@ -99,6 +99,7 @@ export interface GameObject extends Container {
 }
 
 export interface GameObjectWagon extends GameObject {
+  startFlip: () => void
 }
 
 export type BiomeVariant = 'GREEN' | 'BLUE' | 'STONE' | 'TEAL' | 'TOXIC' | 'VIOLET'

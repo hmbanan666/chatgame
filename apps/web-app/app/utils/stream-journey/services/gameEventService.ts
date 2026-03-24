@@ -81,6 +81,16 @@ export class GameEventService implements EventService {
     if (message.event === 'newPlayerMessage') {
       return this.handleNewPlayerMessage(message.data)
     }
+    if (message.event === 'wagonFlip') {
+      return this.handleWagonFlip()
+    }
+  }
+
+  private handleWagonFlip() {
+    const wagon = this.game.wagonService.wagon
+    if (wagon && !wagon.destroyed) {
+      wagon.startFlip()
+    }
   }
 
   private async handleNewPlayerMessage(data: NewPlayerMessage['data']): Promise<void> {
