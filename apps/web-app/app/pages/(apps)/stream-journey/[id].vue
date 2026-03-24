@@ -41,7 +41,9 @@ watch(stage, async () => {
         $fetch(`/api/charge/${params.id}/biome`, {
           method: 'POST',
           body: { biome },
-        }).catch(() => {})
+        }).catch((err) => {
+          console.warn('Biome sync failed:', err.statusCode ?? err.message)
+        })
       }
     }, 2000)
   } catch (error) {
