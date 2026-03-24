@@ -1,8 +1,8 @@
 <template>
-  <div class="-mt-5 -mb-1 -ml-3 -mr-2 w-22 h-22 overflow-hidden duration-200 group">
-    <Image :src="`/units/${randomChar}/128.png`" class="w-22 h-22 hidden group-hover:block" />
-    <Image :src="`/units/${randomChar}/idle.gif`" class="w-22 h-22 block group-hover:hidden" />
-  </div>
+  <NuxtLink to="/#characters" class="-mt-5 -mb-1 -ml-3 -mr-2 w-22 h-22 overflow-hidden duration-200 group block">
+    <Image :src="`/units/${char}/128.png`" class="w-22 h-22 hidden group-hover:block" />
+    <Image :src="`/units/${char}/idle.gif`" class="w-22 h-22 block group-hover:hidden" />
+  </NuxtLink>
 </template>
 
 <script setup lang="ts">
@@ -19,5 +19,7 @@ const characters = [
   'telegramo',
   'santa',
 ]
-const randomChar = computed(() => characters[Math.floor(Math.random() * characters.length)])
+
+const index = useState('logo-char', () => Math.floor(Math.random() * characters.length))
+const char = computed(() => characters[index.value])
 </script>

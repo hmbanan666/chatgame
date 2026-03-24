@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-orange-50 min-h-dvh">
+  <div class="bg-site-bg text-site-text min-h-dvh">
     <ActiveStreamBanner />
     <MainHeader />
 

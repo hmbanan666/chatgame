@@ -1,10 +1,19 @@
 <template>
-  <header class="z-10 fixed top-0 left-0 right-0 min-h-18 bg-orange-50 border-b border-orange-800/10 py-1 px-3 flex flex-row gap-2 justify-between items-center">
-    <div class="min-w-32 flex flex-row gap-1 items-center">
+  <header class="z-10 fixed top-0 left-0 right-0 min-h-18 bg-[#2E222F] border-b border-site-accent/10 py-1 px-3 flex flex-row gap-2 justify-between items-center">
+    <div class="flex-1 flex flex-row gap-1 items-center">
       <MainLogo />
     </div>
 
     <MenuDesktop />
-    <MenuProfile />
+    <div class="flex-1 flex items-center justify-end gap-3">
+      <a
+        href="https://github.com/chat-game"
+        target="_blank"
+        class="text-site-text hover:text-site-accent-bright duration-200"
+      >
+        <Icon name="simple-icons:github" class="size-6" />
+      </a>
+      <MenuProfile />
+    </div>
   </header>
 </template>

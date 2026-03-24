@@ -8,7 +8,7 @@
       </li>
     </ul>
 
-    <div class="mt-4 space-y-2 text-amber-900 text-center">
+    <div class="mt-4 space-y-2 text-site-text text-center">
       <p class="text-base">
         Создается с ❤️ и с 🔥 в глазах
       </p>
@@ -65,7 +65,7 @@ const links = [
     transition: 0.2s all;
 
     &:hover {
-      color: var(--color-emerald-600);
+      color: var(--color-site-accent-bright);
       text-decoration: none;
     }
   }

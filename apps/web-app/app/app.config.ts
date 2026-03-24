@@ -4,7 +4,7 @@ export default defineAppConfig({
    */
   ui: {
     colors: {
-      primary: 'black',
+      primary: 'brand',
       secondary: 'green',
       neutral: 'zinc',
       error: 'rose',

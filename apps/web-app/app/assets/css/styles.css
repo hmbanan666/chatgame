@@ -2,6 +2,16 @@
 @import "@nuxt/ui";
 
 @theme {
+  /* Site UI tokens (all from Resurrect 64 palette) */
+  --color-site-bg: #9E4539;         /* brown1 — page background */
+  --color-site-bg-alt: #3E3546;     /* purple1 — header, cards */
+  --color-site-bg-card: #FDCBB0;    /* cream — elevated cards */
+  --color-site-text: #FDCBB0;       /* cream — primary text */
+  --color-site-text-muted: #AB947A; /* tan — secondary text */
+  --color-site-accent: #CD683D;     /* brown2 — links, hover */
+  --color-site-accent-bright: #E6904E; /* brownOrange — active, highlights */
+  --color-site-highlight: #FBB954;  /* gold — important elements */
+
   /*
    * Game UI tokens — all from Resurrect 64 palette
    *
@@ -80,6 +90,22 @@
   --color-game-secondary-5: #EAADED;
 }
 
+/* Nuxt UI needs a numeric scale for primary color */
+/* Generated from brown1 #9E4539 */
+:root {
+  --color-brand-50: #fdf3f1;
+  --color-brand-100: #fbe4df;
+  --color-brand-200: #f8cdc4;
+  --color-brand-300: #f2ab9c;
+  --color-brand-400: #e87d66;
+  --color-brand-500: #9E4539;
+  --color-brand-600: #8a3b31;
+  --color-brand-700: #6e2727;
+  --color-brand-800: #5c2424;
+  --color-brand-900: #4e2323;
+  --color-brand-950: #2b0e0e;
+}
+
 html,
 body {
   font-family: 'Roboto Serif', 'Times New Roman', 'Georgia', serif;
@@ -87,7 +113,7 @@ body {
   font-weight: 500;
   font-style: normal;
   font-variation-settings: 'wdth' 100;
-  color: var(--color-orange-950);
+  color: var(--color-site-text);
   scroll-behavior: smooth;
   scroll-padding-top: 80px;
 }
@@ -115,7 +141,7 @@ body {
   transform: translateY(100%);
   padding: 0.75em;
   border-radius: 8px;
-  background-color: var(--color-orange-50);
+  background-color: var(--color-site-bg);
   z-index: 5;
 }
 
@@ -130,5 +156,5 @@ body {
 
 .dropdown-menu button:hover,
 .dropdown-menu a:hover {
-  color: var(--color-emerald-600);
+  color: var(--color-site-accent);
 }

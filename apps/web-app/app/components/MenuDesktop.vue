@@ -56,12 +56,12 @@ nav {
     transition: color 0.2s;
 
     &:hover {
-      color: var(--color-emerald-600);
+      color: var(--color-site-accent-bright);
     }
   }
 
   .active a {
-    color: var(--color-emerald-600);
+    color: var(--color-site-accent-bright);
   }
 }
 

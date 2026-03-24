@@ -14,26 +14,53 @@
         <a
           href="https://twitch.tv/hmbanan666"
           target="_blank"
-          class="opacity-70 duration-200 hover:opacity-100 hover:text-emerald-600"
+          class="opacity-70 duration-200 hover:opacity-100 hover:text-site-accent-bright"
         >Twitch стриме</a>.
       </p>
     </div>
 
-    <div
-      class="max-w-sm mx-auto flex flex-col md:flex-row gap-4 items-center justify-center"
-    >
-      <a
-        href="https://github.com/hmbanan666/chatgame"
+    <div class="max-w-md mx-auto flex flex-col sm:flex-row gap-3 items-center justify-center">
+      <UButton
+        v-if="isStreaming"
+        to="https://twitch.tv/hmbanan666"
         target="_blank"
-        class="px-8 py-3 md:py-4 w-fit bg-orange-900/75 border-b-6 border-orange-900/75 text-white text-lg md:text-xl font-semibold tracking-wide rounded-lg cursor-pointer hover:opacity-85 active:scale-95 duration-200 flex flex-row justify-center items-center gap-3"
+        size="xl"
+        icon="simple-icons:twitch"
+        trailing-icon="lucide:radio"
+        class="bg-[#2E222F]! hover:bg-[#3E3546]! text-site-text! px-7! py-3.5!"
       >
-        <Icon name="simple-icons:github" size="32" />
-        <p>GitHub</p>
-        <div class="flex flex-row items-center gap-1">
-          <Icon name="lucide:star" class="size-5" />
-          <p>27</p>
-        </div>
-      </a>
+        Смотреть стрим
+      </UButton>
+      <UButton
+        v-else
+        to="/playground"
+        size="xl"
+        icon="lucide:play"
+        class="bg-[#2E222F]! hover:bg-[#3E3546]! text-site-text! px-7! py-3.5!"
+      >
+        Посмотреть демо
+      </UButton>
+
+      <UButton
+        v-if="loggedIn"
+        to="/#profile"
+        size="xl"
+        icon="lucide:user"
+        variant="outline"
+        class="border-site-text/30! text-site-text! hover:bg-site-text/10! px-7! py-3.5!"
+      >
+        Мой профиль
+      </UButton>
+      <UButton
+        v-else
+        to="/api/auth/twitch"
+        external
+        size="xl"
+        icon="simple-icons:twitch"
+        class="bg-[#2E222F]! hover:bg-[#3E3546]! text-site-text! px-7! py-3.5!"
+      >
+        Войти
+      </UButton>
     </div>
   </div>
 
@@ -50,8 +77,8 @@
 
   <!-- Desktop: live demo -->
   <ClientOnly>
-    <div class="my-2 w-full relative hidden md:block bg-sky-100">
-      <div ref="demoStage" class="w-full h-75" />
+    <div class="my-2 w-full relative hidden md:block">
+      <div ref="demoStage" class="w-full h-75 bg-[#8FD3FF]" />
     </div>
   </ClientOnly>
 
@@ -89,7 +116,7 @@
           :src="`/units/${char.codename}/idle.gif`"
           class="w-20 h-20 hidden group-hover:block"
         />
-        <p class="mt-2 text-orange-900/85 font-semibold">
+        <p class="mt-2 text-site-bg-alt font-semibold">
           {{ char.nickname }}
         </p>
       </ActiveCard>
@@ -110,7 +137,7 @@
 
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
       <ActiveCard v-for="product in shopProducts" :key="product.id">
-        <div class="w-full h-24 bg-orange-500/5">
+        <div class="w-full h-24 bg-site-accent/5">
           <Image
             :src="`/shop-assets/${product.id}/512.png`"
             class="w-40 h-auto absolute -top-14 right-0"
@@ -118,7 +145,7 @@
         </div>
 
         <div class="p-4 flex flex-col justify-between">
-          <div class="mb-4 text-xl font-semibold">
+          <div class="mb-4 text-xl font-semibold text-site-bg-alt">
             {{ product.coins }} Монет
           </div>
 
@@ -126,7 +153,7 @@
             <button
               v-if="loggedIn"
               :disabled="isLoading"
-              class="px-6 py-3 w-full bg-teal-500 border-b-4 border-teal-600 text-white text-xl tracking-wide rounded-lg cursor-pointer hover:opacity-85 active:scale-95 duration-200 flex flex-row justify-center items-center gap-3"
+              class="px-6 py-3 w-full bg-site-accent border-b-4 border-site-bg-alt text-site-text text-xl tracking-wide rounded-lg cursor-pointer hover:opacity-85 active:scale-95 duration-200 flex flex-row justify-center items-center gap-3"
               @click="buyProduct(product.id)"
             >
               <UIcon
@@ -147,7 +174,7 @@
       Можешь
       <NuxtLink
         to="/donate"
-        class="text-emerald-600 hover:opacity-85 duration-200"
+        class="text-site-accent-bright hover:opacity-85 duration-200"
       >
         поддержать стримера
       </NuxtLink>
@@ -169,7 +196,7 @@
         <div class="flex flex-row gap-2 justify-center items-center">
           Игровой профиль с
           <div class="flex flex-row gap-1 items-center">
-            <span class="text-green-700 text-lg">{{
+            <span class="text-site-accent-bright text-lg">{{
               new Intl.NumberFormat().format(profile?.points ?? 0)
             }}</span>
             <Image src="/woodland-small.png" class="h-6 w-6" />
@@ -187,7 +214,7 @@
           />
           <div>
             <p>Активный персонаж</p>
-            <p class="font-semibold text-lg text-orange-900/85">
+            <p class="font-semibold text-lg text-site-accent">
               {{ profile?.activeCharacter?.character.nickname }}
             </p>
           </div>
@@ -236,11 +263,11 @@
     </div>
   </ClientOnly>
 
-  <div class="max-w-4xl my-24 px-4 mx-auto text-center space-y-6">
+  <div class="my-24 px-4 py-12 mx-auto text-center space-y-6 bg-[#2E222F]">
     <h2 class="text-2xl md:text-2xl lg:text-3xl">
       Благодарности от hmbanan666
     </h2>
-    <p class="thanks-block">
+    <p class="thanks-block max-w-4xl mx-auto">
       Спасибо моим зрителям: <em>kungfux010</em> за активные тесты игры,
       <em>sava5621</em> за вкусные шавухи, <em>BezSovesty</em> за помощь на
       старте, <em>flack_zombi</em> за упорство в рубке деревьев,
@@ -254,10 +281,34 @@
 
   <UModal
     v-model:open="isCharacterOpened"
-    :title="`&laquo;${selectedCharacter?.nickname}&raquo; ${selectedCharacter?.name}`"
+    :close="{ color: 'neutral', variant: 'ghost', class: 'text-site-text! hover:bg-[#3E3546]!' }"
+    :ui="{ content: 'bg-[#2E222F]! text-site-text ring-[#3E3546]! divide-[#3E3546]!', overlay: 'bg-[#2E222F]/80! backdrop-blur-sm' }"
   >
+    <template #header>
+      <div class="flex items-center gap-4 flex-1">
+        <Image
+          v-if="selectedCharacter?.codename"
+          :src="`/units/${selectedCharacter.codename}/idle.gif`"
+          class="w-16 h-16 image-rendering-pixelated"
+        />
+        <div>
+          <p class="text-lg font-bold text-site-highlight">
+            {{ selectedCharacter?.nickname }}
+          </p>
+          <p class="text-sm text-site-text-muted">
+            {{ selectedCharacter?.name }}
+          </p>
+        </div>
+      </div>
+      <UButton
+        icon="lucide:x"
+        variant="ghost"
+        class="bg-transparent! text-site-text-muted! hover:text-site-text! hover:bg-[#3E3546]!"
+        @click="isCharacterOpened = false"
+      />
+    </template>
     <template #body>
-      <p v-if="selectedCharacter?.description" class="text-base/5">
+      <p v-if="selectedCharacter?.description" class="text-base/5 text-site-text">
         {{ selectedCharacter.description }}
       </p>
     </template>
@@ -280,6 +331,9 @@ useHead({
 
 const { loggedIn, user } = useUserSession()
 const { onElementVisibility } = useNavigation()
+
+const { data: twitchStatus } = await useFetch('/api/twitch/status')
+const isStreaming = computed(() => twitchStatus.value?.some((s) => s.service === 'HMBANAN666_TWITCH' && s.status === 'RUNNING') ?? false)
 
 function onVisibilityChangeGame(isVisible: boolean) {
   isVisible && onElementVisibility('game')
@@ -384,7 +438,7 @@ async function buyProduct(productId: string) {
   em {
     font-style: normal;
     font-weight: 600;
-    color: var(--color-orange-800);
+    color: var(--color-site-accent-bright);
     opacity: 0.75;
   }
 }
