@@ -142,6 +142,7 @@ export interface AssetService {
 }
 
 export interface EventService {
+  sendTreeDestroyed?: () => void
 }
 
 export interface WagonService {

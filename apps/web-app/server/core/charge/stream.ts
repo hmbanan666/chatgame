@@ -1,30 +1,39 @@
-import type { ChargeEventService, ChargeInstance, ChargeModifier } from '#shared/types/charge'
-import type { CharacterEditionWithCharacter } from '@chat-game/types'
+import type { WagonActionCode, WagonActionConfig, WagonEffect, WagonSessionStats } from '#shared/types/charge'
 import type { DonateController } from './donateClient'
 import { createId } from '@paralleldrive/cuid2'
 import { sendAlertMessage } from '~~/server/api/websocket'
-import { EventService } from './event'
+import { getStreamInfo, updateCustomReward } from '~~/server/utils/twitch/twitch.api'
 
-interface StreamChargeOptions {
+// ── Action Configs ──────────────────────────────────────
+
+export const WAGON_ACTIONS: WagonActionConfig[] = [
+  { code: 'REFUEL', title: 'Заправить вагон', baseCost: 500, durationSec: 0, fuelDelta: 15 },
+  { code: 'STEAL_FUEL', title: 'Украсть топливо', baseCost: 300, durationSec: 0, fuelDelta: -10, escalation: 1.5 },
+  { code: 'SPEED_BOOST', title: 'Ускорение', baseCost: 1000, durationSec: 120, speedMultiplier: 2.0 },
+  { code: 'SABOTAGE', title: 'Саботаж', baseCost: 2000, durationSec: 30, stopWagon: true, escalation: 2.0 },
+  { code: 'RESET_EFFECTS', title: 'Сбросить эффекты', baseCost: 1500, durationSec: 0 },
+]
+
+// ── Reward mapping (twitchRewardId → actionCode) ────────
+
+export interface RewardMapping {
+  twitchRewardId: string
+  actionCode: WagonActionCode
+  currentCost: number
+}
+
+// ── Options ─────────────────────────────────────────────
+
+interface WagonSessionOptions {
   id: string
   streamerId: string
-  startedAt: string
-  energy: number
-  baseRate: number
-  difficulty: number
   twitchChannelId: string
   twitchChannelName: string
 }
 
-interface StreamChargeMessage {
-  id: string
-  createdAt: number
-  text: string
-  userName: string
-  isExpired: boolean
-}
+// ── Donation ────────────────────────────────────────────
 
-interface StreamChargeDonation {
+interface WagonDonation {
   id: string
   createdAt: number
   amount: number
@@ -32,259 +41,232 @@ interface StreamChargeDonation {
   message: string
 }
 
-export class StreamCharge implements ChargeInstance {
+// ── WagonSession ────────────────────────────────────────
+
+export class WagonSession {
   id: string
   streamerId: string
-  startedAt: string
-  energy: number
-  baseRate: number
-  difficulty: number
   twitchChannelId: string
   twitchChannelName: string
 
+  fuel: number = 50
+  maxFuel: number = 100
+  speed: number = 1.0
+  isStopped: boolean = false
   biome: string = 'GREEN'
-  messages: StreamChargeMessage[] = []
-  donations: StreamChargeDonation[] = []
-  modifiers: ChargeModifier[] = []
 
-  energyTicker!: NodeJS.Timeout
-  energyTickerInterval: number = 1000
+  effects: WagonEffect[] = []
+  donations: WagonDonation[] = []
 
-  difficultyTicker!: NodeJS.Timeout
-  difficultyTickerInterval: number = 60_000 * 5
-  difficultyMultiplier: number = 0.04
+  stats: WagonSessionStats = {
+    fuelAdded: 0,
+    fuelStolen: 0,
+    treesChopped: 0,
+    donationsCount: 0,
+    donationsTotal: 0,
+    messagesCount: 0,
+    peakViewers: 0,
+    totalRedemptions: 0,
+    streamStartedAt: new Date().toISOString(),
+  }
 
-  messagesTicker!: NodeJS.Timeout
-  messagesTickerInterval: number = 1000
+  viewerCount: number = 0
+  rewardMappings: RewardMapping[] = []
 
-  modifiersTicker!: NodeJS.Timeout
-  modifiersTickerInterval: number = 1000
+  readonly #logger = useLogger('wagon-session')
 
-  event: ChargeEventService
-
-  readonly #logger = useLogger('stream-charge')
+  #fuelTicker!: NodeJS.Timeout
+  #effectsTicker!: NodeJS.Timeout
+  #viewerTicker!: NodeJS.Timeout
 
   constructor(
-    data: StreamChargeOptions,
+    data: WagonSessionOptions,
     readonly donate: DonateController | null,
   ) {
     this.id = data.id
     this.streamerId = data.streamerId
-    this.startedAt = data.startedAt
-    this.energy = data.energy
-    this.baseRate = data.baseRate
-    this.difficulty = data.difficulty
     this.twitchChannelId = data.twitchChannelId
     this.twitchChannelName = data.twitchChannelName
 
-    this.event = new EventService(this)
-
     this.donate?.onDonation(this.handleDonation.bind(this))
 
-    this.initEnergyTicker()
-    this.initDifficultyTicker()
-    this.initMessagesTicker()
-    this.initModifiersTicker()
+    this.#initFuelTicker()
+    this.#initEffectsTicker()
+    this.#initViewerTicker()
   }
 
-  get energyPerTick() {
-    return this.rate / this.energyTickerInterval
+  // ── Fuel consumption ────────────────────────────────
+
+  #initFuelTicker() {
+    this.#fuelTicker = setInterval(() => {
+      if (this.isStopped) {
+        return
+      }
+
+      // Fuel drains slowly: 0.05 per second × speed
+      this.fuel = Math.max(0, this.fuel - 0.05 * this.speed)
+    }, 1000)
   }
 
-  get rate() {
-    let negative = 0
-    let positive = 0
+  // ── Effects expiry ──────────────────────────────────
 
-    negative += Math.abs(this.baseRate * this.difficulty)
-
-    for (const modifier of this.modifiers) {
-      if (modifier.isExpired) {
-        continue
-      }
-
-      if (modifier.code === 'positive1') {
-        positive += 2
-      }
-      if (modifier.code === 'positive2') {
-        positive += 4
-      }
-      if (modifier.code === 'negative1') {
-        negative += 2
-      }
-      if (modifier.code === 'negative2') {
-        negative += 4
-      }
-    }
-
-    for (const modifier of this.modifiers) {
-      if (modifier.isExpired) {
-        continue
-      }
-
-      if (modifier.code === 'positive3') {
-        positive *= 1.5
-      }
-      if (modifier.code === 'negative3') {
-        negative *= 1.5
-      }
-    }
-
-    positive += this.messages.filter((message) => !message.isExpired).length
-
-    positive = Math.min(positive, 3)
-    negative = Math.min(negative, 3)
-
-    return positive - negative
-  }
-
-  get ratePerMinute() {
-    return this.energyPerTick * (60_000 / this.energyTickerInterval)
-  }
-
-  expireAllModifiers() {
-    for (const modifier of this.modifiers) {
-      modifier.isExpired = true
-    }
-  }
-
-  initEnergyTicker() {
-    this.energyTicker = setInterval(() => {
-      this.energy = Math.max(0, Math.min(1000, this.energy + this.energyPerTick))
-    }, this.energyTickerInterval)
-  }
-
-  initDifficultyTicker() {
-    this.difficultyTicker = setInterval(() => {
-      this.difficulty += this.difficultyMultiplier
-    }, this.difficultyTickerInterval)
-  }
-
-  initMessagesTicker() {
-    this.messagesTicker = setInterval(() => {
+  #initEffectsTicker() {
+    this.#effectsTicker = setInterval(() => {
       const now = Date.now()
+      let recalcSpeed = false
 
-      for (const message of this.messages) {
-        if (message.isExpired) {
+      for (const effect of this.effects) {
+        if (effect.isExpired) {
           continue
         }
-
-        const expiredIn = 30_000
-        if (now >= message.createdAt + expiredIn) {
-          message.isExpired = true
+        if (now >= effect.expiredAt) {
+          effect.isExpired = true
+          recalcSpeed = true
         }
       }
 
-      // Remove expired messages to prevent memory leak
-      this.messages = this.messages.filter((m) => !m.isExpired)
-    }, this.messagesTickerInterval)
-  }
-
-  initModifiersTicker() {
-    this.modifiersTicker = setInterval(() => {
-      const now = Date.now()
-
-      for (const modifier of this.modifiers) {
-        if (modifier.isExpired) {
-          continue
-        }
-
-        if (now >= modifier.expiredAt) {
-          modifier.isExpired = true
-        }
+      if (recalcSpeed) {
+        this.#recalcState()
       }
 
-      // Remove expired modifiers to prevent memory leak
-      this.modifiers = this.modifiers.filter((m) => !m.isExpired)
-    }, this.modifiersTickerInterval)
+      this.effects = this.effects.filter((e) => !e.isExpired)
+    }, 1000)
   }
 
-  connectDonateClient() {
-    if (!this.donate) {
-      return
+  // ── Viewer count polling ────────────────────────────
+
+  #initViewerTicker() {
+    this.#viewerTicker = setInterval(async () => {
+      try {
+        const info = await getStreamInfo(this.twitchChannelId)
+        if (info) {
+          this.viewerCount = info.viewerCount
+          if (info.startedAt) {
+            this.stats.streamStartedAt = info.startedAt
+          }
+          if (info.viewerCount > this.stats.peakViewers) {
+            this.stats.peakViewers = info.viewerCount
+          }
+        }
+      } catch {
+        // Ignore polling errors
+      }
+    }, 60_000)
+  }
+
+  // ── Recalculate speed/stopped from active effects ───
+
+  #recalcState() {
+    const activeEffects = this.effects.filter((e) => !e.isExpired)
+
+    const hasSabotage = activeEffects.some((e) => e.action === 'SABOTAGE')
+    this.isStopped = hasSabotage
+
+    const speedBoost = activeEffects.find((e) => e.action === 'SPEED_BOOST')
+    if (speedBoost) {
+      const config = WAGON_ACTIONS.find((a) => a.code === 'SPEED_BOOST')
+      this.speed = config?.speedMultiplier ?? 2.0
+    } else {
+      this.speed = 1.0
     }
-    this.donate.init().catch((err) => {
-      this.#logger.error('Failed to init DonationAlerts client', err)
-    })
   }
 
-  disconnectDonateClient() {
-    this.donate?.disconnect()
-  }
-
-  destroy() {
-    clearInterval(this.energyTicker)
-    clearInterval(this.difficultyTicker)
-    clearInterval(this.messagesTicker)
-    clearInterval(this.modifiersTicker)
-
-    // Cleanup clients
-    this.donate?.destroy()
-
-    // Clear arrays
-    this.messages = []
-    this.modifiers = []
-    this.donations = []
-  }
-
-  handleMessage(_: string, userName: string, text: string) {
-    this.messages.push({
-      id: createId(),
-      createdAt: Date.now(),
-      text,
-      userName,
-      isExpired: false,
-    })
-
-    this.event.send({
-      id: createId(),
-      type: 'NEW_PLAYER_MESSAGE',
-      data: { text, player: { id: userName, name: userName }, character: this.getBasicCharacter() },
-    })
-  }
+  // ── Handle Twitch channel point redemption ──────────
 
   handleRedemption(userId: string, rewardId: string) {
-    this.#logger.log('Channel point reward redeemed', rewardId, userId)
-
-    const reward = TWITCH_CHANNEL_REWARDS.find((r) => r.rewardId === rewardId)
-    if (!reward) {
+    const mapping = this.rewardMappings.find((r) => r.twitchRewardId === rewardId)
+    if (!mapping) {
       return
     }
 
-    if (reward.code === 'positive4') {
-      this.energy += 5
-    }
-    if (reward.code === 'negative4') {
-      this.energy -= 5
-    }
-    if (reward.code === 'neutral1') {
-      this.expireAllModifiers()
+    const config = WAGON_ACTIONS.find((a) => a.code === mapping.actionCode)
+    if (!config) {
+      return
     }
 
-    this.modifiers.push({
+    this.#logger.log(`Wagon action: ${config.code} by ${userId}`)
+    this.stats.totalRedemptions++
+
+    this.#applyAction(config, userId)
+
+    // Dynamic pricing: escalate cost if configured
+    if (config.escalation) {
+      mapping.currentCost = Math.floor(mapping.currentCost * config.escalation)
+      updateCustomReward(this.twitchChannelId, mapping.twitchRewardId, { cost: mapping.currentCost }).catch((err) => {
+        this.#logger.error('Failed to update reward cost', err)
+      })
+    }
+  }
+
+  #applyAction(config: WagonActionConfig, userName: string) {
+    switch (config.code) {
+      case 'REFUEL':
+        this.fuel = Math.min(this.maxFuel, this.fuel + (config.fuelDelta ?? 0))
+        this.stats.fuelAdded += Math.abs(config.fuelDelta ?? 0)
+        break
+
+      case 'STEAL_FUEL':
+        this.fuel = Math.max(0, this.fuel + (config.fuelDelta ?? 0))
+        this.stats.fuelStolen += Math.abs(config.fuelDelta ?? 0)
+        break
+
+      case 'SPEED_BOOST':
+        this.effects.push(this.#createEffect(config, userName))
+        this.#recalcState()
+        break
+
+      case 'SABOTAGE':
+        this.effects.push(this.#createEffect(config, userName))
+        this.#recalcState()
+        break
+
+      case 'RESET_EFFECTS':
+        for (const effect of this.effects) {
+          effect.isExpired = true
+        }
+        this.effects = []
+        this.#recalcState()
+        break
+    }
+  }
+
+  #createEffect(config: WagonActionConfig, userName: string): WagonEffect {
+    return {
       id: createId(),
       createdAt: Date.now(),
-      expiredAt: Date.now() + reward.actionTimeInSeconds * 1000,
-      code: reward.code,
-      userName: userId,
+      expiredAt: Date.now() + config.durationSec * 1000,
+      action: config.code,
+      userName,
       isExpired: false,
-    })
+    }
   }
+
+  // ── Handle chat message ─────────────────────────────
+
+  handleMessage() {
+    this.stats.messagesCount++
+  }
+
+  // ── Handle donation ─────────────────────────────────
 
   handleDonation(event: { username: string, amount: number, currency: string, message: string }) {
     this.#logger.log('Donation received', event.username, event.amount, event.currency)
 
-    const amount = this.convertDonationToEnergy(event.currency, event.amount)
-    this.energy += amount
+    const fuelAmount = this.#convertDonationToFuel(event.currency, event.amount)
+    this.fuel = Math.min(this.maxFuel, this.fuel + fuelAmount)
+
+    this.stats.donationsCount++
+    this.stats.donationsTotal += Math.round(event.amount)
+    this.stats.fuelAdded += fuelAmount
 
     this.donations.push({
       id: createId(),
       createdAt: Date.now(),
-      amount,
+      amount: Math.round(event.amount),
       userName: event.username,
       message: event.message,
     })
 
-    // Keep only last 50 donations
     if (this.donations.length > 50) {
       this.donations = this.donations.slice(-50)
     }
@@ -313,56 +295,70 @@ export class StreamCharge implements ChargeInstance {
     }
   }
 
-  convertDonationToEnergy(currency: string, amount: number): number {
-    const conversionRates = {
-      RUB: 0.1,
-      USD: 10,
-      EUR: 11,
-    } as const
-
-    const rate = conversionRates[currency as keyof typeof conversionRates]
-    if (!rate) {
-      return amount * conversionRates.USD
+  #convertDonationToFuel(currency: string, amount: number): number {
+    const conversionRates: Record<string, number> = {
+      RUB: 0.01,
+      USD: 1,
+      EUR: 1.1,
     }
 
-    return amount * rate
+    const rate = conversionRates[currency] ?? conversionRates.USD!
+    return Math.min(amount * rate, this.maxFuel)
   }
 
-  getBasicCharacter() {
-    const character: CharacterEditionWithCharacter = {
-      id: '123',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      level: 1,
-      xp: 0,
-      profileId: '123',
-      characterId: 'staoqh419yy3k22cbtm9wquc',
-      character: {
-        id: 'staoqh419yy3k22cbtm9wquc',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        name: 'Том Стокер',
-        description: 'Описание',
-        codename: 'twitchy',
-        nickname: 'Твичи',
-        isReady: true,
-        unlockedBy: 'COINS',
-        price: 100,
-        coefficient: 1,
-      },
+  // ── Lifecycle ───────────────────────────────────────
+
+  connectDonateClient() {
+    if (!this.donate) {
+      return
     }
-    return character
+    this.donate.init().catch((err) => {
+      this.#logger.error('Failed to init DonationAlerts client', err)
+    })
+  }
+
+  disconnectDonateClient() {
+    this.donate?.disconnect()
+  }
+
+  resetSession() {
+    this.fuel = 50
+    this.speed = 1.0
+    this.isStopped = false
+    this.effects = []
+    this.donations = []
+    this.stats = {
+      fuelAdded: 0,
+      fuelStolen: 0,
+      treesChopped: 0,
+      donationsCount: 0,
+      donationsTotal: 0,
+      messagesCount: 0,
+      peakViewers: 0,
+      totalRedemptions: 0,
+      streamStartedAt: new Date().toISOString(),
+    }
+
+    // Reset dynamic pricing
+    for (const mapping of this.rewardMappings) {
+      const config = WAGON_ACTIONS.find((a) => a.code === mapping.actionCode)
+      if (config) {
+        mapping.currentCost = config.baseCost
+        updateCustomReward(this.twitchChannelId, mapping.twitchRewardId, { cost: config.baseCost }).catch((err) => {
+          this.#logger.error('Failed to reset reward cost', err)
+        })
+      }
+    }
+  }
+
+  destroy() {
+    clearInterval(this.#fuelTicker)
+    clearInterval(this.#effectsTicker)
+    clearInterval(this.#viewerTicker)
+
+    this.donate?.destroy()
+
+    this.effects = []
+    this.donations = []
   }
 }
-
-const TWITCH_CHANNEL_REWARDS = [
-  { code: 'positive1', rewardId: '57b753fb-3a74-47f3-bb88-5d4feab6f42e', actionTimeInSeconds: 60 },
-  { code: 'positive2', rewardId: '66e1569d-2226-49f6-9abd-f8b0b03fd5fd', actionTimeInSeconds: 120 },
-  { code: 'positive3', rewardId: 'd37c5835-db07-44b2-80cb-e16f854ae8b7', actionTimeInSeconds: 180 },
-  { code: 'positive4', rewardId: '121c393a-d5a2-4167-aa4b-efe4a016ea6d', actionTimeInSeconds: 0 },
-  { code: 'negative1', rewardId: 'e5420bca-e719-4b8d-8a15-d8ae46739d74', actionTimeInSeconds: 60 },
-  { code: 'negative2', rewardId: 'aa0ca8b8-cf9e-4161-8a75-b3c67dd97cb0', actionTimeInSeconds: 120 },
-  { code: 'negative3', rewardId: '0e6ebe0c-8d6a-4f0d-a300-1269c0d44339', actionTimeInSeconds: 180 },
-  { code: 'negative4', rewardId: '48c5e058-2b71-4ae3-9f6f-b0342a9f2032', actionTimeInSeconds: 0 },
-  { code: 'neutral1', rewardId: '178832f9-f84e-4376-a205-db57ac4f0406', actionTimeInSeconds: 0 },
-]

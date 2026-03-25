@@ -1,33 +1,55 @@
-import type { EventMessage } from '@chat-game/types'
+// ── Wagon Action Codes ──────────────────────────────────
 
-export interface Charge {
-  id: string
-  startedAt: string
-  energy: number
-  baseRate: number
-  difficulty: number
-  twitchChannelId: string
-  twitchChannelName: string
-}
+export type WagonActionCode = 'REFUEL' | 'STEAL_FUEL' | 'SPEED_BOOST' | 'SABOTAGE' | 'RESET_EFFECTS'
 
-export interface ChargeInstance extends Charge {}
+// ── Wagon Effect ────────────────────────────────────────
 
-export interface ChargeService {}
-
-export interface ChargeEventService extends ChargeService {
-  stream: EventStream | null
-  send: (event: EventMessage) => Promise<void>
-}
-
-export interface EventStream {
-  push: (message: string) => Promise<void>
-}
-
-export interface ChargeModifier {
+export interface WagonEffect {
   id: string
   createdAt: number
   expiredAt: number
-  code: string
+  action: WagonActionCode
   userName: string
   isExpired: boolean
+}
+
+// ── Session Stats ───────────────────────────────────────
+
+export interface WagonSessionStats {
+  fuelAdded: number
+  fuelStolen: number
+  treesChopped: number
+  donationsCount: number
+  donationsTotal: number
+  messagesCount: number
+  peakViewers: number
+  totalRedemptions: number
+  streamStartedAt: string
+}
+
+// ── Wagon State (API response) ──────────────────────────
+
+export interface WagonState {
+  id: string
+  fuel: number
+  maxFuel: number
+  speed: number
+  isStopped: boolean
+  effects: WagonEffect[]
+  stats: WagonSessionStats
+  viewerCount: number
+  biome: string
+}
+
+// ── Wagon Action Config ─────────────────────────────────
+
+export interface WagonActionConfig {
+  code: WagonActionCode
+  title: string
+  baseCost: number
+  durationSec: number
+  fuelDelta?: number
+  speedMultiplier?: number
+  stopWagon?: boolean
+  escalation?: number
 }

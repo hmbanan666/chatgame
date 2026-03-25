@@ -4,19 +4,21 @@
       :class="`biome-${biome.toLowerCase()}`"
       class="relative w-dvw h-dvh overscroll-none overflow-hidden bg-transparent flex flex-col justify-end transition-colors duration-1000"
     >
-      <ChargeBar
-        :energy="energy"
-        :rate-per-minute="ratePerMinute"
-        :difficulty="difficulty"
-        :messages-count="messagesCount"
-        :modifiers="modifiers"
+      <WagonDashboard
+        :fuel="fuel"
+        :max-fuel="maxFuel"
+        :speed="speed"
+        :is-stopped="isStopped"
+        :effects="effects"
+        :stats="stats"
+        :viewer-count="viewerCount"
       />
     </div>
   </ClientOnly>
 </template>
 
 <script setup lang="ts">
-import type { ChargeModifier } from '#shared/types/charge'
+import type { WagonEffect, WagonSessionStats } from '#shared/types/charge'
 
 definePageMeta({
   layout: 'game',
@@ -27,11 +29,23 @@ if (!params.id) {
   throw createError({ statusCode: 404 })
 }
 
-const energy = ref(0)
-const ratePerMinute = ref(0)
-const difficulty = ref(0)
-const messagesCount = ref(0)
-const modifiers = ref<ChargeModifier[]>([])
+const fuel = ref(0)
+const maxFuel = ref(100)
+const speed = ref(1)
+const isStopped = ref(false)
+const effects = ref<WagonEffect[]>([])
+const stats = ref<WagonSessionStats>({
+  fuelAdded: 0,
+  fuelStolen: 0,
+  treesChopped: 0,
+  donationsCount: 0,
+  donationsTotal: 0,
+  messagesCount: 0,
+  peakViewers: 0,
+  totalRedemptions: 0,
+  streamStartedAt: new Date().toISOString(),
+})
+const viewerCount = ref(0)
 const biome = ref('GREEN')
 
 async function update(id: string) {
@@ -41,14 +55,16 @@ async function update(id: string) {
       return
     }
 
-    energy.value = data.energy
-    ratePerMinute.value = data.ratePerMinute
-    difficulty.value = data.difficulty
-    messagesCount.value = data.messagesCount
-    modifiers.value = data.modifiers.slice(0, 8)
+    fuel.value = data.fuel
+    maxFuel.value = data.maxFuel
+    speed.value = data.speed
+    isStopped.value = data.isStopped
+    effects.value = data.effects
+    stats.value = data.stats
+    viewerCount.value = data.viewerCount
     biome.value = data.biome
   } catch {
-    // Charge room not found or server error
+    // Session not found or server error
   }
 }
 

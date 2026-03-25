@@ -114,6 +114,8 @@ function handleMessage(message: WebSocketMessage, peer: WebSocketPeer) {
       return handleConnectAlerts(message, peer)
     case 'UPDATE_BIOME':
       return handleUpdateBiome(message)
+    case 'TREE_DESTROYED':
+      return handleTreeDestroyed(message)
   }
 }
 
@@ -183,5 +185,17 @@ function handleUpdateBiome(message: WebSocketMessage) {
         }
       }
     }
+  }
+}
+
+function handleTreeDestroyed(message: WebSocketMessage) {
+  const data = (message as any).data as { roomId: string } | undefined
+  if (!data?.roomId) {
+    return
+  }
+
+  const chargeRoom = chargeRooms.find((room) => room.id === data.roomId)
+  if (chargeRoom) {
+    chargeRoom.stats.treesChopped++
   }
 }

@@ -3,25 +3,22 @@ import { chargeRooms } from '~~/server/core/charge'
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
 
-  const chargeRoom = chargeRooms.find((room) => room.id === id)
-  if (!chargeRoom) {
+  const session = chargeRooms.find((room) => room.id === id)
+  if (!session) {
     throw createError({
       status: 404,
     })
   }
 
-  const modifiers = chargeRoom.modifiers.filter((m) => !m.isExpired)
-
   return {
-    id: chargeRoom.id,
-    startedAt: chargeRoom.startedAt,
-    energy: chargeRoom.energy,
-    baseRate: chargeRoom.baseRate,
-    rate: chargeRoom.rate,
-    ratePerMinute: chargeRoom.ratePerMinute,
-    difficulty: chargeRoom.difficulty,
-    messagesCount: chargeRoom.messages.length,
-    modifiers,
-    biome: chargeRoom.biome,
+    id: session.id,
+    fuel: session.fuel,
+    maxFuel: session.maxFuel,
+    speed: session.speed,
+    isStopped: session.isStopped,
+    effects: session.effects.filter((e) => !e.isExpired),
+    stats: session.stats,
+    viewerCount: session.viewerCount,
+    biome: session.biome,
   }
 })

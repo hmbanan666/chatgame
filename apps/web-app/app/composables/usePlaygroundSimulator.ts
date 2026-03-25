@@ -1,4 +1,4 @@
-import type { ChargeModifier } from '#shared/types/charge'
+import type { WagonEffect, WagonSessionStats } from '#shared/types/charge'
 import type { EventMessage } from '@chat-game/types'
 import type { BacklogItem } from '~/components/BacklogList.vue'
 import { QUEST_TEMPLATES } from '#shared/quest/templates'
@@ -14,21 +14,29 @@ const FAKE_DONATIONS = [
   { text: 'Классная игра, респект', amount: 300 },
 ]
 
-const MODIFIER_CODES = ['positive1', 'positive2', 'negative1', 'positive3']
-
 export function usePlaygroundSimulator() {
-  const energy = ref(100)
-  const ratePerMinute = ref(2)
-  const difficulty = ref(1.0)
-  const messagesCount = ref(0)
-  const modifiers = ref<ChargeModifier[]>([])
+  const fuel = ref(50)
+  const maxFuel = ref(100)
+  const speed = ref(1)
+  const isStopped = ref(false)
+  const effects = ref<WagonEffect[]>([])
+  const stats = ref<WagonSessionStats>({
+    fuelAdded: 0,
+    fuelStolen: 0,
+    treesChopped: 0,
+    donationsCount: 0,
+    donationsTotal: 0,
+    messagesCount: 0,
+    peakViewers: 0,
+    totalRedemptions: 0,
+    streamStartedAt: new Date().toISOString(),
+  })
+  const viewerCount = ref(randomInt(50, 200))
   const backlogItems = ref<BacklogItem[]>([])
   const alerts = ref<EventMessage[]>([])
 
   let idCounter = 0
-  let tickCount = 0
   const intervals: ReturnType<typeof setInterval>[] = []
-  const activeMessages: { expiresAt: number }[] = []
 
   function nextId() {
     return `fake-${++idCounter}`
@@ -42,61 +50,85 @@ export function usePlaygroundSimulator() {
     return Math.floor(Math.random() * (max - min + 1)) + min
   }
 
-  function chargeTick() {
-    tickCount++
-
+  function wagonTick() {
     const now = Date.now()
-    while (activeMessages.length > 0 && activeMessages[0]!.expiresAt < now) {
-      activeMessages.shift()
+
+    // Expire effects
+    let recalc = false
+    for (const effect of effects.value) {
+      if (!effect.isExpired && now >= effect.expiredAt) {
+        effect.isExpired = true
+        recalc = true
+      }
     }
-    messagesCount.value = activeMessages.length
+    effects.value = effects.value.filter((e) => !e.isExpired)
 
-    modifiers.value = modifiers.value.filter((m) => m.expiredAt > now)
-
-    if (tickCount % 300 === 0) {
-      difficulty.value = Math.round((difficulty.value + 0.04) * 100) / 100
+    if (recalc) {
+      isStopped.value = effects.value.some((e) => e.action === 'SABOTAGE')
+      const hasBoost = effects.value.some((e) => e.action === 'SPEED_BOOST')
+      speed.value = hasBoost ? 2 : 1
     }
 
-    const baseRate = 0.15
-    const drain = -(baseRate * difficulty.value)
-    const messageBoost = Math.min(activeMessages.length, 3) * 0.08
-    const modBoost = modifiers.value.reduce((sum, m) => {
-      if (m.code === 'positive1') {
-        return sum + 0.1
-      }
-      if (m.code === 'positive2') {
-        return sum + 0.2
-      }
-      if (m.code === 'negative1') {
-        return sum - 0.1
-      }
-      return sum
-    }, 0)
-    const rate = drain + messageBoost + modBoost
-    ratePerMinute.value = Math.round(rate * 60 * 100) / 100
+    // Fuel drain
+    if (!isStopped.value) {
+      fuel.value = Math.max(0, fuel.value - 0.05 * speed.value)
+    }
 
-    energy.value = Math.max(0, Math.min(100, energy.value + rate))
+    // Fake tree chop
+    if (Math.random() < 0.02) {
+      stats.value.treesChopped++
+    }
+
+    // Fluctuate viewers
+    viewerCount.value = Math.max(0, viewerCount.value + randomInt(-2, 3))
+    if (viewerCount.value > stats.value.peakViewers) {
+      stats.value.peakViewers = viewerCount.value
+    }
+  }
+
+  function addFakeAction() {
+    const actions = ['REFUEL', 'STEAL_FUEL', 'SPEED_BOOST', 'SABOTAGE'] as const
+    const action = pick([...actions])
+    const userName = pick(FAKE_NAMES)
+
+    stats.value.totalRedemptions++
+
+    switch (action) {
+      case 'REFUEL':
+        fuel.value = Math.min(maxFuel.value, fuel.value + 15)
+        stats.value.fuelAdded += 15
+        break
+      case 'STEAL_FUEL':
+        fuel.value = Math.max(0, fuel.value - 10)
+        stats.value.fuelStolen += 10
+        break
+      case 'SPEED_BOOST':
+        effects.value.push({
+          id: nextId(),
+          createdAt: Date.now(),
+          expiredAt: Date.now() + 120_000,
+          action: 'SPEED_BOOST',
+          userName,
+          isExpired: false,
+        })
+        speed.value = 2
+        break
+      case 'SABOTAGE':
+        effects.value.push({
+          id: nextId(),
+          createdAt: Date.now(),
+          expiredAt: Date.now() + 30_000,
+          action: 'SABOTAGE',
+          userName,
+          isExpired: false,
+        })
+        isStopped.value = true
+        break
+    }
   }
 
   function addFakeMessage() {
-    activeMessages.push({ expiresAt: Date.now() + 30_000 })
-    messagesCount.value = activeMessages.length
-  }
-
-  function addFakeModifier() {
-    const code = pick(MODIFIER_CODES)
-    const duration = randomInt(30, 90) * 1000
-    modifiers.value.push({
-      id: nextId(),
-      createdAt: Date.now(),
-      expiredAt: Date.now() + duration,
-      code,
-      userName: pick(FAKE_NAMES),
-      isExpired: false,
-    })
-    if (modifiers.value.length > 8) {
-      modifiers.value = modifiers.value.slice(-8)
-    }
+    stats.value.messagesCount++
   }
 
   const activeQuestViewers = new Set<string>()
@@ -105,7 +137,6 @@ export function usePlaygroundSimulator() {
     const isQuest = Math.random() < 0.5
 
     if (isQuest) {
-      // Find a viewer without an active quest
       const available = FAKE_NAMES.filter((n) => !activeQuestViewers.has(n))
       if (available.length === 0) {
         return
@@ -135,7 +166,6 @@ export function usePlaygroundSimulator() {
           return
         }
         item.questProgress = Math.min(item.questProgress + randomInt(1, 3), item.questGoal!)
-        // Move updated quest to end (most visible)
         const idx = backlogItems.value.indexOf(item)
         if (idx !== -1) {
           backlogItems.value.splice(idx, 1)
@@ -159,6 +189,14 @@ export function usePlaygroundSimulator() {
     } else {
       const donation = pick(FAKE_DONATIONS)
       const donorName = pick(FAKE_NAMES)
+
+      // Donation adds fuel
+      const fuelAmount = Math.min(donation.amount * 0.01, maxFuel.value)
+      fuel.value = Math.min(maxFuel.value, fuel.value + fuelAmount)
+      stats.value.donationsCount++
+      stats.value.donationsTotal += donation.amount
+      stats.value.fuelAdded += fuelAmount
+
       alerts.value.push({
         id: nextId(),
         type: 'DONATION',
@@ -183,7 +221,7 @@ export function usePlaygroundSimulator() {
   }
 
   function start() {
-    intervals.push(setInterval(chargeTick, 1000))
+    intervals.push(setInterval(wagonTick, 1000))
 
     function scheduleMessage() {
       const delay = randomInt(3000, 8000)
@@ -195,15 +233,15 @@ export function usePlaygroundSimulator() {
     }
     scheduleMessage()
 
-    function scheduleModifier() {
-      const delay = randomInt(30_000, 60_000)
+    function scheduleAction() {
+      const delay = randomInt(20_000, 45_000)
       const timeout = setTimeout(() => {
-        addFakeModifier()
-        scheduleModifier()
+        addFakeAction()
+        scheduleAction()
       }, delay)
       intervals.push(timeout as unknown as ReturnType<typeof setInterval>)
     }
-    scheduleModifier()
+    scheduleAction()
 
     function scheduleCoupon() {
       const delay = randomInt(40_000, 80_000)
@@ -258,10 +296,9 @@ export function usePlaygroundSimulator() {
     scheduleBacklog()
 
     addBacklogItem()
-    addFakeModifier()
-    for (let i = 0; i < 3; i++) {
-      addFakeMessage()
-    }
+    addFakeMessage()
+    addFakeMessage()
+    addFakeMessage()
   }
 
   function stop() {
@@ -272,11 +309,13 @@ export function usePlaygroundSimulator() {
   }
 
   return {
-    energy,
-    ratePerMinute,
-    difficulty,
-    messagesCount,
-    modifiers,
+    fuel,
+    maxFuel,
+    speed,
+    isStopped,
+    effects,
+    stats,
+    viewerCount,
     backlogItems,
     alerts,
     start,

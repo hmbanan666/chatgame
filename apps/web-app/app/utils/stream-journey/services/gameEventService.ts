@@ -58,6 +58,17 @@ export class GameEventService implements EventService {
     }
   }
 
+  sendTreeDestroyed() {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      return
+    }
+    this.ws.send(JSON.stringify({
+      id: createId(),
+      type: 'TREE_DESTROYED',
+      data: { roomId: this.roomId },
+    }))
+  }
+
   sendBiome(biome: string) {
     if (biome === this.lastBiome || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
       return

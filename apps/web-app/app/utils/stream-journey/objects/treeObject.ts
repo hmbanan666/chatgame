@@ -136,6 +136,7 @@ export class TreeObject extends BaseObject implements GameObjectTree {
     // Done falling
     if (Math.abs(this.fallAngle) > 90 || this.alpha <= 0) {
       this.spawnStump()
+      this.game.eventService.sendTreeDestroyed?.()
       this.destroy()
     }
   }

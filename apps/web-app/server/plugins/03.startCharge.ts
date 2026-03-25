@@ -5,7 +5,7 @@ export default defineNitroPlugin(async (nitroApp) => {
   const logger = useLogger('plugin:charge')
 
   if (import.meta.dev) {
-    logger.info('Charge server not started in dev mode')
+    logger.info('Wagon session not started in dev mode')
     return
   }
 
@@ -18,7 +18,7 @@ export default defineNitroPlugin(async (nitroApp) => {
   }
 
   nitroApp.hooks.hook('close', () => {
-    logger.info('Shutting down charge rooms...')
+    logger.info('Shutting down wagon sessions...')
     for (const room of chargeRooms) {
       room.destroy()
     }

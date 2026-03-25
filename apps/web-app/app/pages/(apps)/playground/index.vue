@@ -34,15 +34,17 @@
       <div ref="stage" class="absolute left-0 right-0 bottom-0 h-75 w-full z-10" />
 
       <!-- Right panel: backlog + charge + webcam (1/5 width) -->
-      <div class="absolute right-0 top-0 bottom-0 w-1/5 flex flex-col z-20">
+      <div class="absolute right-0 top-0 bottom-0 w-84 flex flex-col z-20">
         <BacklogList :items="backlogItems" class="flex-1 p-2 pb-4" />
 
-        <ChargeBar
-          :energy="energy"
-          :rate-per-minute="ratePerMinute"
-          :difficulty="difficulty"
-          :messages-count="messagesCount"
-          :modifiers="modifiers"
+        <WagonDashboard
+          :fuel="fuel"
+          :max-fuel="maxFuel"
+          :speed="speed"
+          :is-stopped="isStopped"
+          :effects="effects"
+          :stats="stats"
+          :viewer-count="viewerCount"
         />
 
         <!-- Webcam -->
@@ -68,11 +70,13 @@ definePageMeta({
 const soundUnlocked = ref(false)
 const stage = ref<HTMLDivElement>()
 const {
-  energy,
-  ratePerMinute,
-  difficulty,
-  messagesCount,
-  modifiers,
+  fuel,
+  maxFuel,
+  speed,
+  isStopped,
+  effects,
+  stats,
+  viewerCount,
   backlogItems,
   alerts,
   start,

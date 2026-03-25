@@ -50,6 +50,7 @@ export type WebSocketEvents
     | WebSocketNewPlayerTarget
     | WebSocketWagonRoomDestroy
     | WebSocketUpdateBiome
+    | WebSocketTreeDestroyed
 
 export interface WebSocketConnectAddon {
   type: 'CONNECT_ADDON'
@@ -174,5 +175,12 @@ export interface WebSocketUpdateBiome {
   data: {
     roomId: string
     biome: string
+  }
+}
+
+export interface WebSocketTreeDestroyed {
+  type: 'TREE_DESTROYED'
+  data: {
+    roomId: string
   }
 }

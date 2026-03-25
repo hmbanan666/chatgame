@@ -1,9 +1,11 @@
+import type { RewardMapping } from './stream'
 import { getViewerQuestService } from '~~/server/core/quest'
+import { createCustomReward, getCustomRewards } from '~~/server/utils/twitch/twitch.api'
 import { getTwitchController } from '../../utils/twitch/twitch.controller'
 import { DonateController } from './donateClient'
-import { StreamCharge } from './stream'
+import { WAGON_ACTIONS, WagonSession } from './stream'
 
-export const chargeRooms: StreamCharge[] = []
+export const chargeRooms: WagonSession[] = []
 
 export async function initCharges() {
   const logger = useLogger('charge:init')
@@ -17,14 +19,10 @@ export async function initCharges() {
   const controller = getTwitchController()
 
   for (const streamer of streamers) {
-    const chargeInstance = new StreamCharge(
+    const session = new WagonSession(
       {
         id: streamer.twitchChannelId,
         streamerId: streamer.id,
-        startedAt: new Date().toISOString(),
-        energy: 100,
-        baseRate: 10,
-        difficulty: 1,
         twitchChannelId: streamer.twitchChannelId,
         twitchChannelName: streamer.twitchChannelName,
       },
@@ -33,26 +31,73 @@ export async function initCharges() {
         : null,
     )
 
-    // Subscribe to shared Twitch events (only active when stream online)
-    controller.onMessage((_, userName, text) => {
-      chargeInstance.handleMessage(_, userName, text)
+    // Create Twitch rewards dynamically
+    const mappings = await createWagonRewards(streamer.twitchChannelId, logger)
+    session.rewardMappings = mappings
+
+    // Subscribe to shared Twitch events
+    controller.onMessage(() => {
+      session.handleMessage()
     })
 
     controller.onRedemption((userId, rewardId) => {
-      chargeInstance.handleRedemption(userId, rewardId)
+      session.handleRedemption(userId, rewardId)
     })
 
     // DonationAlerts — connect/disconnect with stream
     controller.onStreamOnline(() => {
-      chargeInstance.connectDonateClient()
+      session.resetSession()
+      session.connectDonateClient()
     })
 
     controller.onStreamOffline(() => {
-      chargeInstance.disconnectDonateClient()
+      session.disconnectDonateClient()
       getViewerQuestService(streamer.id).reset()
     })
 
-    chargeRooms.push(chargeInstance)
-    logger.success(`Stream charge initialized for ${streamer.twitchChannelName}`)
+    chargeRooms.push(session)
+    logger.success(`Wagon session initialized for ${streamer.twitchChannelName}`)
   }
+}
+
+async function createWagonRewards(broadcasterId: string, logger: ReturnType<typeof useLogger>): Promise<RewardMapping[]> {
+  const mappings: RewardMapping[] = []
+
+  // Fetch existing manageable rewards to avoid duplicates
+  const existing = await getCustomRewards(broadcasterId)
+
+  for (const action of WAGON_ACTIONS) {
+    try {
+      // Check if reward with this title already exists
+      const found = existing.find((r) => r.title === action.title)
+      if (found) {
+        mappings.push({
+          twitchRewardId: found.id,
+          actionCode: action.code,
+          currentCost: found.cost,
+        })
+        logger.info(`Reusing existing Twitch reward: ${action.title} (${found.id})`)
+        continue
+      }
+
+      const reward = await createCustomReward(broadcasterId, {
+        title: action.title,
+        cost: action.baseCost,
+        is_enabled: true,
+      })
+
+      if (reward) {
+        mappings.push({
+          twitchRewardId: reward.id,
+          actionCode: action.code,
+          currentCost: action.baseCost,
+        })
+        logger.info(`Created Twitch reward: ${action.title} (${reward.id})`)
+      }
+    } catch (err) {
+      logger.error(`Failed to create reward ${action.title}`, err)
+    }
+  }
+
+  return mappings
 }
