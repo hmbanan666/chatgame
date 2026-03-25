@@ -30,7 +30,7 @@ export class MoveToTreeAndChopScript extends BaseScript {
     ]
   }
 
-  override destroy() {
+  destroy() {
     this.tree.chopperCount = Math.max(0, this.tree.chopperCount - 1)
   }
 
