@@ -67,11 +67,6 @@ import { BaseGame } from '@chat-game/game'
 definePageMeta({
   layout: 'game',
 })
-
-// const route = useRoute()
-// const id = route.query.id?.toString() ?? ''
-// const eventsUrl = computed(() => `/api/charge/${id}/sse`)
-
 const stage = ref<HTMLElement>()
 
 const game = new BaseGame()

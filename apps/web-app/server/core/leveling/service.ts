@@ -24,9 +24,16 @@ export class LevelingService {
 
     const [profileResult] = await Promise.all([
       this.addProfileXp(ctx),
-      ctx.activeEditionId ? this.addCharacterXp(ctx.activeEditionId) : Promise.resolve(),
-      deltaMin > 0 ? this.trackWatchTime(ctx.profileId, ctx.activeEditionId, deltaMin) : Promise.resolve(),
+      deltaMin > 0 ? db.profile.addWatchTime(ctx.profileId, deltaMin) : Promise.resolve(),
     ])
+
+    // Character edition updates run sequentially to avoid lock contention on the same row
+    if (ctx.activeEditionId) {
+      await this.addCharacterXp(ctx.activeEditionId)
+      if (deltaMin > 0) {
+        await db.characterEdition.addPlayTime(ctx.activeEditionId, deltaMin)
+      }
+    }
 
     return profileResult ?? { leveledUp: false }
   }
@@ -35,13 +42,6 @@ export class LevelingService {
     const deltaMs = Date.now() - lastActionAt.getTime()
     const deltaMin = Math.floor(deltaMs / 60_000)
     return Math.min(deltaMin, MAX_DELTA_MIN)
-  }
-
-  private async trackWatchTime(profileId: string, activeEditionId: string | null, minutes: number) {
-    await db.profile.addWatchTime(profileId, minutes)
-    if (activeEditionId) {
-      await db.characterEdition.addPlayTime(activeEditionId, minutes)
-    }
   }
 
   private async addProfileXp(ctx: MessageContext): Promise<LevelingResult> {
