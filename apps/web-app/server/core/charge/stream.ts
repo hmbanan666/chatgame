@@ -1,7 +1,7 @@
 import type { WagonActionCode, WagonActionConfig, WagonEffect, WagonSessionStats } from '#shared/types/charge'
 import type { DonateController } from './donateClient'
 import { createId } from '@paralleldrive/cuid2'
-import { sendAlertMessage } from '~~/server/api/websocket'
+import { sendAlertMessage, sendGameMessage } from '~~/server/api/websocket'
 import { getLevelingService } from '~~/server/core/leveling/service'
 import { getStreamInfo, sendChatAnnouncement, updateCustomReward } from '~~/server/utils/twitch/twitch.api'
 
@@ -55,6 +55,8 @@ export class WagonSession {
   speed: number = 1.0
   isStopped: boolean = false
   biome: string = 'GREEN'
+  lastActivityAt: number = 0
+  wagonSpeed: number = 0
 
   effects: WagonEffect[] = []
   donations: WagonDonation[] = []
@@ -75,6 +77,9 @@ export class WagonSession {
   rewardMappings: RewardMapping[] = []
   #redemptionXpGiven: number = 0
   readonly #maxRedemptionXpPerStream = 50
+  #lastFuelWarning: number = 0
+  #lastSentHasFuel: boolean = true
+  #lastSentSpeedMultiplier: number = 1
 
   readonly #logger = useLogger('wagon-session')
 
@@ -100,15 +105,73 @@ export class WagonSession {
 
   // ── Fuel consumption ────────────────────────────────
 
+  get fuelPercent() {
+    return (this.fuel / this.maxFuel) * 100
+  }
+
+  get speedMultiplier() {
+    // Below 25% fuel — wagon slows down
+    if (this.fuel <= 0) {
+      return 0
+    }
+    if (this.fuelPercent <= 25) {
+      return 0.5 * this.speed
+    }
+    return this.speed
+  }
+
   #initFuelTicker() {
     this.#fuelTicker = setInterval(() => {
-      if (this.isStopped) {
+      if (this.isStopped || this.fuel <= 0) {
         return
       }
 
-      // Fuel drains slowly: 0.05 per second × speed
+      // Only drain fuel if wagon is actively moving
+      const isActive = Date.now() - this.lastActivityAt < 5000
+      if (!isActive || this.wagonSpeed <= 0) {
+        return
+      }
+
+      // Fuel drains based on wagon speed: faster wagon = more fuel
       this.fuel = Math.max(0, this.fuel - 0.05 * this.speed)
+
+      // Fuel warnings + sync state to game client
+      this.#checkFuelWarnings()
+      this.#syncFuelState()
     }, 1000)
+  }
+
+  #syncFuelState() {
+    const hasFuel = this.fuel > 0
+    const mult = this.speedMultiplier
+
+    if (hasFuel !== this.#lastSentHasFuel || mult !== this.#lastSentSpeedMultiplier) {
+      this.#lastSentHasFuel = hasFuel
+      this.#lastSentSpeedMultiplier = mult
+      sendGameMessage(this.id, {
+        event: 'wagonFuelState',
+        data: { hasFuel, speedMultiplier: mult },
+      })
+    }
+  }
+
+  #checkFuelWarnings() {
+    const now = Date.now()
+    // Throttle warnings to once per 2 minutes
+    if (now - this.#lastFuelWarning < 120_000) {
+      return
+    }
+
+    if (this.fuel <= 0) {
+      this.#lastFuelWarning = now
+      sendChatAnnouncement(this.twitchChannelId, 'Топливо закончилось! Вагон остановился. Заправьте вагон за баллы канала!')
+    } else if (this.fuelPercent <= 10) {
+      this.#lastFuelWarning = now
+      sendChatAnnouncement(this.twitchChannelId, `Топливо на исходе! Осталось ${Math.ceil(this.fuel)}/${this.maxFuel}. Заправьте вагон!`)
+    } else if (this.fuelPercent <= 25) {
+      this.#lastFuelWarning = now
+      sendChatAnnouncement(this.twitchChannelId, `Топлива мало — ${Math.ceil(this.fuel)}/${this.maxFuel}. Вагон замедляется!`)
+    }
   }
 
   // ── Effects expiry ──────────────────────────────────
@@ -398,6 +461,7 @@ export class WagonSession {
     this.effects = []
     this.donations = []
     this.#redemptionXpGiven = 0
+    this.#lastFuelWarning = 0
     this.stats = {
       fuelAdded: 0,
       fuelStolen: 0,

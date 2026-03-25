@@ -69,22 +69,24 @@ export class GameEventService implements EventService {
     }))
   }
 
-  sendBiome(biome: string) {
-    if (biome === this.lastBiome || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
+  sendWagonState(biome: string, speed: number) {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       return
     }
-    this.lastBiome = biome
     this.ws.send(JSON.stringify({
       id: createId(),
       type: 'UPDATE_BIOME',
-      data: { roomId: this.roomId, biome },
+      data: { roomId: this.roomId, biome, wagonSpeed: speed },
     }))
   }
 
   private startBiomeSync() {
     this.biomeInterval = setInterval(() => {
-      const biome = this.game.treeService.getBiomeAt(this.game.wagonService.wagon?.x ?? 0)
-      this.sendBiome(biome)
+      const wagon = this.game.wagonService.wagon
+      const biome = this.game.treeService.getBiomeAt(wagon?.x ?? 0)
+      const speed = wagon?.speedPerSecond ?? 0
+      const isMoving = wagon?.state === 'MOVING'
+      this.sendWagonState(biome, isMoving ? speed : 0)
     }, 2000)
   }
 
@@ -94,6 +96,27 @@ export class GameEventService implements EventService {
     }
     if (message.event === 'wagonFlip') {
       return this.handleWagonFlip()
+    }
+    if (message.event === 'wagonFuelState') {
+      return this.handleWagonFuelState(message.data)
+    }
+  }
+
+  private handleWagonFuelState(data: { hasFuel: boolean, speedMultiplier: number }) {
+    const wagon = this.game.wagonService.wagon
+    if (!wagon || wagon.destroyed) {
+      return
+    }
+
+    if (!data.hasFuel) {
+      // Stop wagon — clear target and script
+      wagon.target = undefined
+      wagon.script = undefined
+      wagon.state = 'IDLE'
+      wagon.speedPerSecond = 0
+    } else {
+      // Restore speed based on multiplier
+      wagon.speedPerSecond = 60 * data.speedMultiplier
     }
   }
 

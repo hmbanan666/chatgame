@@ -169,6 +169,10 @@ function handleUpdateBiome(message: WebSocketMessage) {
   }
 
   const chargeRoom = chargeRooms.find((room) => room.id === data.roomId)
+  if (chargeRoom) {
+    chargeRoom.lastActivityAt = Date.now()
+    chargeRoom.wagonSpeed = (data as any).wagonSpeed ?? 0
+  }
   if (chargeRoom && chargeRoom.biome !== data.biome) {
     logger.info(`Biome changed: ${chargeRoom.biome} → ${data.biome}`)
     chargeRoom.biome = data.biome
