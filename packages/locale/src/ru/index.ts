@@ -103,7 +103,7 @@ export const ru: Dictionary = {
       newCoupon: 'Появился новый Купон! Забирай: пиши команду "!купон {command}" :D',
     },
     inventory: 'У тебя есть {n} купон(а/ов). Обменивай их на награды в игре.',
-    github: '👨‍💻 https://chatgame.space | ⭐ https://github.com/chat-game',
+    github: '👨‍💻 https://chatgame.space | ⭐ https://github.com/hmbanan666/chatgame',
     info: {
       supportStreamer: 'Поддержи стримера: https://chatgame.space/donate',
       buyCoins: 'Приобретай Монеты в ChatGame: https://chatgame.space/#shop. Разблокируй вручную созданных персонажей. Спасибо за поддержку!',

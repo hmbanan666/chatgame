@@ -104,7 +104,7 @@ export const en = {
       newCoupon: 'A new Coupon appeared! Grab it: type "!coupon {command}" :D',
     },
     inventory: 'You have {n} coupon(s). Exchange them for rewards in the game.',
-    github: '👨‍💻 https://chatgame.space | ⭐ https://github.com/chat-game',
+    github: '👨‍💻 https://chatgame.space | ⭐ https://github.com/hmbanan666/chatgame',
     info: {
       supportStreamer: 'Support the streamer: https://chatgame.space/donate',
       buyCoins: 'Buy Coins in ChatGame: https://chatgame.space/#shop. Unlock hand-crafted characters. Thanks for the support!',

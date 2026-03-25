@@ -31,9 +31,13 @@ export async function initCharges() {
         : null,
     )
 
-    // Create Twitch rewards dynamically
-    const mappings = await createWagonRewards(streamer.twitchChannelId, logger)
-    session.rewardMappings = mappings
+    // Create Twitch rewards dynamically (requires channel:manage:redemptions scope)
+    try {
+      const mappings = await createWagonRewards(streamer.twitchChannelId, logger)
+      session.rewardMappings = mappings
+    } catch {
+      logger.warn(`Twitch rewards not available (missing scope?), wagon actions disabled`)
+    }
 
     // Subscribe to shared Twitch events
     controller.onMessage(() => {
