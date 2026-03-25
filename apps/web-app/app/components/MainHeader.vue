@@ -5,14 +5,7 @@
     </div>
 
     <MenuDesktop />
-    <div class="flex-1 flex items-center justify-end gap-4">
-      <a
-        href="https://github.com/chat-game"
-        target="_blank"
-        class="text-site-text hover:text-site-accent-bright duration-200"
-      >
-        <Icon name="simple-icons:github" class="size-6" />
-      </a>
+    <div class="flex-1 flex items-center justify-end">
       <MenuProfile />
     </div>
   </header>

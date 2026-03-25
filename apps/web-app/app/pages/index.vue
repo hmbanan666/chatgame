@@ -45,7 +45,7 @@
         size="xl"
         icon="simple-icons:twitch"
         trailing-icon="lucide:radio"
-        class="bg-[#2E222F]! hover:bg-[#3E3546]! text-site-text! px-7! py-3.5! rounded-none!"
+        class="bg-[#2E222F]! hover:bg-site-bg-alt! text-site-text! px-7! py-3.5! rounded-none!"
       >
         Смотреть стрим
       </UButton>
@@ -54,7 +54,7 @@
         to="/playground"
         size="xl"
         icon="lucide:play"
-        class="bg-[#2E222F]! hover:bg-[#3E3546]! text-site-text! px-7! py-3.5! rounded-none!"
+        class="bg-[#2E222F]! hover:bg-site-bg-alt! text-site-text! px-7! py-3.5! rounded-none!"
       >
         Посмотреть демо
       </UButton>
@@ -64,7 +64,7 @@
         to="/#profile"
         size="xl"
         icon="lucide:user"
-        class="bg-[#3E3546]! hover:bg-[#625565]! text-site-text! px-7! py-3.5! rounded-none!"
+        class="bg-site-bg-alt! hover:bg-[#625565]! text-site-text! px-7! py-3.5! rounded-none!"
       >
         Мой профиль
       </UButton>
@@ -74,7 +74,7 @@
         external
         size="xl"
         icon="simple-icons:twitch"
-        class="bg-[#3E3546]! hover:bg-[#625565]! text-site-text! px-7! py-3.5! rounded-none!"
+        class="bg-site-bg-alt! hover:bg-[#625565]! text-site-text! px-7! py-3.5! rounded-none!"
       >
         Войти
       </UButton>
@@ -207,11 +207,11 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
         <ActiveCard
-          class="px-4 py-0 flex flex-row gap-0 items-center justify-center text-[#3E3546]"
+          class="px-4 py-0 flex flex-row gap-0 items-center justify-center text-site-bg-alt"
         >
           <Image
             :src="`/units/${profile?.activeCharacter?.character.codename}/idle.gif`"
-            class="h-24 w-24"
+            class="size-24"
           />
           <div>
             <p>Активный персонаж</p>
@@ -222,10 +222,10 @@
         </ActiveCard>
 
         <ActiveCard
-          class="px-4 py-6 flex flex-row gap-8 items-center justify-center text-[#3E3546]"
+          class="px-4 py-6 flex flex-row gap-8 items-center justify-center text-site-bg-alt"
         >
           <div class="flex flex-row gap-2 items-center justify-center">
-            <Image src="/coin.png" class="h-12 w-12" />
+            <Image src="/coin.png" class="size-12" />
             <div>
               <p class="font-semibold text-2xl leading-tight">
                 {{ profile?.coins }}
@@ -243,7 +243,7 @@
           </div>
 
           <div class="flex flex-row gap-2 items-center justify-center">
-            <Image src="/coupon-small.png" class="h-12 w-12" />
+            <Image src="/coupon-small.png" class="size-12" />
             <div>
               <p class="font-semibold text-2xl leading-tight">
                 {{ profile?.coupons }}
@@ -290,7 +290,7 @@
         <Image
           v-if="selectedCharacter?.codename"
           :src="`/units/${selectedCharacter.codename}/idle.gif`"
-          class="w-16 h-16 image-rendering-pixelated"
+          class="size-16 image-rendering-pixelated"
         />
         <div>
           <p class="text-lg font-bold text-site-highlight">
@@ -304,7 +304,7 @@
       <UButton
         icon="lucide:x"
         variant="ghost"
-        class="bg-transparent! text-site-text-muted! hover:text-site-text! hover:bg-[#3E3546]!"
+        class="bg-transparent! text-site-text-muted! hover:text-site-text! hover:bg-site-bg-alt!"
         @click="isCharacterOpened = false"
       />
     </template>

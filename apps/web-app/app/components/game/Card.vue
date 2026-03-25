@@ -1,5 +1,5 @@
 <template>
-  <div class="aspect-[2/3] bg-amber-100 rounded-xl flex flex-col justify-between">
+  <div class="aspect-2/3 bg-amber-100 rounded-xl flex flex-col justify-between">
     <div class="p-4 flex flex-col gap-1">
       <div>
         Карточка юнита

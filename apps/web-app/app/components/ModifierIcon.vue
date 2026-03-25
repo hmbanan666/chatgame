@@ -35,12 +35,12 @@ onUnmounted(() => {
 
 function getEffectColor(code: string) {
   if (code.startsWith('positive')) {
-    return 'bg-game-bright'
+    return 'bg-game-bright text-game-bg'
   }
   if (code.startsWith('negative')) {
     return 'bg-game-accent text-game-bg'
   }
-  return 'bg-game-bright'
+  return 'bg-game-bright text-game-bg'
 }
 
 function getEffectIcon(code: string) {

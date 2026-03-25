@@ -160,6 +160,8 @@ export class StreamJourneyGame extends Container implements Game {
     this.demoInterval = setInterval(() => {
       if (this.playerService.activePlayers.length < 4) {
         this.spawnDemoPlayer()
+      } else {
+        this.sendDemoMessage()
       }
     }, 8000 + Math.random() * 7000)
   }
@@ -190,7 +192,19 @@ export class StreamJourneyGame extends Container implements Game {
 
     const playerId = `demo-${name}`
     this.demoCodenames.set(playerId, codename)
-    const player = await this.playerService.init(playerId, name, codename)
+    const level = Math.floor(Math.random() * 12) + 1
+    const player = await this.playerService.init(playerId, name, codename, level)
+    player.addMessage(message)
+  }
+
+  private sendDemoMessage() {
+    const players = this.playerService.activePlayers
+    if (!players.length) {
+      return
+    }
+
+    const player = players[Math.floor(Math.random() * players.length)]!
+    const message = DEMO_MESSAGES[Math.floor(Math.random() * DEMO_MESSAGES.length)]!
     player.addMessage(message)
   }
 

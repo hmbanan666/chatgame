@@ -1,5 +1,6 @@
 import { getDateMinusMinutes } from '#shared/utils/date'
 import { sendAlertMessage, sendGameMessage } from '~~/server/api/websocket'
+import { getLevelingService } from '~~/server/core/leveling/service'
 import { dictionary } from '~~/server/core/locale'
 import { getViewerQuestService } from '~~/server/core/quest'
 
@@ -54,6 +55,23 @@ export class TwitchService {
       await questService.trackMessage(profile.id)
     }
 
+    // XP gain + watch time
+    const leveling = getLevelingService()
+    await leveling.onMessage({
+      profileId: profile.id,
+      activeEditionId: profile.activeEditionId,
+      userName,
+      codename,
+      roomId: this.#roomId,
+      lastActionAt: player.lastActionAt,
+    })
+
+    // Update last action timestamp for watch time tracking
+    await db.player.updateLastActionAt(player.id)
+
+    // Refetch profile after XP gain (level may have changed)
+    const updatedProfile = await db.profile.find(profile.id)
+
     // Stream Journey
     sendGameMessage(this.#roomId, {
       event: 'newPlayerMessage',
@@ -63,6 +81,7 @@ export class TwitchService {
           id: userId,
           name: userName,
           codename,
+          level: updatedProfile?.level ?? profile.level,
         },
       },
     })

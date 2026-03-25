@@ -39,6 +39,9 @@ export class TreeObject extends BaseObject implements GameObjectTree {
   private fallSpeed = 0
   private fallDirection = 1
 
+  /** How many players are currently targeting this tree */
+  chopperCount = 0
+
   constructor({ game, x, y, size, maxSize, id, zIndex, treeType, variant }: TreeObjectOptions) {
     super({ id, game, x, y: y ?? game.bottomY, type: 'TREE' })
 
@@ -142,7 +145,7 @@ export class TreeObject extends BaseObject implements GameObjectTree {
     const stump = new StumpObject(variantIndex, this.BASE_SCALE * (this.maxSize / 100))
     stump.x = this.x
     stump.y = this.y
-    stump.zIndex = this.zIndex - 1
+    stump.zIndex = -20
 
     this.game.worldContainer.addChild(stump)
 

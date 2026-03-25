@@ -69,6 +69,7 @@ export interface GameScript {
   tasks: GameScriptTask[]
   isInterruptible: boolean
   live: () => void
+  destroy?: () => void
 }
 
 export interface GameScriptTask {
@@ -131,7 +132,7 @@ export interface GameObjectUnit extends GameObject {
 
 export interface GameObjectPlayer extends GameObjectUnit {
   lastActionAt: Date
-  initName: (name: string) => void
+  initName: (name: string, level?: number) => void
   updateLastActionAt: () => void
 }
 
@@ -148,6 +149,7 @@ export interface WagonService {
   init: () => void
   updateCameraPosition: () => void
   getNearestObstacle: () => GameObject | undefined
+  getAvailableObstacle: () => GameObject | undefined
   getNearestTrees: () => GameObject[]
   getRandomNearPoint: () => { x: number, y: number }
   getOffScreenPoint: () => { x: number, y: number }
@@ -160,6 +162,7 @@ export interface PlayerService {
     id: string,
     name: string,
     codename?: string | null,
+    level?: number,
   ) => Promise<GameObjectPlayer>
 }
 

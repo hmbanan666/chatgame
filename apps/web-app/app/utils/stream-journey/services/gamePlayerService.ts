@@ -13,25 +13,27 @@ export class GamePlayerService implements PlayerService {
     this.removeInactivePlayers()
   }
 
-  async init(id: string, name: string, codename?: string | null) {
-    const player = await this.findOrCreatePlayer(id, name, codename)
+  async init(id: string, name: string, codename?: string | null, level?: number) {
+    const player = await this.findOrCreatePlayer(id, name, codename, level)
 
     player.updateLastActionAt()
 
-    // If there's an obstacle — chop it. Otherwise run to random point.
-    const tree = this.game.wagonService.getNearestObstacle()
-    if (tree) {
-      player.script = new MoveToTreeAndChopScript({
-        object: player,
-        target: tree,
-      })
-    } else {
-      const point = this.game.wagonService.getRandomNearPoint()
-      const target = new TargetPoint(point.x, point.y)
-      player.script = new MoveToTargetScript({
-        object: player,
-        target,
-      })
+    // Don't reassign if player already has a task
+    if (!player.script) {
+      const tree = this.game.wagonService.getAvailableObstacle()
+      if (tree) {
+        player.script = new MoveToTreeAndChopScript({
+          object: player,
+          target: tree,
+        })
+      } else {
+        const point = this.game.wagonService.getRandomNearPoint()
+        const target = new TargetPoint(point.x, point.y)
+        player.script = new MoveToTargetScript({
+          object: player,
+          target,
+        })
+      }
     }
 
     return player
@@ -47,10 +49,11 @@ export class GamePlayerService implements PlayerService {
     id: string,
     name: string,
     codename?: string | null,
+    level?: number,
   ): Promise<GameObjectPlayer> {
     const player = this.findPlayer(id)
     if (!player) {
-      return this.createPlayer({ id, name }, codename)
+      return this.createPlayer({ id, name, level }, codename)
     }
 
     return player
@@ -62,7 +65,7 @@ export class GamePlayerService implements PlayerService {
     ) as PlayerObject | undefined
   }
 
-  private async createPlayer(player: { id: string, name: string }, codename?: string | null) {
+  private async createPlayer(player: { id: string, name: string, level?: number }, codename?: string | null) {
     const playerObj = new PlayerObject({
       game: this.game,
       id: player.id,
@@ -70,7 +73,7 @@ export class GamePlayerService implements PlayerService {
       y: 0,
     })
     await playerObj.initVisual(codename)
-    playerObj.initName(player.name)
+    playerObj.initName(player.name, player.level)
 
     const spawnPoint = this.game.wagonService.getOffScreenPoint()
     playerObj.x = spawnPoint.x

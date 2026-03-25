@@ -33,30 +33,20 @@
           <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-game-bright to-transparent animate-shimmer" />
 
           <template v-if="currentAlert.type === 'QUEST_COMPLETE'">
-            <div class="flex items-center gap-2 text-game-bright">
-              <Icon name="lucide:trophy" class="!size-6" />
-              <span class="text-base font-bold uppercase tracking-widest">Квест выполнен</span>
-            </div>
-            <p class="text-3xl font-bold text-white">
-              {{ currentAlert.data.userName }}
-            </p>
+            <AlertHeader
+              icon="lucide:trophy"
+              title="Квест выполнен"
+              :user-name="currentAlert.data.userName"
+            />
             <p class="text-base text-game-text">
               {{ currentAlert.data.questText }}
             </p>
 
-            <!-- Reward block -->
-            <div class="relative flex flex-col items-center gap-2 px-12 py-6 mt-3 w-full animate-reward-pop">
-              <div class="absolute inset-0 bg-game-bright/10 animate-reward-glow" />
-              <div class="absolute inset-0 border-2 border-game-bright/50" />
-              <div class="absolute -inset-1 border border-game-bright/20" />
-              <span class="relative text-xs font-bold uppercase tracking-[0.3em] text-game-accent">Награда</span>
-              <div class="relative flex items-center gap-3">
-                <span class="text-5xl font-black text-game-bright">+{{ currentAlert.data.reward }}</span>
-                <Image src="/coin.png" class="h-12 w-12 image-rendering-pixelated" />
-              </div>
-            </div>
+            <AlertRewardBlock label="Награда">
+              <span class="text-5xl font-black text-game-bright">+{{ currentAlert.data.reward }} {{ pluralizationRu(currentAlert.data.reward, ['монета', 'монеты', 'монет']) }}</span>
+              <Image src="/coin.png" class="h-12 w-12 image-rendering-pixelated" />
+            </AlertRewardBlock>
 
-            <!-- CTA -->
             <div class="flex items-center justify-center gap-3 mt-3">
               <span class="text-base text-game-text">
                 У тебя <span class="font-black text-game-bright">{{ currentAlert.data.totalCoins }}</span> монет
@@ -67,23 +57,18 @@
           </template>
 
           <template v-else-if="currentAlert.type === 'DONATION'">
-            <div class="flex items-center gap-2 text-game-bright">
-              <Icon name="lucide:heart" class="!size-6 animate-pulse" />
-              <span class="text-base font-bold uppercase tracking-widest">Донат</span>
-            </div>
-            <p class="text-3xl font-bold text-white">
-              {{ currentAlert.data.userName }}
-            </p>
+            <AlertHeader
+              icon="lucide:heart"
+              title="Донат"
+              :user-name="currentAlert.data.userName"
+              icon-class="animate-pulse"
+            />
 
-            <!-- Amount block -->
-            <div class="relative flex flex-col items-center gap-2 px-12 py-6 mt-3 w-full animate-reward-pop">
-              <div class="absolute inset-0 bg-game-bright/10 animate-reward-glow" />
-              <div class="absolute inset-0 border-2 border-game-bright/50" />
-              <div class="absolute -inset-1 border border-game-bright/20" />
-              <span class="relative text-5xl font-black text-game-bright">
+            <AlertRewardBlock>
+              <span class="text-5xl font-black text-game-bright">
                 {{ currentAlert.data.amount }} {{ currencySymbol(currentAlert.data.currency) }}
               </span>
-            </div>
+            </AlertRewardBlock>
 
             <p v-if="currentAlert.data.message" class="text-lg text-white text-center max-w-md mt-3">
               {{ currentAlert.data.message }}
@@ -94,28 +79,38 @@
             </p>
           </template>
 
+          <template v-else-if="currentAlert.type === 'LEVEL_UP'">
+            <AlertHeader
+              icon="lucide:arrow-up-circle"
+              title="Новый уровень"
+              :user-name="currentAlert.data.userName"
+            />
+
+            <AlertRewardBlock label="Награда">
+              <span class="text-5xl font-black text-game-bright">+{{ currentAlert.data.reward }} {{ pluralizationRu(currentAlert.data.reward, ['монета', 'монеты', 'монет']) }}</span>
+              <Image src="/coin.png" class="h-12 w-12 image-rendering-pixelated" />
+            </AlertRewardBlock>
+
+            <div class="flex items-center gap-2 mt-3">
+              <span class="text-base text-game-text">Теперь уровень</span>
+              <span class="text-lg font-black text-game-bright">{{ currentAlert.data.level }}</span>
+              <span class="text-game-muted">·</span>
+              <span class="text-base font-bold text-game-secondary-5">Трать монеты на chatgame.space</span>
+            </div>
+          </template>
+
           <template v-else-if="currentAlert.type === 'COUPON_TAKEN'">
-            <div class="flex items-center gap-2 text-game-bright">
-              <Icon name="lucide:ticket" class="!size-6" />
-              <span class="text-base font-bold uppercase tracking-widest">Купон получен</span>
-            </div>
-            <p class="text-3xl font-bold text-white">
-              {{ currentAlert.data.userName }}
-            </p>
+            <AlertHeader
+              icon="lucide:ticket"
+              title="Купон получен"
+              :user-name="currentAlert.data.userName"
+            />
 
-            <!-- Reward block -->
-            <div class="relative flex flex-col items-center gap-2 px-12 py-6 mt-3 w-full animate-reward-pop">
-              <div class="absolute inset-0 bg-game-bright/10 animate-reward-glow" />
-              <div class="absolute inset-0 border-2 border-game-bright/50" />
-              <div class="absolute -inset-1 border border-game-bright/20" />
-              <span class="relative text-xs font-bold uppercase tracking-[0.3em] text-game-accent">Награда</span>
-              <div class="relative flex items-center gap-3">
-                <span class="text-5xl font-black text-game-bright">+1 купон</span>
-                <Image src="/coupon-small.png" class="h-12 w-12 image-rendering-pixelated" />
-              </div>
-            </div>
+            <AlertRewardBlock label="Награда">
+              <span class="text-5xl font-black text-game-bright">+1 купон</span>
+              <Image src="/coupon-small.png" class="h-12 w-12 image-rendering-pixelated" />
+            </AlertRewardBlock>
 
-            <!-- CTA -->
             <div class="flex items-center justify-center gap-3 mt-3">
               <span class="text-base text-game-text">
                 У тебя <span class="font-black text-game-bright">{{ currentAlert.data.totalCoupons }}</span> купонов
@@ -136,6 +131,7 @@
 <script setup lang="ts">
 import type { EventMessage } from '@chat-game/types'
 import { useAlertSound } from '~/composables/useAlertSound'
+import { pluralizationRu } from '~/utils/locale'
 
 const props = defineProps<{
   alerts: EventMessage[]
@@ -196,6 +192,7 @@ function spawnBurst(originX: number, originY: number, burstDelay: number) {
 const ALERT_CONFIG = {
   DONATION: { bursts: 16, burstDelay: 120, duration: 20000 },
   QUEST_COMPLETE: { bursts: 6, burstDelay: 200, duration: 15000 },
+  LEVEL_UP: { bursts: 8, burstDelay: 180, duration: 12000 },
   COUPON_TAKEN: { bursts: 3, burstDelay: 250, duration: 10000 },
 } as const
 

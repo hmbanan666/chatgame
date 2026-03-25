@@ -20,7 +20,7 @@ export class BaseObject extends Container implements GameObject {
   speedPerSecond!: GameObject['speedPerSecond']
   size!: GameObject['size']
   maxSize!: GameObject['maxSize']
-  script: GameObject['script']
+  private _script: GameObject['script']
   isObstacleForWagon: GameObject['isObstacleForWagon']
   minDistance: GameObject['minDistance']
 
@@ -38,11 +38,22 @@ export class BaseObject extends Container implements GameObject {
     this.type = type
     this.direction = 'RIGHT'
     this.state = 'IDLE'
-    this.script = undefined
+    this._script = undefined
     this.isObstacleForWagon = false
     this.minDistance = 1
 
     this.init()
+  }
+
+  get script(): GameObject['script'] {
+    return this._script
+  }
+
+  set script(value: GameObject['script']) {
+    if (this._script && this._script !== value) {
+      this._script.destroy?.()
+    }
+    this._script = value
   }
 
   private init() {

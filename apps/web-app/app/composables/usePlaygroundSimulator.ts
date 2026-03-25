@@ -219,6 +219,20 @@ export function usePlaygroundSimulator() {
     }
     scheduleCoupon()
 
+    function scheduleLevelUp() {
+      const delay = randomInt(50_000, 100_000)
+      const timeout = setTimeout(() => {
+        alerts.value.push({
+          id: nextId(),
+          type: 'LEVEL_UP',
+          data: { userName: pick(FAKE_NAMES), codename: pick(FAKE_CODENAMES), level: randomInt(2, 15), reward: 1 },
+        })
+        scheduleLevelUp()
+      }, delay)
+      intervals.push(timeout as unknown as ReturnType<typeof setInterval>)
+    }
+    scheduleLevelUp()
+
     function scheduleBacklog() {
       const delay = randomInt(8000, 15_000)
       const timeout = setTimeout(() => {

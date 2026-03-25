@@ -1,6 +1,7 @@
 import type { TreeObject } from '../objects/treeObject'
 import type { GameObject, GameScriptTask, MovementTarget } from '../types'
 import { createId } from '@paralleldrive/cuid2'
+import { TargetPoint } from '../objects/targetPoint'
 import { getRandInteger } from '../utils/random'
 import { BaseScript } from './baseScript'
 
@@ -10,14 +11,27 @@ interface MoveToTreeAndChopOptions {
 }
 
 export class MoveToTreeAndChopScript extends BaseScript {
+  private tree: TreeObject
+
   constructor({ target, object }: MoveToTreeAndChopOptions) {
     super({ object })
 
+    this.tree = target as unknown as TreeObject
+    this.tree.chopperCount++
+
+    // Spread players around the tree so they don't stack
+    const offset = getRandInteger(-60, 60)
+    const moveTarget = new TargetPoint(this.tree.x + offset, this.tree.y)
+
     this.tasks = [
-      this.setTarget(target),
+      this.setTarget(moveTarget),
       this.runToTarget(),
-      this.chopTree(target as unknown as TreeObject),
+      this.chopTree(this.tree),
     ]
+  }
+
+  override destroy() {
+    this.tree.chopperCount = Math.max(0, this.tree.chopperCount - 1)
   }
 
   private chopTree(tree: TreeObject): GameScriptTask {

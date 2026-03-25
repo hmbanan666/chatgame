@@ -27,7 +27,7 @@ export class DialogueInterface extends Container {
       text: formattedText,
       style: {
         fontFamily: 'monospace',
-        fontSize: 20,
+        fontSize: 22,
         fontWeight: '600',
         fill: '#ffffff',
         align: 'center',

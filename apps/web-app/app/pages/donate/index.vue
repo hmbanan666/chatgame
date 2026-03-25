@@ -18,7 +18,7 @@
         target="_blank"
         class="px-6 py-5 w-full bg-[#E6904E] border-b-6 border-[#CD683D] text-white text-base font-semibold tracking-wide rounded-lg cursor-pointer hover:opacity-85 active:scale-95 duration-200 flex flex-row justify-center items-center gap-3 flex-wrap"
       >
-        <Icon name="simple-icons:twitch" class="!w-8 !h-8" />
+        <Icon name="simple-icons:twitch" class="size-8!" />
         <p class="uppercase">Donationalerts</p>
       </a>
     </ActiveCard>

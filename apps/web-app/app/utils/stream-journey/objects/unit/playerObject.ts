@@ -23,9 +23,9 @@ export class PlayerObject extends UnitObject implements GameObjectPlayer {
     this.lastActionAt = new Date()
   }
 
-  initName(name: string) {
+  initName(name: string, level?: number) {
     this.name = name
-    this.drawUserName(name)
+    this.drawUserName(name, level)
   }
 
   override async live() {
@@ -44,7 +44,7 @@ export class PlayerObject extends UnitObject implements GameObjectPlayer {
   }
 
   private assignRandomAction() {
-    const tree = this.game.wagonService.getNearestObstacle()
+    const tree = this.game.wagonService.getAvailableObstacle()
     if (tree && Math.random() > 0.6) {
       this.script = new MoveToTreeAndChopScript({
         object: this,

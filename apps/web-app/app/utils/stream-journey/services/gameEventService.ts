@@ -94,7 +94,7 @@ export class GameEventService implements EventService {
   }
 
   private async handleNewPlayerMessage(data: NewPlayerMessage['data']): Promise<void> {
-    const playerObj = await this.game.playerService.init(data.player.id, data.player.name, data.player.codename)
+    const playerObj = await this.game.playerService.init(data.player.id, data.player.name, data.player.codename, data.player.level)
 
     playerObj.addMessage(data.text)
     playerObj.updateLastActionAt()

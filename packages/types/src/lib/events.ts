@@ -7,6 +7,7 @@ export type Events
     | EventQuestComplete
     | EventDonation
     | EventCouponTaken
+    | EventLevelUp
 
 type EventNewPlayerMessage = {
   type: 'NEW_PLAYER_MESSAGE'
@@ -48,5 +49,15 @@ type EventCouponTaken = {
     userName: string
     codename: string
     totalCoupons: number
+  }
+}
+
+type EventLevelUp = {
+  type: 'LEVEL_UP'
+  data: {
+    userName: string
+    codename: string
+    level: number
+    reward: number
   }
 }

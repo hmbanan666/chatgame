@@ -50,6 +50,20 @@
       "when": 1774339220591,
       "tag": "0006_known_mad_thinker",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1774426189248,
+      "tag": "0007_nappy_whirlwind",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1774427839258,
+      "tag": "0008_warm_leo",
+      "breakpoints": true
     }
   ]
 }

@@ -9,6 +9,7 @@ export type NewPlayerMessage = {
       id: string
       name: string
       codename: string
+      level: number
     }
     text: string
   }

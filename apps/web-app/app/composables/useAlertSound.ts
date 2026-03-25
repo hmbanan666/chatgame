@@ -66,6 +66,17 @@ export function useAlertSound() {
     playNote(2093, 0.3, 1.0, 'sine', 0.05) // C7
   }
 
+  function playLevelUp() {
+    // Rising power-up melody
+    playNote(440, 0.12, 0, 'square', 0.1) // A4
+    playNote(554, 0.12, 0.1, 'square', 0.1) // C#5
+    playNote(659, 0.12, 0.2, 'square', 0.1) // E5
+    playNote(880, 0.25, 0.3, 'square', 0.12) // A5
+    playNote(1047, 0.12, 0.5, 'sine', 0.08) // C6
+    playNote(1319, 0.2, 0.58, 'sine', 0.07) // E6
+    playNote(1760, 0.3, 0.7, 'sine', 0.06) // A6
+  }
+
   function playCouponTaken() {
     // Quick coin-like pickup sound
     playNote(880, 0.1, 0, 'square', 0.1) // A5
@@ -78,6 +89,8 @@ export function useAlertSound() {
       playQuestComplete()
     } else if (type === 'DONATION') {
       playDonation()
+    } else if (type === 'LEVEL_UP') {
+      playLevelUp()
     } else if (type === 'COUPON_TAKEN') {
       playCouponTaken()
     }

@@ -97,6 +97,20 @@ export class ProfileRepository {
       .returning()
   }
 
+  static addXp(id: string, amount = 1) {
+    const db = useDatabase()
+    return db.update(tables.profiles)
+      .set({ xp: sql`${tables.profiles.xp} + ${amount}` })
+      .where(eq(tables.profiles.id, id))
+  }
+
+  static addWatchTime(id: string, minutes: number) {
+    const db = useDatabase()
+    return db.update(tables.profiles)
+      .set({ watchTimeMin: sql`${tables.profiles.watchTimeMin} + ${minutes}` })
+      .where(eq(tables.profiles.id, id))
+  }
+
   static addLevel(id: string) {
     const db = useDatabase()
     return db.update(tables.profiles)

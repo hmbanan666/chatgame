@@ -30,4 +30,11 @@ export class CharacterEditionRepository {
       .set({ level: sql`${tables.characterEditions.level} + 1` })
       .where(eq(tables.characterEditions.id, id))
   }
+
+  static addPlayTime(id: string, minutes: number) {
+    const db = useDatabase()
+    return db.update(tables.characterEditions)
+      .set({ playTimeMin: sql`${tables.characterEditions.playTimeMin} + ${minutes}` })
+      .where(eq(tables.characterEditions.id, id))
+  }
 }

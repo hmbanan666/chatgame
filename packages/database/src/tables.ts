@@ -14,7 +14,9 @@ export const profiles = pgTable('profile', {
   coupons: integer('coupons').notNull().default(0),
   coins: integer('coins').notNull().default(0),
   mana: integer('mana').notNull().default(0),
+  xp: integer('xp').notNull().default(0),
   level: integer('level').notNull().default(1),
+  watchTimeMin: integer('watch_time_min').notNull().default(0),
   activeEditionId: text('active_edition_id'),
 })
 
@@ -223,6 +225,7 @@ export const characterEditions = pgTable('character_edition', {
   updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
   level: integer('level').notNull().default(1),
   xp: integer('xp').notNull().default(0),
+  playTimeMin: integer('play_time_min').notNull().default(0),
   profileId: text('profile_id').notNull(),
   characterId: text('character_id').notNull(),
 })

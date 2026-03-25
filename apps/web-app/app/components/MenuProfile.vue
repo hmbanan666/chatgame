@@ -1,18 +1,34 @@
 <template>
-  <div class="flex flex-row justify-end">
+  <div v-if="loggedIn" class="flex flex-row items-center gap-2">
     <a
-      v-if="loggedIn"
-      href="/#profile"
-      class="profile-avatar cursor-pointer"
+      href="/#shop"
+      class="flex flex-row items-center gap-1 px-2 py-1 hover:opacity-80 duration-200"
     >
-      <img :src="user?.imageUrl ?? '/icons/twitch/112.png'" alt="">
+      <Image src="/coin.png" class="size-7" />
+      <span class="text-[#30E1B9] text-lg font-semibold">{{ profile?.coins ?? 0 }}</span>
     </a>
-    <LoginButton v-else />
+
+    <a
+      href="/#profile"
+      class="size-11 overflow-hidden cursor-pointer duration-200 hover:opacity-85 hover:scale-105"
+    >
+      <img
+        :src="user?.imageUrl ?? '/icons/twitch/112.png'"
+        class="size-full object-cover"
+        alt=""
+      >
+    </a>
   </div>
+  <LoginButton v-else />
 </template>
 
 <script setup lang="ts">
 const { loggedIn, user } = useUserSession()
+
+const { data: profile } = useFetch(() => `/api/profile/${user.value?.id}`, {
+  watch: false,
+  immediate: loggedIn.value && !!user.value?.id,
+})
 
 onMounted(() => {
   if (!loggedIn.value) {
@@ -21,44 +37,3 @@ onMounted(() => {
   }
 })
 </script>
-
-<style scoped>
-.profile-avatar {
-  width: 58px;
-  height: 58px;
-  border-radius: 50%;
-  transition: all 0.2s;
-
-  &:hover {
-    animation-name: skewRandom;
-    animation-duration: 0.5s;
-    animation-iteration-count: infinite;
-    animation-timing-function: ease-in-out;
-    animation-direction: alternate-reverse;
-    transform-origin: 50% 50%;
-    scale: 1.1;
-    opacity: 0.9;
-  }
-
-  img {
-    width: 100%;
-    height: auto;
-    border-radius: 50%;
-  }
-}
-
-@keyframes skewRandom {
-  0% {
-    transform: skewX(0);
-  }
-  50% {
-    transform: skewX(-3deg);
-  }
-  75% {
-    transform: skewX(3deg);
-  }
-  100% {
-    transform: skewX(0);
-  }
-}
-</style>

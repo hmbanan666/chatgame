@@ -6,7 +6,7 @@ import type {
   GameUnitCodename,
 } from '../../types'
 import { createId } from '@paralleldrive/cuid2'
-import { Container, Text } from 'pixi.js'
+import { Container, Graphics, Text } from 'pixi.js'
 import { BaseObject } from '../baseObject'
 import { getRandInteger } from './../../utils/random'
 import { DialogueInterface } from './dialogueInterface'
@@ -144,7 +144,7 @@ export class UnitObject extends BaseObject implements GameObjectUnit {
     this.dialogueInterface.animate()
   }
 
-  drawUserName(name: string) {
+  drawUserName(name: string, level = 1) {
     if (!name) {
       return
     }
@@ -152,6 +152,10 @@ export class UnitObject extends BaseObject implements GameObjectUnit {
     const formattedText = name.trim().slice(0, 18)
 
     const container = new Container()
+
+    // Level badge
+    const badge = this.createLevelBadge(level)
+    container.addChild(badge)
 
     const basicText = new Text({
       text: formattedText,
@@ -169,12 +173,46 @@ export class UnitObject extends BaseObject implements GameObjectUnit {
       },
     })
 
+    basicText.x = badge.width + 4
+    badge.y = (basicText.height - badge.height) / 2 + 2
     container.addChild(basicText)
 
     container.x = -container.width / 2
     container.y = 0
 
     this.addChild(container)
+  }
+
+  private createLevelBadge(level: number): Container {
+    const badge = new Container()
+
+    const text = new Text({
+      text: `${level}`,
+      style: {
+        fontFamily: 'monospace',
+        fontSize: 14,
+        fontWeight: '900',
+        fill: '#ffffff',
+        align: 'center',
+      },
+    })
+
+    const padX = 6
+    const padY = 3
+    const w = text.width + padX * 2
+    const h = text.height + padY * 2
+
+    const bg = new Graphics()
+    bg.roundRect(0, 0, w, h, 4)
+    bg.fill(0x905EA9)
+    bg.stroke({ color: 0x45293F, width: 2 })
+    badge.addChild(bg)
+
+    text.x = padX
+    text.y = padY
+    badge.addChild(text)
+
+    return badge
   }
 
   private initInterfaces() {

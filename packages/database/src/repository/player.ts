@@ -1,4 +1,5 @@
 import { createId } from '@paralleldrive/cuid2'
+import { eq } from 'drizzle-orm'
 import { useDatabase } from '../database'
 import * as tables from '../tables'
 
@@ -39,5 +40,12 @@ export class PlayerRepository {
     }
 
     return player
+  }
+
+  static updateLastActionAt(id: string) {
+    const db = useDatabase()
+    return db.update(tables.players)
+      .set({ lastActionAt: new Date() })
+      .where(eq(tables.players.id, id))
   }
 }
