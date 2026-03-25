@@ -142,8 +142,8 @@
 
 <script setup lang="ts">
 import type { EventMessage } from '@chat-game/types'
+import { pluralizationRu } from '#shared/utils/pluralize'
 import { useAlertSound } from '~/composables/useAlertSound'
-import { pluralizationRu } from '~/utils/locale'
 
 const props = defineProps<{
   alerts: EventMessage[]

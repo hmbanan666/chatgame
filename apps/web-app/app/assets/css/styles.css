@@ -2,15 +2,15 @@
 @import "@nuxt/ui";
 
 @theme {
-  /* Site UI tokens (all from Resurrect 64 palette) */
-  --color-site-bg: #9E4539;         /* brown1 — page background */
-  --color-site-bg-alt: #3E3546;     /* purple1 — header, cards */
-  --color-site-bg-card: #FDCBB0;    /* cream — elevated cards */
-  --color-site-text: #FDCBB0;       /* cream — primary text */
-  --color-site-text-muted: #AB947A; /* tan — secondary text */
-  --color-site-accent: #CD683D;     /* brown2 — links, hover */
-  --color-site-accent-bright: #E6904E; /* brownOrange — active, highlights */
-  --color-site-highlight: #FBB954;  /* gold — important elements */
+  /* Site UI tokens — dark streamer/live vibe */
+  --color-site-bg: #0f0f14;         /* near-black — page background */
+  --color-site-bg-alt: #18181b;     /* zinc-900 — sections */
+  --color-site-bg-card: #1e1e24;    /* slightly elevated — cards */
+  --color-site-text: #FFFFFF;       /* pure white — max contrast */
+  --color-site-text-muted: #9ca3af; /* gray-400 — secondary */
+  --color-site-accent: #8b5cf6;     /* violet-500 — Twitch purple vibe */
+  --color-site-accent-bright: #a78bfa; /* violet-400 — hover states */
+  --color-site-highlight: #fbbf24;  /* amber-400 — highlights, coins */
 
   /*
    * Game UI tokens — all from Resurrect 64 palette
@@ -120,6 +120,9 @@ body {
 
 body {
   background-color: transparent;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
 }
 
 .bg-paper {
@@ -157,4 +160,70 @@ body {
 .dropdown-menu button:hover,
 .dropdown-menu a:hover {
   color: var(--color-site-accent);
+}
+
+/* Game-styled headings */
+.font-pixel {
+  font-family: 'Roboto Serif', serif;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* Pixel-style 3D buttons (SNES feel) */
+.btn-pixel {
+  border: none;
+  box-shadow:
+    inset -4px -4px 0 0 rgba(0, 0, 0, 0.25),
+    inset 4px 4px 0 0 rgba(255, 255, 255, 0.15);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.btn-pixel:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset -4px -4px 0 0 rgba(0, 0, 0, 0.25),
+    inset 4px 4px 0 0 rgba(255, 255, 255, 0.15),
+    0 4px 0 0 rgba(0, 0, 0, 0.3);
+}
+.btn-pixel:active {
+  transform: translateY(2px);
+  box-shadow:
+    inset 4px 4px 0 0 rgba(0, 0, 0, 0.25),
+    inset -4px -4px 0 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Pixel section divider */
+.pixel-divider {
+  height: 2px;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(139, 92, 246, 0.3) 0px, rgba(139, 92, 246, 0.3) 8px,
+    transparent 8px, transparent 16px
+  );
+  margin: 0 auto;
+  max-width: 64rem;
+}
+
+/* Terrain divider — game-world section separator */
+.terrain-divider {
+  height: 12px;
+  background: repeating-linear-gradient(
+    90deg,
+    #165A4C 0px, #165A4C 8px,
+    #239063 8px, #239063 16px,
+    #1EBC73 16px, #1EBC73 24px,
+    #91DB69 24px, #91DB69 32px
+  );
+  image-rendering: pixelated;
+}
+
+.terrain-divider-dirt {
+  height: 8px;
+  background: repeating-linear-gradient(
+    90deg,
+    #4C3E24 0px, #4C3E24 8px,
+    #9E4539 8px, #9E4539 16px,
+    #CD683D 16px, #CD683D 24px,
+    #4C3E24 24px, #4C3E24 32px
+  );
 }

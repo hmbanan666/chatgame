@@ -1,5 +1,5 @@
 <template>
-  <header class="z-10 fixed top-0 left-0 right-0 h-18 bg-[#2E222F] px-3 flex flex-row gap-2 justify-between items-center">
+  <header class="z-50 fixed top-0 left-0 right-0 h-18 bg-[#0f0f14]/90 backdrop-blur-sm border-b border-white/5 px-3 flex flex-row gap-2 justify-between items-center">
     <div class="flex-1 flex flex-row gap-1 items-center">
       <MainLogo />
     </div>

@@ -9,7 +9,7 @@
       </p>
     </div>
 
-    <ActiveCard class="py-4 px-6 grid grid-cols-1 md:grid-cols-3 gap-y-4 md:gap-x-4 items-center justify-center text-site-bg-alt">
+    <ActiveCard class="py-4 px-6 grid grid-cols-1 md:grid-cols-3 gap-y-4 md:gap-x-4 items-center justify-center text-site-text">
       <p class="col-span-2">
         Укажи любую сумму и напиши сообщение, которое появится на активном стриме.
       </p>
@@ -23,7 +23,7 @@
       </a>
     </ActiveCard>
 
-    <ActiveCard class="py-4 px-6 grid grid-cols-1 md:grid-cols-3 gap-y-4 md:gap-x-4 items-center justify-center text-site-bg-alt">
+    <ActiveCard class="py-4 px-6 grid grid-cols-1 md:grid-cols-3 gap-y-4 md:gap-x-4 items-center justify-center text-site-text">
       <p class="col-span-2">
         Приобрети любой набор Монет для игры. Оплата через "ЮKassa": РФ карта, ЮMoney, SberPay.
       </p>

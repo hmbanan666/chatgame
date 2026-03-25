@@ -4,6 +4,12 @@ import { useDatabase } from '../database'
 import * as tables from '../tables'
 
 export class ProfileRepository {
+  static async count() {
+    const db = useDatabase()
+    const result = await db.select({ count: count() }).from(tables.profiles)
+    return result[0]?.count ?? 0
+  }
+
   static find(id: string) {
     const db = useDatabase()
     return db.query.profiles.findFirst({

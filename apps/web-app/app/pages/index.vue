@@ -1,107 +1,292 @@
 <template>
-  <!-- Desktop: live demo -->
-  <ClientOnly>
-    <div class="w-full relative hidden md:block">
-      <div ref="demoStage" class="w-full h-75 bg-[#8FD3FF]" />
-    </div>
-  </ClientOnly>
+  <!-- HERO SECTION -->
+  <div
+    v-element-visibility="[onVisibilityChangeGame, observerOptions]"
+    class="relative w-full overflow-hidden"
+  >
+    <!-- Desktop: live demo at natural height -->
+    <ClientOnly>
+      <div class="w-full relative hidden md:block">
+        <div ref="demoStage" class="w-full h-75 bg-[#0f0f14]" />
+      </div>
+    </ClientOnly>
 
-  <!-- Mobile: static image -->
-  <div class="py-8 w-full md:hidden" style="background-image: url('/img/background-green.webp')">
-    <div class="my-0 mx-auto w-fit text-center">
-      <img
-        src="/img/wagon-full.png"
-        class="w-auto max-h-64"
-        alt=""
-      >
+    <!-- Mobile: static image -->
+    <div class="relative w-full md:hidden" style="background-image: url('/img/background-green.webp'); background-size: cover; background-position: center;">
+      <div class="py-8 flex justify-center">
+        <img
+          src="/img/wagon-full.png"
+          class="w-auto max-h-64"
+          alt=""
+        >
+      </div>
     </div>
   </div>
 
-  <div
-    v-element-visibility="[onVisibilityChangeGame, observerOptions]"
-    class="my-24 md:my-16 px-4 max-w-4xl mx-auto text-center"
-  >
-    <div class="mb-8 space-y-4">
-      <h1 class="text-3xl md:text-3xl lg:text-4xl">
-        Интерактивная онлайн-игра
+  <!-- HERO CTA (logged-out) -->
+  <div v-if="!loggedIn" class="py-12 md:py-16 px-4 text-center">
+    <!-- Live indicator -->
+    <div v-if="isStreaming" class="mb-4 flex items-center justify-center gap-2 text-emerald-400">
+      <span class="relative flex size-3">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+        <span class="relative inline-flex rounded-full size-3 bg-emerald-400" />
+      </span>
+      <span class="font-bold text-sm uppercase tracking-wider">Стрим идёт прямо сейчас</span>
+    </div>
+
+    <div class="mb-8 space-y-4 max-w-2xl mx-auto">
+      <h1 class="font-pixel text-3xl md:text-5xl lg:text-6xl font-bold text-amber-300 leading-tight [text-shadow:_3px_3px_0_#0f0f14,_-1px_-1px_0_#0f0f14,_1px_-1px_0_#0f0f14,_-1px_1px_0_#0f0f14] drop-shadow-[0_0_20px_rgba(251,191,36,0.4)]">
+        Чат-игра на стриме
       </h1>
-      <p class="text-base md:text-lg lg:text-xl">
-        Группа игроков сопровождает Машину из точки А в точку Б. По пути
-        встречаются препятствия, от которых нужно избавляться. Все это
-        транслируется на
-        <a
-          href="https://twitch.tv/hmbanan666"
-          target="_blank"
-          class="opacity-70 duration-200 hover:opacity-100 hover:text-site-accent-bright"
-        >Twitch стриме</a>.
+      <p class="text-lg md:text-xl text-white/80">
+        Пиши в чат — управляй персонажем. Руби деревья, зарабатывай монеты, собирай героев.
+      </p>
+      <p v-if="profileCount?.count" class="text-sm text-white/50">
+        {{ profileCount.count }}+ игроков уже в игре
       </p>
     </div>
 
-    <div class="max-w-md mx-auto flex flex-col sm:flex-row gap-3 items-center justify-center">
-      <UButton
-        v-if="isStreaming"
-        to="https://twitch.tv/hmbanan666"
-        target="_blank"
-        size="xl"
-        icon="simple-icons:twitch"
-        trailing-icon="lucide:radio"
-        class="bg-[#2E222F]! hover:bg-site-bg-alt! text-site-text! px-7! py-3.5! rounded-none!"
-      >
-        Смотреть стрим
-      </UButton>
-      <UButton
-        v-else
-        to="/playground"
-        size="xl"
-        icon="lucide:play"
-        class="bg-[#2E222F]! hover:bg-site-bg-alt! text-site-text! px-7! py-3.5! rounded-none!"
-      >
-        Посмотреть демо
-      </UButton>
+    <UButton
+      to="/api/auth/twitch"
+      external
+      size="xl"
+      icon="simple-icons:twitch"
+      class="btn-pixel bg-[#6441a5]! hover:bg-[#7B5BBF]! text-white! shadow-[0_0_30px_rgba(139,92,246,0.4)]! px-12! py-5! rounded-none! font-pixel text-lg!"
+    >
+      Войти через Twitch
+    </UButton>
+    <p class="mt-3 text-xs text-white/30">
+      Безопасный вход через Twitch. Мы не получаем пароль.
+    </p>
+  </div>
 
-      <UButton
-        v-if="loggedIn"
-        to="/#profile"
-        size="xl"
-        icon="lucide:user"
-        class="bg-site-bg-alt! hover:bg-[#625565]! text-site-text! px-7! py-3.5! rounded-none!"
-      >
-        Мой профиль
-      </UButton>
-      <UButton
-        v-else
-        to="/api/auth/twitch"
-        external
-        size="xl"
-        icon="simple-icons:twitch"
-        class="bg-site-bg-alt! hover:bg-[#625565]! text-site-text! px-7! py-3.5! rounded-none!"
-      >
-        Войти
-      </UButton>
+  <div v-if="!loggedIn" class="pixel-divider" />
+
+  <!-- HOW IT WORKS (logged-out) -->
+  <div v-if="!loggedIn" class="py-16 px-4">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="font-pixel text-2xl md:text-3xl font-bold text-amber-300 text-center mb-10">
+        Как это работает
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+        <div class="space-y-3">
+          <div class="size-18 mx-auto bg-[#1e1e24] border-2 border-white/10 flex items-center justify-center">
+            <Icon name="simple-icons:twitch" class="size-10 text-[#a78bfa]" />
+          </div>
+          <h3 class="text-lg font-bold text-white">
+            Войди через Twitch
+          </h3>
+          <p class="text-sm text-white/50">
+            Один клик — и ты в игре. Никаких регистраций.
+          </p>
+        </div>
+        <div class="space-y-3">
+          <div class="size-18 mx-auto bg-[#1e1e24] border-2 border-white/10 flex items-center justify-center">
+            <Image src="/units/twitchy/head.png" class="size-12" />
+          </div>
+          <h3 class="text-lg font-bold text-white">
+            Получи персонажа
+          </h3>
+          <p class="text-sm text-white/50">
+            Твичи — стартовый герой. Ещё {{ (characters?.length ?? 1) - 1 }} можно разблокировать.
+          </p>
+        </div>
+        <div class="space-y-3">
+          <div class="size-18 mx-auto bg-[#1e1e24] border-2 border-white/10 flex items-center justify-center">
+            <Image src="/coin.png" class="size-12" />
+          </div>
+          <h3 class="text-lg font-bold text-white">
+            Играй и зарабатывай
+          </h3>
+          <p class="text-sm text-white/50">
+            Руби деревья, копи монеты, открывай новых героев.
+          </p>
+        </div>
+      </div>
+      <div class="mt-10 text-center">
+        <UButton
+          to="/api/auth/twitch"
+          external
+          size="xl"
+          icon="simple-icons:twitch"
+          class="btn-pixel bg-[#6441a5]! hover:bg-[#7B5BBF]! text-white! shadow-[0_0_30px_rgba(139,92,246,0.4)]! px-10! py-4! rounded-none!"
+        >
+          Начать играть
+        </UButton>
+      </div>
     </div>
   </div>
+
+  <!-- PROFILE DASHBOARD (logged-in only, hero position) -->
+  <div
+    v-if="loggedIn"
+    id="profile"
+    v-element-visibility="[onVisibilityChangeProfile, observerOptions]"
+    class="w-full py-10 bg-[#141418] border-y border-white/5"
+  >
+    <div class="max-w-3xl mx-auto px-4 space-y-6">
+      <!-- Avatar + name + level -->
+      <div class="flex flex-col items-center gap-3 text-center">
+        <div class="size-20 rounded-none ring-4 ring-site-highlight bg-[#1e1e24] flex items-center justify-center overflow-hidden">
+          <Image
+            v-if="profile?.activeCharacter?.character.codename"
+            :src="`/units/${profile.activeCharacter.character.codename}/idle.gif`"
+            class="size-16"
+          />
+          <Icon
+            v-else
+            name="lucide:user"
+            class="size-10 text-site-text/50"
+          />
+        </div>
+        <div>
+          <h2 class="font-pixel text-2xl md:text-3xl font-bold text-site-text">
+            {{ profile?.userName }}
+          </h2>
+          <div class="flex flex-row gap-2 items-center justify-center mt-1">
+            <span class="bg-site-highlight text-white px-3 py-0.5 rounded-none font-bold text-sm">
+              Ур. {{ profile?.level }}
+            </span>
+            <span class="text-sm text-site-text/60">{{ formatWatchTime(profile?.watchTimeMin ?? 0) }} на стримах</span>
+          </div>
+        </div>
+        <!-- XP bar -->
+        <div v-if="xpProgress" class="w-full max-w-xs">
+          <div class="w-full h-2.5 bg-[#1e1e24] rounded-none overflow-hidden">
+            <div
+              class="h-full bg-emerald-500 transition-all duration-500"
+              :style="{ width: `${xpProgress.percent}%` }"
+            />
+          </div>
+          <p class="text-xs text-site-text/60 mt-1">
+            {{ profile?.xp }} / {{ xpProgress.required }} XP
+          </p>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="grid grid-cols-3 gap-4 text-center">
+        <!-- Active character -->
+        <ActiveCard class="py-4 flex flex-col items-center justify-center gap-1 text-white">
+          <Image
+            v-if="profile?.activeCharacter?.character.codename"
+            :src="`/units/${profile.activeCharacter.character.codename}/idle.gif`"
+            class="size-16"
+          />
+          <p class="text-sm font-semibold">
+            {{ profile?.activeCharacter?.character.nickname }}
+          </p>
+          <a href="#characters" class="text-xs text-emerald-500 hover:underline">Сменить</a>
+        </ActiveCard>
+
+        <!-- Coins -->
+        <ActiveCard class="py-4 flex flex-col items-center justify-center gap-1 text-white">
+          <Image src="/coin.png" class="size-16" />
+          <p class="text-3xl font-bold">
+            {{ profile?.coins }}
+          </p>
+          <p class="text-xs text-white/60">
+            {{ pluralizationRu(profile?.coins ?? 0, ['Монета', 'Монеты', 'Монет']) }}
+          </p>
+        </ActiveCard>
+
+        <!-- Coupons -->
+        <ActiveCard class="py-4 flex flex-col items-center justify-center gap-1 text-white">
+          <Image src="/coupon-small.png" class="size-16" />
+          <p class="text-3xl font-bold">
+            {{ profile?.coupons }}
+          </p>
+          <p class="text-xs text-white/60">
+            {{ pluralizationRu(profile?.coupons ?? 0, ['Купон', 'Купона', 'Купонов']) }}
+          </p>
+        </ActiveCard>
+      </div>
+
+      <!-- Coupon exchange -->
+      <button
+        v-if="(profile?.coupons ?? 0) > 0"
+        :disabled="isExchanging"
+        class="btn-pixel w-full px-4 py-3 bg-emerald-500 text-white text-sm rounded-none cursor-pointer duration-200 flex items-center justify-center gap-2"
+        @click="exchangeCoupon"
+      >
+        <span class="relative flex size-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-none bg-white opacity-75" />
+          <span class="relative inline-flex rounded-none size-2 bg-white" />
+        </span>
+        <Image src="/coupon-small.png" class="size-5" />
+        <span>Обменять купон на 2 монеты</span>
+        <Image src="/coin.png" class="size-5" />
+      </button>
+    </div>
+  </div>
+
+  <!-- NUDGE BANNER (logged-in, has character to unlock) -->
+  <div
+    v-if="loggedIn && nextCharacterNudge"
+    class="py-6 px-4"
+  >
+    <div class="max-w-2xl mx-auto flex items-center gap-4 p-4 border-2 border-[#8b5cf6]/30 bg-[#8b5cf6]/10">
+      <Image
+        :src="`/units/${nextCharacterNudge.character.codename}/idle.gif`"
+        class="size-14 shrink-0"
+      />
+      <div class="flex-1 min-w-0">
+        <p v-if="nextCharacterNudge.canAfford" class="text-white font-bold">
+          У тебя хватает монет на {{ nextCharacterNudge.character.nickname }}!
+        </p>
+        <p v-else class="text-white font-bold">
+          Ещё {{ nextCharacterNudge.deficit }} монет — и {{ nextCharacterNudge.character.nickname }} твой
+        </p>
+        <p class="text-sm text-white/50 mt-0.5">
+          {{ nextCharacterNudge.character.price }} монет за персонажа
+        </p>
+      </div>
+      <a
+        v-if="nextCharacterNudge.canAfford"
+        href="#characters"
+        class="btn-pixel shrink-0 px-4 py-2 bg-emerald-500 text-white font-bold text-sm"
+      >
+        Открыть
+      </a>
+      <a
+        v-else
+        href="#shop"
+        class="btn-pixel shrink-0 px-4 py-2 bg-[#6441a5] text-white font-bold text-sm"
+      >
+        Купить монеты
+      </a>
+    </div>
+  </div>
+
+  <div class="pixel-divider" />
 
   <div
     id="characters"
     v-element-visibility="[onVisibilityChangeCharacters, observerOptions]"
-    class="my-24 md:my-30 px-4 py-12 text-center space-y-6 bg-[#2E222F]"
+    class="px-4 py-12 text-center space-y-6"
   >
     <div class="max-w-4xl mx-auto space-y-6">
       <div class="space-y-2">
-        <h2 class="text-2xl md:text-2xl lg:text-3xl">
-          Персонажи из игры
+        <h2 class="font-pixel text-2xl md:text-3xl font-bold text-amber-300">
+          {{ loggedIn ? 'Твоя коллекция' : 'Твой персонаж ждёт' }}
         </h2>
-        <p>
-          Создаются вручную. Разблокируются за Монеты и за участие в событиях.
+        <p v-if="!loggedIn" class="text-white/50">
+          {{ characters?.length ?? '' }} уникальных героев. Войди чтобы начать собирать.
+        </p>
+        <p v-else class="text-white/50">
+          Разблокируй новых героев за Монеты и участие в событиях.
         </p>
       </div>
 
-      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <ActiveCard
           v-for="char in characters"
           :key="char.id"
-          class="px-2 py-2 md:aspect-square flex flex-col items-center justify-center cursor-pointer"
-          :class="isCharacterOwned(char.id) ? '' : 'grayscale-50'"
+          class="relative px-2 py-3 flex flex-col items-center justify-between cursor-pointer"
+          :class="[
+            isCharacterOwned(char.id) ? 'border-emerald-500!' : '',
+            !loggedIn && char.codename === 'twitchy' ? '' : (!isCharacterOwned(char.id) ? 'grayscale-50 hover:grayscale-0' : ''),
+          ]"
           @click="
             () => {
               isCharacterOpened = true;
@@ -109,94 +294,213 @@
             }
           "
         >
-          <Image
-            :src="`/units/${char.codename}/128.png`"
-            class="w-20 h-20 block group-hover:hidden"
-          />
-          <Image
-            :src="`/units/${char.codename}/idle.gif`"
-            class="w-20 h-20 hidden group-hover:block"
-          />
-          <p class="mt-2 text-site-bg-alt font-semibold flex items-center gap-1">
-            {{ char.nickname }}
-            <Icon
-              v-if="isActiveCharacter(char.id)"
-              name="lucide:star"
-              class="size-4 text-[#0EAF9B]"
+          <!-- Active star badge -->
+          <div
+            v-if="isActiveCharacter(char.id)"
+            class="absolute -top-1.5 -right-1.5 z-10 size-7 bg-amber-400 rounded-none flex items-center justify-center border-2 border-[#2a2a30]"
+          >
+            <Icon name="lucide:star" class="size-4 text-white" />
+          </div>
+
+          <!-- Starter badge for Twitchy -->
+          <div
+            v-if="!loggedIn && char.codename === 'twitchy'"
+            class="absolute -top-1.5 -left-1.5 z-10 px-1.5 py-0.5 bg-emerald-500 text-white text-[10px] font-bold"
+          >
+            Стартовый
+          </div>
+
+          <!-- Lock overlay for unowned -->
+          <div
+            v-if="!loggedIn && char.price > 0"
+            class="absolute inset-0 z-10 flex items-center justify-center bg-[#18181b]/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          >
+            <span class="text-xs text-white font-bold px-2 py-1 bg-[#6441a5]">Войди</span>
+          </div>
+          <div
+            v-else-if="loggedIn && !isCharacterOwned(char.id)"
+            class="absolute inset-0 z-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
+          >
+            <div class="size-10 rounded-none bg-[#18181b]/60 flex items-center justify-center">
+              <Icon name="lucide:lock" class="size-5 text-white/80" />
+            </div>
+          </div>
+
+          <div class="flex-1 flex flex-col items-center justify-center">
+            <Image
+              :src="`/units/${char.codename}/128.png`"
+              class="w-20 h-20 block group-hover:hidden"
             />
-          </p>
+            <Image
+              :src="`/units/${char.codename}/idle.gif`"
+              class="w-20 h-20 hidden group-hover:block"
+            />
+            <p class="mt-2 text-white font-semibold flex items-center gap-1">
+              {{ char.nickname }}
+            </p>
+          </div>
           <div v-if="isCharacterOwned(char.id)" class="w-full mt-1 px-2">
-            <div class="flex justify-between text-xs text-site-bg-alt/60 mb-0.5">
+            <div class="flex justify-between text-xs text-white/60 mb-0.5">
               <span>Ур. {{ getCharacterEdition(char.id)?.level ?? 1 }}</span>
               <span>{{ formatWatchTime(getCharacterEdition(char.id)?.playTimeMin ?? 0) }}</span>
             </div>
-            <div class="w-full h-1 bg-[#2E222F]/15 rounded-full overflow-hidden">
+            <div class="w-full h-1 bg-[#18181b]/15 rounded-none overflow-hidden">
               <div
-                class="h-full bg-[#0EAF9B]"
+                class="h-full bg-emerald-500"
                 :style="{ width: `${getCharXpPercent(char.id)}%` }"
               />
             </div>
           </div>
           <div v-else class="w-full mt-1 px-2">
-            <p v-if="char.price > 0" class="text-xs text-site-bg-alt/60 flex items-center justify-center gap-1 mb-0.5">
-              <Image src="/coin.png" class="size-3" />
-              {{ char.price }}
-            </p>
-            <p v-else class="text-xs text-site-bg-alt/60 mb-0.5">
+            <template v-if="loggedIn">
+              <p v-if="char.price > 0" class="text-xs text-white/40 flex items-center justify-center gap-1 mb-0.5">
+                <Image src="/coin.png" class="size-3" />
+                {{ char.price }}
+              </p>
+              <p v-else class="text-xs text-white/40 mb-0.5">
+                &nbsp;
+              </p>
+            </template>
+            <p class="text-xs text-white/50 mb-0.5">
               &nbsp;
             </p>
             <div class="w-full h-1" />
           </div>
         </ActiveCard>
       </div>
+      <!-- CTA after characters (logged-out) -->
+      <div v-if="!loggedIn" class="pt-6 text-center">
+        <p class="text-white/50 mb-4">
+          Войди через Twitch чтобы собирать персонажей
+        </p>
+        <UButton
+          to="/api/auth/twitch"
+          external
+          size="xl"
+          icon="simple-icons:twitch"
+          class="btn-pixel bg-[#6441a5]! hover:bg-[#7B5BBF]! text-white! shadow-[0_0_30px_rgba(139,92,246,0.4)]! px-10! py-4! rounded-none!"
+        >
+          Войти и начать
+        </UButton>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHOP (logged-in: full shop, logged-out: teaser banner) -->
+  <div v-if="!loggedIn" class="py-16 px-4 text-center">
+    <div class="max-w-2xl mx-auto space-y-6">
+      <div class="flex items-center justify-center gap-3">
+        <Image src="/coin.png" class="size-12" />
+        <div class="text-left">
+          <h2 class="font-pixel text-xl md:text-2xl font-bold text-amber-300">
+            Монеты открывают персонажей
+          </h2>
+          <p class="text-white/50 text-sm">
+            Покупай монеты, разблокируй уникальных героев, поддержи проект
+          </p>
+        </div>
+      </div>
+      <UButton
+        to="/api/auth/twitch"
+        external
+        size="xl"
+        icon="simple-icons:twitch"
+        class="btn-pixel bg-[#6441a5]! hover:bg-[#7B5BBF]! text-white! shadow-[0_0_30px_rgba(139,92,246,0.4)]! px-10! py-4! rounded-none!"
+      >
+        Войти чтобы увидеть магазин
+      </UButton>
     </div>
   </div>
 
   <div
+    v-else
     id="shop"
     v-element-visibility="[onVisibilityChangeShop, observerOptions]"
-    class="max-w-4xl my-24 md:my-30 px-4 mx-auto text-center space-y-6"
+    class="max-w-4xl my-16 px-4 mx-auto text-center space-y-6"
   >
     <div class="space-y-2">
-      <h2 class="text-2xl md:text-2xl lg:text-3xl">
+      <p class="text-sm text-site-text/60 flex items-center justify-center gap-1">
+        <Icon name="lucide:heart" class="size-4 text-red-500" />
+        Поддержи проект
+      </p>
+      <h2 class="font-pixel text-2xl md:text-3xl font-bold text-site-highlight">
         Магазин
       </h2>
       <p>Отличный способ поддержки проекта. Спасибо!</p>
     </div>
 
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-      <ActiveCard v-for="product in shopProducts" :key="product.id">
-        <div class="w-full h-24 bg-site-accent/5">
-          <Image
-            :src="`/shop-assets/${product.id}/512.png`"
-            class="w-40 h-auto absolute -top-14 right-0"
-          />
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 items-end">
+      <div
+        v-for="(product, index) in shopProducts"
+        :key="product.id"
+        class="relative transition-all duration-200 hover:-translate-y-1"
+        :class="[
+          recommendedProduct && product.id === recommendedProduct.id ? 'ring-2 ring-[#8b5cf6]' : '',
+        ]"
+      >
+        <!-- Tier badge -->
+        <div
+          v-if="recommendedProduct && product.id === recommendedProduct.id"
+          class="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 bg-[#6441a5] text-white text-xs font-bold whitespace-nowrap animate-pulse"
+        >
+          Подходит!
+        </div>
+        <div
+          v-else-if="index === 2"
+          class="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 bg-[#FBB954] text-[#2B2416] text-xs font-bold whitespace-nowrap"
+        >
+          Популярное
+        </div>
+        <div
+          v-else-if="index >= 3"
+          class="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 bg-[#A884F3] text-white text-xs font-bold whitespace-nowrap"
+        >
+          Выгодно
         </div>
 
-        <div class="p-4 flex flex-col justify-between">
-          <div class="mb-4 text-xl font-semibold text-site-bg-alt">
-            {{ product.coins }} Монет
+        <!-- Card with tier-colored border -->
+        <div
+          class="border-2 border-b-4 overflow-hidden"
+          :style="{ borderColor: shopTierColors[index], backgroundColor: shopTierBg[index] }"
+        >
+          <!-- Image area with tier bg -->
+          <div class="relative h-28 flex items-center justify-center" :style="{ backgroundColor: `${shopTierColors[index]}20` }">
+            <Image
+              :src="`/shop-assets/${product.id}/512.png`"
+              class="w-36 h-auto relative z-10"
+            />
           </div>
 
-          <div>
-            <button
-              v-if="loggedIn"
-              :disabled="isLoading"
-              class="px-6 py-3 w-full bg-[#0EAF9B] border-b-4 border-[#0B8A8F] text-white text-xl tracking-wide rounded-none cursor-pointer hover:opacity-85 active:scale-95 duration-200 flex flex-row justify-center items-center gap-3"
-              @click="buyProduct(product.id)"
-            >
-              <UIcon
-                v-if="isLoading"
-                name="i-lucide:loader-circle"
-                class="animate-spin"
-              />
-              <span v-else>{{ product.price }} ₽</span>
-            </button>
+          <!-- Content -->
+          <div class="p-4 text-center">
+            <div class="mb-3">
+              <span class="font-pixel text-3xl font-bold" :style="{ color: shopTierColors[index] }">{{ product.coins }}</span>
+              <p class="text-sm text-white/50 mt-0.5">
+                Монет
+              </p>
+            </div>
+            <p class="text-xs text-white/40 mb-3">
+              {{ (product.price / product.coins).toFixed(1) }} ₽/монета
+            </p>
 
-            <LoginButton v-else />
+            <div>
+              <button
+                :disabled="isLoading"
+                class="btn-pixel px-4 py-3 w-full text-white font-bold rounded-none cursor-pointer flex flex-row justify-center items-center gap-2"
+                :style="{ backgroundColor: shopTierColors[index] }"
+                @click="buyProduct(product.id)"
+              >
+                <UIcon
+                  v-if="isLoading"
+                  name="i-lucide:loader-circle"
+                  class="animate-spin"
+                />
+                <span v-else class="text-lg">{{ product.price }} ₽</span>
+              </button>
+            </div>
           </div>
         </div>
-      </ActiveCard>
+      </div>
     </div>
 
     <p>
@@ -211,125 +515,29 @@
     </p>
   </div>
 
-  <ClientOnly>
-    <div
-      v-if="loggedIn"
-      id="profile"
-      v-element-visibility="[onVisibilityChangeProfile, observerOptions]"
-      class="max-w-4xl my-24 md:my-30 px-4 mx-auto text-center space-y-6"
-    >
-      <div class="space-y-2">
-        <h2 class="text-2xl md:text-2xl lg:text-3xl">
-          {{ profile?.userName }}
-        </h2>
-        <div class="flex flex-row gap-3 justify-center items-center text-site-text">
-          <span>Уровень <span class="text-site-accent-bright font-bold">{{ profile?.level }}</span></span>
-          <span>·</span>
-          <span>{{ formatWatchTime(profile?.watchTimeMin ?? 0) }} на стримах</span>
-        </div>
-        <div v-if="xpProgress" class="max-w-xs mx-auto">
-          <div class="w-full h-1.5 bg-[#3E3546] rounded-full overflow-hidden">
-            <div
-              class="h-full bg-[#0EAF9B] transition-all duration-500"
-              :style="{ width: `${xpProgress.percent}%` }"
-            />
-          </div>
-          <p class="text-xs text-site-text/60 mt-1">
-            {{ profile?.xp }} / {{ xpProgress.required }} XP
-          </p>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <ActiveCard
-          class="px-4 py-0 flex flex-row gap-0 items-center justify-center text-site-bg-alt"
-        >
-          <Image
-            :src="`/units/${profile?.activeCharacter?.character.codename}/idle.gif`"
-            class="size-24"
-          />
-          <div>
-            <p>Активный персонаж</p>
-            <p class="font-semibold text-lg text-[#2E222F]">
-              {{ profile?.activeCharacter?.character.nickname }}
-            </p>
-          </div>
-        </ActiveCard>
-
-        <ActiveCard
-          class="px-4 py-6 flex flex-row gap-8 items-center justify-center text-site-bg-alt"
-        >
-          <div class="flex flex-row gap-2 items-center justify-center">
-            <Image src="/coin.png" class="size-12" />
-            <div>
-              <p class="font-semibold text-2xl leading-tight">
-                {{ profile?.coins }}
-              </p>
-              <p class="text-sm leading-tight">
-                {{
-                  pluralizationRu(profile?.coins ?? 0, [
-                    "Монета",
-                    "Монеты",
-                    "Монет",
-                  ])
-                }}
-              </p>
-            </div>
-          </div>
-
-          <div class="flex flex-row gap-2 items-center justify-center">
-            <Image src="/coupon-small.png" class="size-12" />
-            <div>
-              <p class="font-semibold text-2xl leading-tight">
-                {{ profile?.coupons }}
-              </p>
-              <p class="text-sm leading-tight">
-                {{
-                  pluralizationRu(profile?.coupons ?? 0, [
-                    "Купон",
-                    "Купона",
-                    "Купонов",
-                  ])
-                }}
-              </p>
-            </div>
-          </div>
-        </ActiveCard>
-
-        <button
-          v-if="(profile?.coupons ?? 0) > 0"
-          :disabled="isExchanging"
-          class="col-span-1 md:col-span-2 px-4 py-3 bg-[#0EAF9B] border-b-4 border-[#0B8A8F] text-white text-base font-semibold rounded-none cursor-pointer hover:opacity-85 active:scale-95 duration-200 flex items-center justify-center gap-2"
-          @click="exchangeCoupon"
-        >
-          <Image src="/coupon-small.png" class="size-5" />
-          <span>Обменять купон на 2 монеты</span>
-          <Image src="/coin.png" class="size-5" />
-        </button>
-      </div>
-    </div>
-  </ClientOnly>
-
-  <div class="my-24 px-4 py-12 mx-auto text-center space-y-6 bg-[#2E222F]">
-    <h2 class="text-2xl md:text-2xl lg:text-3xl">
-      Благодарности от hmbanan666
+  <!-- THANKS / COMMUNITY -->
+  <div class="px-4 py-16 mx-auto text-center space-y-6">
+    <h2 class="font-pixel text-2xl md:text-3xl font-bold text-site-highlight">
+      Благодарности
     </h2>
-    <p class="thanks-block max-w-4xl mx-auto">
-      Спасибо моим зрителям: <em>kungfux010</em> за активные тесты игры,
-      <em>sava5621</em> за вкусные шавухи, <em>BezSovesty</em> за помощь на
-      старте, <em>flack_zombi</em> за упорство в рубке деревьев,
-      <em>player_mmcm</em> за первые тесты Дополнения, <em>a_hywax</em> за
-      помощь с open source, <em>PeregonStream</em> и <em>siberiacancode</em> за
-      крутые рейды. Спасибо <em>tozikab_</em>, <em>6alt1ca</em>,
-      <em>derailon</em>, <em>sloghniy</em>, <em>MaN0ol</em>, <em>dO_Oy</em>,
-      <em>VombatDrago</em>, <em>sleeplessness8</em>. <br>Вы все крутые!
+    <p class="max-w-4xl mx-auto text-site-text/80">
+      Спасибо моим зрителям за поддержку проекта! Вы все крутые!
     </p>
+    <div class="max-w-4xl mx-auto flex flex-wrap justify-center gap-2">
+      <span
+        v-for="name in thanksNames"
+        :key="name"
+        class="px-3 py-1.5 bg-[#2D2640] text-[#a78bfa] font-pixel text-sm border border-[#8b5cf6]/20 hover:bg-[#8b5cf6] hover:text-white transition-colors duration-200"
+      >
+        {{ name }}
+      </span>
+    </div>
   </div>
 
   <UModal
     v-model:open="isCharacterOpened"
-    :close="{ color: 'neutral', variant: 'ghost', class: 'text-site-text! hover:bg-[#3E3546]!' }"
-    :ui="{ content: 'bg-[#2E222F]! text-site-text ring-[#3E3546]! divide-[#3E3546]! rounded-none!', overlay: 'bg-[#2E222F]/80! backdrop-blur-sm' }"
+    :close="{ color: 'neutral', variant: 'ghost', class: 'text-site-text! hover:bg-[#1e1e24]!' }"
+    :ui="{ content: 'bg-[#18181b]! text-site-text ring-zinc-700! divide-zinc-700! rounded-none!', overlay: 'bg-[#18181b]/80! backdrop-blur-sm' }"
   >
     <template #header>
       <div class="flex items-center gap-4 flex-1">
@@ -363,28 +571,63 @@
         <template v-if="isCharacterOwned(selectedCharacter.id)">
           <button
             v-if="!isActiveCharacter(selectedCharacter.id)"
-            class="px-6 py-3 w-full bg-[#625565] text-white text-base font-semibold rounded-none cursor-pointer hover:opacity-85 active:scale-95 duration-200 flex items-center justify-center gap-2"
+            class="px-6 py-3 w-full bg-[#1e1e24] text-white text-base font-semibold rounded-none cursor-pointer hover:opacity-85 active:scale-95 duration-200 flex items-center justify-center gap-2"
             @click="activateCharacter(selectedCharacter.id)"
           >
             <Icon name="lucide:star" class="size-5" />
             <span>Сделать активным</span>
           </button>
-          <p v-else class="text-sm text-[#FBB954] font-semibold text-center">
+          <p v-else class="text-sm text-amber-400 font-semibold text-center">
             Активный персонаж
           </p>
         </template>
-        <button
-          v-else-if="selectedCharacter.price > 0"
-          :disabled="isBuyingCharacter || (profile?.coins ?? 0) < selectedCharacter.price"
-          class="px-6 py-3 w-full bg-[#0EAF9B] border-b-4 border-[#0B8A8F] text-white text-base font-semibold rounded-none cursor-pointer hover:opacity-85 active:scale-95 duration-200 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          @click="buyCharacter(selectedCharacter.id)"
-        >
-          <Image src="/coin.png" class="size-5" />
-          <span>Купить за {{ selectedCharacter.price }} монет</span>
-        </button>
+        <template v-else-if="selectedCharacter.price > 0">
+          <button
+            v-if="(profile?.coins ?? 0) >= selectedCharacter.price"
+            :disabled="isBuyingCharacter"
+            class="btn-pixel px-6 py-3 w-full bg-emerald-500 text-white text-base font-semibold rounded-none cursor-pointer flex items-center justify-center gap-2"
+            @click="buyCharacter(selectedCharacter.id)"
+          >
+            <Image src="/coin.png" class="size-5" />
+            <span>Купить за {{ selectedCharacter.price }} монет</span>
+          </button>
+          <div v-else class="space-y-2">
+            <p class="text-sm text-white/50 text-center">
+              Не хватает {{ selectedCharacter.price - (profile?.coins ?? 0) }} монет
+            </p>
+            <a
+              href="#shop"
+              class="btn-pixel px-6 py-3 w-full bg-[#6441a5] text-white text-base font-semibold rounded-none flex items-center justify-center gap-2"
+              @click="isCharacterOpened = false"
+            >
+              <Image src="/coin.png" class="size-5" />
+              <span>Купить монеты</span>
+            </a>
+          </div>
+        </template>
       </div>
     </template>
   </UModal>
+
+  <!-- Spacer for sticky CTA on mobile -->
+  <div v-if="!loggedIn" class="h-16 md:hidden" />
+
+  <!-- STICKY MOBILE CTA (logged-out only) -->
+  <div
+    v-if="!loggedIn"
+    class="fixed bottom-0 left-0 right-0 z-50 md:hidden p-3 bg-[#18181b]/95 backdrop-blur-sm border-t border-[#2a2a30]"
+  >
+    <UButton
+      to="/api/auth/twitch"
+      external
+      block
+      size="lg"
+      icon="simple-icons:twitch"
+      class="btn-pixel bg-[#6441a5]! hover:bg-[#7B5BBF]! text-white! shadow-[0_0_30px_rgba(139,92,246,0.4)]! py-3! rounded-none! font-bold!"
+    >
+      Войти через Twitch
+    </UButton>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -392,12 +635,12 @@ import { getXpForLevel } from '#shared/utils/level'
 import { vElementVisibility } from '@vueuse/components'
 
 useHead({
-  title: 'Интерактивная онлайн-игра',
+  title: 'Чат-игра на стриме',
   meta: [
     {
       name: 'description',
       content:
-        'Группа игроков сопровождает Машину из точки А в точку Б. По пути встречаются препятствия, от которых нужно избавляться.',
+        'Пиши в чат — управляй персонажем. Руби деревья, зарабатывай монеты, собирай героев. Бесплатная чат-игра на Twitch.',
     },
   ],
 })
@@ -429,18 +672,29 @@ const observerOptions = { rootMargin: '0px 0px -400px 0px' }
 const demoStage = ref<HTMLElement>()
 const demoGame = shallowRef<any>()
 
-watch(demoStage, async () => {
-  if (!demoStage.value) {
+watch(demoStage, async (el) => {
+  if (!el) {
     return
   }
 
   try {
+    const width = el.clientWidth
+    if (!width) {
+      return
+    }
+
     const [{ StreamJourneyGame }, demoNames] = await Promise.all([
       import('~/utils/stream-journey/game'),
       $fetch('/api/game/demo-names').catch(() => [] as string[]),
     ])
+    if (!demoStage.value) {
+      return
+    }
     demoGame.value = new StreamJourneyGame({ demo: true, demoNames })
-    await demoGame.value.init({ width: demoStage.value.clientWidth })
+    await demoGame.value.init({ width })
+    if (!demoStage.value) {
+      return
+    }
     demoStage.value.appendChild(demoGame.value.app.canvas)
   } catch (error) {
     console.error(error)
@@ -451,6 +705,15 @@ onUnmounted(() => {
   demoGame.value?.destroy()
 })
 
+const thanksNames = [
+  'kungfux010', 'sava5621', 'BezSovesty', 'flack_zombi',
+  'player_mmcm', 'a_hywax', 'PeregonStream', 'siberiacancode',
+  'tozikab_', '6alt1ca', 'derailon', 'sloghniy',
+  'MaN0ol', 'dO_Oy', 'VombatDrago', 'sleeplessness8',
+]
+
+const { data: profileCount } = await useFetch('/api/stats/count')
+
 const { data: characters } = await useFetch('/api/character')
 
 const isCharacterOpened = ref(false)
@@ -459,7 +722,9 @@ const selectedCharacter = computed(() =>
   characters.value?.find(({ id }: { id: string }) => id === selectedCharacterId.value),
 )
 
-const { data: profile } = await useFetch(`/api/profile/${user.value?.id}`)
+const { data: profile } = await useFetch(`/api/profile/${user.value?.id}`, {
+  immediate: !!user.value?.id,
+})
 
 const xpProgress = computed(() => {
   if (!profile.value) {
@@ -474,6 +739,33 @@ const xpProgress = computed(() => {
   return { required, percent }
 })
 
+const nextCharacterNudge = computed(() => {
+  if (!profile.value || !characters.value) {
+    return null
+  }
+  const coins = profile.value.coins ?? 0
+  const unowned = characters.value
+    .filter((c: { id: string, price: number }) => c.price > 0 && !isCharacterOwned(c.id))
+    .sort((a: { price: number }, b: { price: number }) => a.price - b.price)
+  if (!unowned.length) {
+    return null
+  }
+  const closest = unowned[0]!
+  const deficit = closest.price - coins
+  if (deficit <= 0) {
+    return { character: closest, deficit: 0, canAfford: true }
+  }
+  return { character: closest, deficit, canAfford: false }
+})
+
+const recommendedProduct = computed(() => {
+  if (!nextCharacterNudge.value || nextCharacterNudge.value.canAfford) {
+    return null
+  }
+  const deficit = nextCharacterNudge.value.deficit
+  return shopProducts.find((p) => p.coins >= deficit) ?? shopProducts.at(-1)
+})
+
 function formatWatchTime(minutes: number): string {
   if (minutes < 60) {
     return `${minutes} мин`
@@ -485,6 +777,9 @@ function formatWatchTime(minutes: number): string {
   }
   return `${hours} ч ${mins} мин`
 }
+
+const shopTierColors = ['#1EBC73', '#4D9BE6', '#A884F3', '#FBB954', '#E6904E']
+const shopTierBg = ['#162B23', '#161E2B', '#1E162B', '#2B2416', '#2B1C16']
 
 const shopProducts = [
   {
@@ -617,14 +912,3 @@ async function buyProduct(productId: string) {
   }
 }
 </script>
-
-<style scoped>
-.thanks-block {
-  em {
-    font-style: normal;
-    font-weight: 600;
-    color: var(--color-site-accent-bright);
-    opacity: 0.75;
-  }
-}
-</style>

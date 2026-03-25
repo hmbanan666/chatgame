@@ -53,6 +53,7 @@ vite.config.*.timestamp-*
 *.njsproj
 *.sln
 *.sw?
+.claude/
 
 ### System ###
 .DS_Store

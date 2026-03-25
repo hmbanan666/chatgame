@@ -44,5 +44,3 @@ export function useLocaleTimeAgo(date: Date) {
     messages: I18N_MESSAGES,
   })
 }
-
-export { pluralizationRu } from '#shared/utils/pluralize'
