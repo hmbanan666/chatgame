@@ -9,7 +9,7 @@ interface MessageContext {
   userName: string
   codename: string
   roomId: string
-  lastActionAt: Date
+  lastActionAt: Date | null
 }
 
 export interface LevelingResult {
@@ -38,7 +38,10 @@ export class LevelingService {
     return profileResult ?? { leveledUp: false }
   }
 
-  private calcDeltaMin(lastActionAt: Date): number {
+  private calcDeltaMin(lastActionAt: Date | null): number {
+    if (!lastActionAt) {
+      return 0
+    }
     const deltaMs = Date.now() - lastActionAt.getTime()
     const deltaMin = Math.floor(deltaMs / 60_000)
     return Math.min(deltaMin, MAX_DELTA_MIN)

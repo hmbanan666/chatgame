@@ -55,10 +55,10 @@ const props = defineProps<{
 const cardClass = computed(() => {
   if (props.source === 'quest') {
     if (props.status === 'done') {
-      return 'bg-game-secondary-1/80'
+      return 'bg-game-secondary-1'
     }
-    return 'bg-game-secondary-1/40'
+    return 'bg-game-secondary-1'
   }
-  return 'bg-game-bg-alt/80'
+  return 'bg-game-bg-alt'
 })
 </script>
