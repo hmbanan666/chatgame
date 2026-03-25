@@ -75,17 +75,21 @@ export class WagonSession {
 
   viewerCount: number = 0
   rewardMappings: RewardMapping[] = []
-  #redemptionXpGiven: number = 0
+  #redemptionXpByUser: Map<string, number> = new Map()
   readonly #maxRedemptionXpPerStream = 50
   #lastFuelWarning: number = 0
   #lastSentHasFuel: boolean = true
   #lastSentSpeedMultiplier: number = 1
+
+  streamId: string | null = null
+  #viewerSamples: number[] = []
 
   readonly #logger = useLogger('wagon-session')
 
   #fuelTicker!: NodeJS.Timeout
   #effectsTicker!: NodeJS.Timeout
   #viewerTicker!: NodeJS.Timeout
+  #saveTicker!: NodeJS.Timeout
 
   constructor(
     data: WagonSessionOptions,
@@ -101,6 +105,7 @@ export class WagonSession {
     this.#initFuelTicker()
     this.#initEffectsTicker()
     this.#initViewerTicker()
+    this.#initSaveTicker()
   }
 
   // ── Fuel consumption ────────────────────────────────
@@ -255,20 +260,22 @@ export class WagonSession {
 
     this.#applyAction(config, userId)
 
-    // Alert
-    this.#sendActionAlert(userId, config)
-
     // XP for spending channel points (1 XP per 100 points, max 50 XP per stream)
-    if (this.#redemptionXpGiven < this.#maxRedemptionXpPerStream) {
-      const xpAmount = Math.min(
+    let xpEarned = 0
+    const userXpGiven = this.#redemptionXpByUser.get(userId) ?? 0
+    if (userXpGiven < this.#maxRedemptionXpPerStream) {
+      xpEarned = Math.min(
         Math.max(1, Math.floor(mapping.currentCost / 100)),
-        this.#maxRedemptionXpPerStream - this.#redemptionXpGiven,
+        this.#maxRedemptionXpPerStream - userXpGiven,
       )
-      this.#redemptionXpGiven += xpAmount
-      getLevelingService().addXpForAction(userId, xpAmount, this.id).catch((err) => {
+      this.#redemptionXpByUser.set(userId, userXpGiven + xpEarned)
+      getLevelingService().addXpForAction(userId, xpEarned, this.id).catch((err) => {
         this.#logger.error('Failed to add XP for redemption', err)
       })
     }
+
+    // Alert (includes XP earned)
+    this.#sendActionAlert(userId, config, xpEarned)
 
     // Dynamic pricing: escalate cost if configured
     if (config.escalation) {
@@ -322,7 +329,7 @@ export class WagonSession {
     }
   }
 
-  async #sendActionAlert(twitchId: string, config: WagonActionConfig) {
+  async #sendActionAlert(twitchId: string, config: WagonActionConfig, xpEarned: number) {
     const ACTION_DESCRIPTIONS: Record<string, string> = {
       REFUEL: 'Заправил вагон!',
       STEAL_FUEL: 'Украл топливо!',
@@ -351,6 +358,7 @@ export class WagonSession {
           action: config.code,
           actionTitle: config.title,
           actionDescription: ACTION_DESCRIPTIONS[config.code] ?? config.title,
+          xpEarned,
         },
       })
 
@@ -439,29 +447,80 @@ export class WagonSession {
     return Math.min(amount * rate, this.maxFuel)
   }
 
-  // ── Lifecycle ───────────────────────────────────────
+  // ── Stream persistence ─────────────────────────────
 
-  connectDonateClient() {
-    if (!this.donate) {
-      return
+  /** Load or create stream record from DB */
+  async initStream() {
+    try {
+      // Check for existing live stream (e.g. after container restart)
+      const existing = await db.stream.findLive(this.streamerId)
+      if (existing) {
+        this.streamId = existing.id
+        this.fuel = existing.fuel
+        this.stats.messagesCount = existing.messagesCount
+        this.stats.fuelAdded = existing.fuelAdded
+        this.stats.fuelStolen = existing.fuelStolen
+        this.stats.treesChopped = existing.treesChopped
+        this.stats.donationsCount = existing.donationsCount
+        this.stats.donationsTotal = existing.donationsTotal
+        this.stats.totalRedemptions = existing.totalRedemptions
+        this.stats.peakViewers = existing.peakViewers
+        this.stats.streamStartedAt = existing.startedAt.toISOString()
+        this.#logger.info(`Resumed stream ${this.streamId}`)
+      }
+    } catch (err) {
+      this.#logger.error('Failed to load stream', err)
     }
-    this.donate.init().catch((err) => {
-      this.#logger.error('Failed to init DonationAlerts client', err)
-    })
   }
 
-  disconnectDonateClient() {
-    this.donate?.disconnect()
-  }
+  async startStream() {
+    const RESUME_WINDOW_MS = 25 * 60_000 // 25 minutes
 
-  resetSession() {
+    try {
+      // Check if there's a recently ended stream to resume
+      const recent = await db.stream.findRecent(this.streamerId, RESUME_WINDOW_MS)
+      if (recent) {
+        // Resume — stream was just interrupted
+        this.streamId = recent.id
+        this.fuel = recent.fuel
+        this.stats.messagesCount = recent.messagesCount
+        this.stats.fuelAdded = recent.fuelAdded
+        this.stats.fuelStolen = recent.fuelStolen
+        this.stats.treesChopped = recent.treesChopped
+        this.stats.donationsCount = recent.donationsCount
+        this.stats.donationsTotal = recent.donationsTotal
+        this.stats.totalRedemptions = recent.totalRedemptions
+        this.stats.peakViewers = recent.peakViewers
+        this.stats.streamStartedAt = recent.startedAt.toISOString()
+        await db.stream.resumeStream(recent.id)
+        this.#logger.info(`Resumed interrupted stream ${this.streamId}`)
+        return
+      }
+
+      // Truly new stream
+      const existing = await db.stream.findLive(this.streamerId)
+      if (existing) {
+        await db.stream.endStream(existing.id)
+      }
+
+      const [stream] = await db.stream.create({ streamerId: this.streamerId, fuel: 50 })
+      if (stream) {
+        this.streamId = stream.id
+        this.#logger.info(`New stream started: ${this.streamId}`)
+      }
+    } catch (err) {
+      this.#logger.error('Failed to create stream', err)
+    }
+
+    // Reset in-memory state for new stream
     this.fuel = 50
     this.speed = 1.0
     this.isStopped = false
     this.effects = []
     this.donations = []
-    this.#redemptionXpGiven = 0
+    this.#redemptionXpByUser.clear()
     this.#lastFuelWarning = 0
+    this.#viewerSamples = []
     this.stats = {
       fuelAdded: 0,
       fuelStolen: 0,
@@ -486,11 +545,82 @@ export class WagonSession {
     }
   }
 
+  async endStream() {
+    if (!this.streamId) {
+      return
+    }
+
+    await this.#saveToDb()
+
+    try {
+      await db.stream.endStream(this.streamId)
+      this.#logger.info(`Stream ended: ${this.streamId}`)
+    } catch (err) {
+      this.#logger.error('Failed to end stream', err)
+    }
+
+    this.streamId = null
+  }
+
+  #initSaveTicker() {
+    this.#saveTicker = setInterval(() => {
+      this.#saveToDb()
+    }, 15_000)
+  }
+
+  async #saveToDb() {
+    if (!this.streamId) {
+      return
+    }
+
+    // Calculate average viewers
+    if (this.viewerCount > 0) {
+      this.#viewerSamples.push(this.viewerCount)
+    }
+    const avgViewers = this.#viewerSamples.length > 0
+      ? Math.round(this.#viewerSamples.reduce((a, b) => a + b, 0) / this.#viewerSamples.length)
+      : 0
+
+    try {
+      await db.stream.updateStats(this.streamId, {
+        fuel: Math.round(this.fuel),
+        messagesCount: this.stats.messagesCount,
+        fuelAdded: Math.round(this.stats.fuelAdded),
+        fuelStolen: Math.round(this.stats.fuelStolen),
+        treesChopped: this.stats.treesChopped,
+        donationsCount: this.stats.donationsCount,
+        donationsTotal: this.stats.donationsTotal,
+        totalRedemptions: this.stats.totalRedemptions,
+        peakViewers: this.stats.peakViewers,
+        averageViewers: avgViewers,
+      })
+    } catch (err) {
+      this.#logger.error('Failed to save stream stats', err)
+    }
+  }
+
+  // ── Lifecycle ───────────────────────────────────────
+
+  connectDonateClient() {
+    if (!this.donate) {
+      return
+    }
+    this.donate.init().catch((err) => {
+      this.#logger.error('Failed to init DonationAlerts client', err)
+    })
+  }
+
+  disconnectDonateClient() {
+    this.donate?.disconnect()
+  }
+
   destroy() {
     clearInterval(this.#fuelTicker)
     clearInterval(this.#effectsTicker)
     clearInterval(this.#viewerTicker)
+    clearInterval(this.#saveTicker)
 
+    this.#saveToDb()
     this.donate?.destroy()
 
     this.effects = []

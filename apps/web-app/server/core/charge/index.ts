@@ -39,6 +39,9 @@ export async function initCharges() {
       logger.warn(`Twitch rewards not available (missing scope?), wagon actions disabled`)
     }
 
+    // Resume existing stream or wait for new one
+    await session.initStream()
+
     // Subscribe to shared Twitch events
     controller.onMessage(() => {
       session.handleMessage()
@@ -48,13 +51,14 @@ export async function initCharges() {
       session.handleRedemption(userId, rewardId)
     })
 
-    // DonationAlerts — connect/disconnect with stream
+    // Stream lifecycle
     controller.onStreamOnline(() => {
-      session.resetSession()
+      session.startStream()
       session.connectDonateClient()
     })
 
     controller.onStreamOffline(() => {
+      session.endStream()
       session.disconnectDonateClient()
       getViewerQuestService(streamer.id).reset()
     })

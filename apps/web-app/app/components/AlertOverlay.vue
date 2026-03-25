@@ -142,6 +142,10 @@
             <p class="text-base text-game-text mt-2">
               {{ currentAlert.data.actionDescription }}
             </p>
+
+            <div v-if="currentAlert.data.xpEarned > 0" class="flex items-center gap-2 mt-3">
+              <span class="text-2xl font-black text-game-bright">+{{ currentAlert.data.xpEarned }} XP</span>
+            </div>
           </template>
 
           <!-- Bottom shimmer -->

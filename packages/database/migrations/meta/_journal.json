@@ -64,6 +64,13 @@
       "when": 1774427839258,
       "tag": "0008_warm_leo",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1774452071521,
+      "tag": "0009_fat_magdalene",
+      "breakpoints": true
     }
   ]
 }

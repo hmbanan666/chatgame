@@ -115,6 +115,7 @@ export function usePlaygroundSimulator() {
         action,
         actionTitle: ACTION_TITLES[action] ?? action,
         actionDescription: ACTION_DESCRIPTIONS[action] ?? action,
+        xpEarned: randomInt(1, 20),
       },
     })
 

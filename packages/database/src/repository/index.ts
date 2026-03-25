@@ -10,6 +10,7 @@ import { PaymentRepository } from './payment'
 import { PlayerRepository } from './player'
 import { ProductRepository } from './product'
 import { ProfileRepository } from './profile'
+import { StreamRepository } from './stream'
 import { StreamerRepository } from './streamer'
 import { TransactionRepository } from './transaction'
 import { TwitchAccessTokenRepository } from './twitchAccessToken'
@@ -23,6 +24,7 @@ class Repository {
   readonly characterLevel = CharacterLevelRepository
   readonly coupon = CouponRepository
   readonly player = PlayerRepository
+  readonly stream = StreamRepository
   readonly streamer = StreamerRepository
   readonly transaction = TransactionRepository
   readonly payment = PaymentRepository

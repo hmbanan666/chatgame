@@ -80,5 +80,6 @@ type EventWagonAction = {
     action: string
     actionTitle: string
     actionDescription: string
+    xpEarned: number
   }
 }

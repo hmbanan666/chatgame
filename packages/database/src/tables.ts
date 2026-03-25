@@ -95,6 +95,36 @@ export const streamers = pgTable('streamer', {
   donationAlertsUserId: text('donation_alerts_user_id'),
 })
 
+export const streamersRelations = relations(streamers, ({ many }) => ({
+  streams: many(streams),
+}))
+
+// ── Stream ──────────────────────────────────────────────
+
+export const streams = pgTable('stream', {
+  id: cuid2('id').defaultRandom().primaryKey(),
+  createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+  startedAt: timestamp('started_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+  endedAt: timestamp('ended_at', { precision: 3, withTimezone: true, mode: 'date' }),
+  isLive: boolean('is_live').notNull().default(true),
+  fuel: integer('fuel').notNull().default(50),
+  messagesCount: integer('messages_count').notNull().default(0),
+  fuelAdded: integer('fuel_added').notNull().default(0),
+  fuelStolen: integer('fuel_stolen').notNull().default(0),
+  treesChopped: integer('trees_chopped').notNull().default(0),
+  donationsCount: integer('donations_count').notNull().default(0),
+  donationsTotal: integer('donations_total').notNull().default(0),
+  totalRedemptions: integer('total_redemptions').notNull().default(0),
+  peakViewers: integer('peak_viewers').notNull().default(0),
+  averageViewers: integer('average_viewers').notNull().default(0),
+  streamerId: text('streamer_id').notNull(),
+})
+
+export const streamsRelations = relations(streams, ({ one }) => ({
+  streamer: one(streamers, { fields: [streams.streamerId], references: [streamers.id] }),
+}))
+
 // ── Backlog ─────────────────────────────────────────────
 
 export const backlogItems = pgTable('backlog_item', {
