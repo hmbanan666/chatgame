@@ -60,6 +60,7 @@ export class StreamRepository {
     donationsCount?: number
     donationsTotal?: number
     totalRedemptions?: number
+    couponsTaken?: number
     peakViewers?: number
     averageViewers?: number
   }) {

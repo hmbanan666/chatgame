@@ -71,6 +71,13 @@
       "when": 1774452071521,
       "tag": "0009_fat_magdalene",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1774452909966,
+      "tag": "0010_hesitant_freak",
+      "breakpoints": true
     }
   ]
 }

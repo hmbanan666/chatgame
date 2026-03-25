@@ -1,6 +1,6 @@
-import { getDateMinusMinutes } from '#shared/utils/date'
 import { pluralizationRu } from '#shared/utils/pluralize'
 import { sendAlertMessage, sendGameMessage } from '~~/server/api/websocket'
+import { chargeRooms } from '~~/server/core/charge'
 import { getLevelingService } from '~~/server/core/leveling/service'
 import { dictionary } from '~~/server/core/locale'
 import { getViewerQuestService } from '~~/server/core/quest'
@@ -8,10 +8,15 @@ import { getViewerQuestService } from '~~/server/core/quest'
 export class TwitchService {
   readonly #roomId: string
   readonly #streamerId: string
+  #streamStartedAt: Date = new Date()
 
   constructor(roomId: string, streamerId: string) {
     this.#roomId = roomId
     this.#streamerId = streamerId
+  }
+
+  setStreamStartedAt(date: Date) {
+    this.#streamStartedAt = date
   }
 
   async handleMessage({
@@ -169,6 +174,11 @@ export class TwitchService {
     if (status === 'OK') {
       const profile = await db.profile.find(profileId)
 
+      const session = chargeRooms.find((r) => r.id === this.#roomId)
+      if (session) {
+        session.stats.couponsTaken++
+      }
+
       sendAlertMessage(this.#roomId, {
         type: 'COUPON_TAKEN',
         data: {
@@ -207,14 +217,12 @@ export class TwitchService {
     id: string,
     profileId: string,
   ): Promise<'OK' | 'TAKEN_ALREADY' | 'TIME_LIMIT' | 'NOT_FOUND'> {
-    const cutoff = getDateMinusMinutes(60 * 10)
-
-    const isAlreadyToday = await db.coupon.findByProfileSince(profileId, cutoff)
+    const isAlreadyToday = await db.coupon.findByProfileSince(profileId, this.#streamStartedAt)
     if (isAlreadyToday) {
       return 'TIME_LIMIT'
     }
 
-    const coupon = await db.coupon.findByActivationCommandSince(id, cutoff)
+    const coupon = await db.coupon.findByActivationCommandSince(id, this.#streamStartedAt)
     if (!coupon) {
       return 'NOT_FOUND'
     }

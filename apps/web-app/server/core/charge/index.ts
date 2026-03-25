@@ -41,6 +41,11 @@ export async function initCharges() {
 
     // Resume existing stream or wait for new one
     await session.initStream()
+    if (session.streamId) {
+      const startedAt = new Date(session.stats.streamStartedAt)
+      getViewerQuestService(streamer.id, streamer.twitchChannelId).setStreamStartedAt(startedAt)
+      controller.service.setStreamStartedAt(startedAt)
+    }
 
     // Subscribe to shared Twitch events
     controller.onMessage(() => {
@@ -52,9 +57,12 @@ export async function initCharges() {
     })
 
     // Stream lifecycle
-    controller.onStreamOnline(() => {
-      session.startStream()
+    controller.onStreamOnline(async () => {
+      await session.startStream()
       session.connectDonateClient()
+      const startedAt = new Date(session.stats.streamStartedAt)
+      getViewerQuestService(streamer.id, streamer.twitchChannelId).setStreamStartedAt(startedAt)
+      controller.service.setStreamStartedAt(startedAt)
     })
 
     controller.onStreamOffline(() => {

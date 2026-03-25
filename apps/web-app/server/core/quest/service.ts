@@ -1,4 +1,3 @@
-import { getDateMinusMinutes } from '#shared/utils/date'
 import { sendAlertMessage } from '~~/server/api/websocket'
 import { QUEST_TEMPLATES } from './templates'
 
@@ -21,10 +20,15 @@ export class ViewerQuestService {
   readonly #completed = new Set<string>()
   readonly #streamerId: string
   readonly #channelId: string
+  #streamStartedAt: Date = new Date()
 
   constructor(streamerId: string, channelId: string) {
     this.#streamerId = streamerId
     this.#channelId = channelId
+  }
+
+  setStreamStartedAt(date: Date) {
+    this.#streamStartedAt = date
   }
 
   async tryAssignQuest(profileId: string, userName: string, codename: string): Promise<void> {
@@ -32,9 +36,8 @@ export class ViewerQuestService {
       return
     }
 
-    // Check DB — maybe quest was created before server restart
-    const cutoff = getDateMinusMinutes(60 * 10)
-    const existing = await db.backlogItem.findQuestByProfileSince(profileId, cutoff)
+    // Check DB — one quest per viewer per stream
+    const existing = await db.backlogItem.findQuestByProfileSince(profileId, this.#streamStartedAt)
     if (existing) {
       this.#completed.add(profileId)
       return

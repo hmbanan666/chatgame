@@ -24,6 +24,7 @@ export interface WagonSessionStats {
   messagesCount: number
   peakViewers: number
   totalRedemptions: number
+  couponsTaken: number
   streamStartedAt: string
 }
 

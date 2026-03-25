@@ -70,6 +70,7 @@ export class WagonSession {
     messagesCount: 0,
     peakViewers: 0,
     totalRedemptions: 0,
+    couponsTaken: 0,
     streamStartedAt: new Date().toISOString(),
   }
 
@@ -464,6 +465,7 @@ export class WagonSession {
         this.stats.donationsCount = existing.donationsCount
         this.stats.donationsTotal = existing.donationsTotal
         this.stats.totalRedemptions = existing.totalRedemptions
+        this.stats.couponsTaken = existing.couponsTaken
         this.stats.peakViewers = existing.peakViewers
         this.stats.streamStartedAt = existing.startedAt.toISOString()
         this.#logger.info(`Resumed stream ${this.streamId}`)
@@ -490,6 +492,7 @@ export class WagonSession {
         this.stats.donationsCount = recent.donationsCount
         this.stats.donationsTotal = recent.donationsTotal
         this.stats.totalRedemptions = recent.totalRedemptions
+        this.stats.couponsTaken = recent.couponsTaken
         this.stats.peakViewers = recent.peakViewers
         this.stats.streamStartedAt = recent.startedAt.toISOString()
         await db.stream.resumeStream(recent.id)
@@ -530,6 +533,7 @@ export class WagonSession {
       messagesCount: 0,
       peakViewers: 0,
       totalRedemptions: 0,
+      couponsTaken: 0,
       streamStartedAt: new Date().toISOString(),
     }
 
@@ -591,6 +595,7 @@ export class WagonSession {
         donationsCount: this.stats.donationsCount,
         donationsTotal: this.stats.donationsTotal,
         totalRedemptions: this.stats.totalRedemptions,
+        couponsTaken: this.stats.couponsTaken,
         peakViewers: this.stats.peakViewers,
         averageViewers: avgViewers,
       })

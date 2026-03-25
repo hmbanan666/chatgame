@@ -24,6 +24,10 @@ class TwitchController {
   #infoMessageId: ReturnType<typeof setInterval> | null = null
   #streamPollId: ReturnType<typeof setInterval> | null = null
 
+  get service() {
+    return this.#service
+  }
+
   #messageHandlers: MessageHandler[] = []
   #redemptionHandlers: RedemptionHandler[] = []
   #onlineHandlers: (() => void)[] = []

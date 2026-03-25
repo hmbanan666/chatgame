@@ -43,6 +43,7 @@ const stats = ref<WagonSessionStats>({
   messagesCount: 0,
   peakViewers: 0,
   totalRedemptions: 0,
+  couponsTaken: 0,
   streamStartedAt: new Date().toISOString(),
 })
 const viewerCount = ref(0)

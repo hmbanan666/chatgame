@@ -116,6 +116,7 @@ export const streams = pgTable('stream', {
   donationsCount: integer('donations_count').notNull().default(0),
   donationsTotal: integer('donations_total').notNull().default(0),
   totalRedemptions: integer('total_redemptions').notNull().default(0),
+  couponsTaken: integer('coupons_taken').notNull().default(0),
   peakViewers: integer('peak_viewers').notNull().default(0),
   averageViewers: integer('average_viewers').notNull().default(0),
   streamerId: text('streamer_id').notNull(),
