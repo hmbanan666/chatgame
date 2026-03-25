@@ -93,6 +93,31 @@ export function usePlaygroundSimulator() {
 
     stats.value.totalRedemptions++
 
+    const ACTION_TITLES: Record<string, string> = {
+      REFUEL: 'Заправить вагон',
+      STEAL_FUEL: 'Украсть топливо',
+      SPEED_BOOST: 'Ускорение',
+      SABOTAGE: 'Саботаж',
+    }
+    const ACTION_DESCRIPTIONS: Record<string, string> = {
+      REFUEL: 'Заправил вагон!',
+      STEAL_FUEL: 'Украл топливо!',
+      SPEED_BOOST: 'Ускорил вагон!',
+      SABOTAGE: 'Саботировал вагон!',
+    }
+
+    alerts.value.push({
+      id: nextId(),
+      type: 'WAGON_ACTION',
+      data: {
+        userName,
+        codename: pick(FAKE_CODENAMES),
+        action,
+        actionTitle: ACTION_TITLES[action] ?? action,
+        actionDescription: ACTION_DESCRIPTIONS[action] ?? action,
+      },
+    })
+
     switch (action) {
       case 'REFUEL':
         fuel.value = Math.min(maxFuel.value, fuel.value + 15)

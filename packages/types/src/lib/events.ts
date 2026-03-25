@@ -9,6 +9,7 @@ export type Events
     | EventCouponTaken
     | EventLevelUp
     | EventNewViewer
+    | EventWagonAction
 
 type EventNewPlayerMessage = {
   type: 'NEW_PLAYER_MESSAGE'
@@ -68,5 +69,16 @@ type EventNewViewer = {
   data: {
     userName: string
     codename: string
+  }
+}
+
+type EventWagonAction = {
+  type: 'WAGON_ACTION'
+  data: {
+    userName: string
+    codename: string
+    action: string
+    actionTitle: string
+    actionDescription: string
   }
 }

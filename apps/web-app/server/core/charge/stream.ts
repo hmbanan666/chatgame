@@ -2,7 +2,8 @@ import type { WagonActionCode, WagonActionConfig, WagonEffect, WagonSessionStats
 import type { DonateController } from './donateClient'
 import { createId } from '@paralleldrive/cuid2'
 import { sendAlertMessage } from '~~/server/api/websocket'
-import { getStreamInfo, updateCustomReward } from '~~/server/utils/twitch/twitch.api'
+import { getLevelingService } from '~~/server/core/leveling/service'
+import { getStreamInfo, sendChatAnnouncement, updateCustomReward } from '~~/server/utils/twitch/twitch.api'
 
 // ── Action Configs ──────────────────────────────────────
 
@@ -72,6 +73,8 @@ export class WagonSession {
 
   viewerCount: number = 0
   rewardMappings: RewardMapping[] = []
+  #redemptionXpGiven: number = 0
+  readonly #maxRedemptionXpPerStream = 50
 
   readonly #logger = useLogger('wagon-session')
 
@@ -189,6 +192,21 @@ export class WagonSession {
 
     this.#applyAction(config, userId)
 
+    // Alert
+    this.#sendActionAlert(userId, config)
+
+    // XP for spending channel points (1 XP per 100 points, max 50 XP per stream)
+    if (this.#redemptionXpGiven < this.#maxRedemptionXpPerStream) {
+      const xpAmount = Math.min(
+        Math.max(1, Math.floor(mapping.currentCost / 100)),
+        this.#maxRedemptionXpPerStream - this.#redemptionXpGiven,
+      )
+      this.#redemptionXpGiven += xpAmount
+      getLevelingService().addXpForAction(userId, xpAmount, this.id).catch((err) => {
+        this.#logger.error('Failed to add XP for redemption', err)
+      })
+    }
+
     // Dynamic pricing: escalate cost if configured
     if (config.escalation) {
       mapping.currentCost = Math.floor(mapping.currentCost * config.escalation)
@@ -241,6 +259,46 @@ export class WagonSession {
     }
   }
 
+  async #sendActionAlert(twitchId: string, config: WagonActionConfig) {
+    const ACTION_DESCRIPTIONS: Record<string, string> = {
+      REFUEL: 'Заправил вагон!',
+      STEAL_FUEL: 'Украл топливо!',
+      SPEED_BOOST: 'Ускорил вагон!',
+      SABOTAGE: 'Саботировал вагон!',
+      RESET_EFFECTS: 'Сбросил все эффекты!',
+    }
+
+    try {
+      const profile = await db.profile.findByTwitchId(twitchId)
+      const userName = profile?.userName ?? twitchId
+
+      let codename = 'twitchy'
+      if (profile?.activeEditionId) {
+        const edition = await db.characterEdition.findWithCharacter(profile.activeEditionId)
+        if (edition?.character?.codename) {
+          codename = edition.character.codename
+        }
+      }
+
+      sendAlertMessage(this.id, {
+        type: 'WAGON_ACTION',
+        data: {
+          userName,
+          codename,
+          action: config.code,
+          actionTitle: config.title,
+          actionDescription: ACTION_DESCRIPTIONS[config.code] ?? config.title,
+        },
+      })
+
+      // Chat announcement
+      const description = ACTION_DESCRIPTIONS[config.code] ?? config.title
+      sendChatAnnouncement(this.twitchChannelId, `${userName} — ${description}`)
+    } catch {
+      // Non-critical, skip
+    }
+  }
+
   // ── Handle chat message ─────────────────────────────
 
   handleMessage() {
@@ -258,6 +316,13 @@ export class WagonSession {
     this.stats.donationsCount++
     this.stats.donationsTotal += Math.round(event.amount)
     this.stats.fuelAdded += fuelAmount
+
+    // XP for donations (1 XP per 5 RUB)
+    const rubAmount = this.#convertToRub(event.currency, event.amount)
+    const xpAmount = Math.max(1, Math.floor(rubAmount / 5))
+    getLevelingService().addXpForAction(event.username, xpAmount, this.id, true).catch((err) => {
+      this.#logger.error('Failed to add XP for donation', err)
+    })
 
     this.donations.push({
       id: createId(),
@@ -295,6 +360,11 @@ export class WagonSession {
     }
   }
 
+  #convertToRub(currency: string, amount: number): number {
+    const rates: Record<string, number> = { RUB: 1, USD: 90, EUR: 100 }
+    return amount * (rates[currency] ?? rates.USD!)
+  }
+
   #convertDonationToFuel(currency: string, amount: number): number {
     const conversionRates: Record<string, number> = {
       RUB: 0.01,
@@ -327,6 +397,7 @@ export class WagonSession {
     this.isStopped = false
     this.effects = []
     this.donations = []
+    this.#redemptionXpGiven = 0
     this.stats = {
       fuelAdded: 0,
       fuelStolen: 0,

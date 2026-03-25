@@ -132,6 +132,18 @@
             </p>
           </template>
 
+          <template v-else-if="currentAlert.type === 'WAGON_ACTION'">
+            <AlertHeader
+              :icon="getActionIcon(currentAlert.data.action)"
+              :title="currentAlert.data.actionTitle"
+              :user-name="currentAlert.data.userName"
+            />
+
+            <p class="text-base text-game-text mt-2">
+              {{ currentAlert.data.actionDescription }}
+            </p>
+          </template>
+
           <!-- Bottom shimmer -->
           <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-game-bright to-transparent animate-shimmer-reverse" />
         </div>
@@ -156,6 +168,18 @@ const particles = ref<{ id: number, color: string, style: string }[]>([])
 let particleId = 0
 let processing = false
 let lastProcessedIndex = 0
+
+const ACTION_ICONS: Record<string, string> = {
+  REFUEL: 'lucide:fuel',
+  STEAL_FUEL: 'lucide:flame',
+  SPEED_BOOST: 'lucide:zap',
+  SABOTAGE: 'lucide:octagon-x',
+  RESET_EFFECTS: 'lucide:refresh-cw',
+}
+
+function getActionIcon(action: string): string {
+  return ACTION_ICONS[action] ?? 'lucide:circle'
+}
 
 function currencySymbol(currency: string): string {
   if (currency === 'RUB') {
@@ -207,6 +231,7 @@ const ALERT_CONFIG = {
   LEVEL_UP: { bursts: 8, burstDelay: 180, duration: 12000 },
   COUPON_TAKEN: { bursts: 3, burstDelay: 250, duration: 10000 },
   NEW_VIEWER: { bursts: 4, burstDelay: 200, duration: 8000 },
+  WAGON_ACTION: { bursts: 5, burstDelay: 180, duration: 8000 },
 } as const
 
 function spawnParticles(burstCount: number, burstDelay: number) {

@@ -91,6 +91,14 @@ export function useAlertSound() {
     playNote(1319, 0.2, 0.16, 'square', 0.08) // E6
   }
 
+  function playWagonAction() {
+    // Mechanical clunk + whoosh
+    playNote(220, 0.08, 0, 'sawtooth', 0.1) // A3 clunk
+    playNote(330, 0.1, 0.06, 'square', 0.09) // E4
+    playNote(440, 0.12, 0.14, 'square', 0.1) // A4
+    playNote(660, 0.2, 0.22, 'sine', 0.08) // E5
+  }
+
   function play(type: string) {
     if (type === 'QUEST_COMPLETE') {
       playQuestComplete()
@@ -102,6 +110,8 @@ export function useAlertSound() {
       playNewViewer()
     } else if (type === 'COUPON_TAKEN') {
       playCouponTaken()
+    } else if (type === 'WAGON_ACTION') {
+      playWagonAction()
     }
   }
 

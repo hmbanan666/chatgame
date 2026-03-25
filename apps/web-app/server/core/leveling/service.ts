@@ -79,6 +79,50 @@ export class LevelingService {
     return { leveledUp: false }
   }
 
+  /** Add XP for channel point redemptions (by twitchId) or donations (by userName) */
+  async addXpForAction(identifier: string, amount: number, roomId: string, byUserName = false) {
+    const profile = byUserName
+      ? await db.profile.findByUserName(identifier)
+      : await db.profile.findByTwitchId(identifier)
+    if (!profile) {
+      return
+    }
+
+    await db.profile.addXp(profile.id, amount)
+
+    const updated = await db.profile.find(profile.id)
+    if (!updated) {
+      return
+    }
+
+    const requiredXp = getXpForLevel(updated.level + 1)
+    if (updated.xp >= requiredXp) {
+      const newLevel = updated.level + 1
+      const reward = 1
+
+      await db.profile.addLevel(profile.id)
+      await db.profile.addCoins(profile.id, reward)
+
+      let codename = 'twitchy'
+      if (updated.activeEditionId) {
+        const edition = await db.characterEdition.findWithCharacter(updated.activeEditionId)
+        if (edition?.character?.codename) {
+          codename = edition.character.codename
+        }
+      }
+
+      sendAlertMessage(roomId, {
+        type: 'LEVEL_UP',
+        data: {
+          userName: updated.userName ?? identifier,
+          codename,
+          level: newLevel,
+          reward,
+        },
+      })
+    }
+  }
+
   private async addCharacterXp(editionId: string) {
     await db.characterEdition.addXp(editionId)
 
