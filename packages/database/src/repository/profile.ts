@@ -111,6 +111,13 @@ export class ProfileRepository {
       .where(eq(tables.profiles.id, id))
   }
 
+  static setActiveEdition(id: string, editionId: string) {
+    const db = useDatabase()
+    return db.update(tables.profiles)
+      .set({ activeEditionId: editionId })
+      .where(eq(tables.profiles.id, id))
+  }
+
   static addLevel(id: string) {
     const db = useDatabase()
     return db.update(tables.profiles)

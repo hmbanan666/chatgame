@@ -1,4 +1,5 @@
 import { getDateMinusMinutes } from '#shared/utils/date'
+import { pluralizationRu } from '#shared/utils/pluralize'
 import { sendAlertMessage, sendGameMessage } from '~~/server/api/websocket'
 import { getLevelingService } from '~~/server/core/leveling/service'
 import { dictionary } from '~~/server/core/locale'
@@ -34,7 +35,7 @@ export class TwitchService {
       return
     }
 
-    const player = await db.player.findOrCreate({ profileId: profile.id, userName })
+    const { player, isNew } = await db.player.findOrCreate({ profileId: profile.id, userName })
     if (!player) {
       return
     }
@@ -48,16 +49,33 @@ export class TwitchService {
       }
     }
 
+    const chatAnnouncements: string[] = []
+
+    // New viewer alert
+    if (isNew) {
+      sendAlertMessage(this.#roomId, {
+        type: 'NEW_VIEWER',
+        data: {
+          userName,
+          codename,
+        },
+      })
+      chatAnnouncements.push(`Добро пожаловать, ${userName}! Пиши в чат, качай уровень и собирай персонажей на chatgame.space`)
+    }
+
     // Viewer quest (skip for streamer)
     if (userId !== this.#roomId) {
       const questService = getViewerQuestService(this.#streamerId, this.#roomId)
       await questService.tryAssignQuest(profile.id, userName, codename)
-      await questService.trackMessage(profile.id)
+      const questResult = await questService.trackMessage(profile.id)
+      if (questResult.completed) {
+        chatAnnouncements.push(`${questResult.userName} выполнил квест! +${questResult.reward} ${pluralizationRu(questResult.reward ?? 0, ['монета', 'монеты', 'монет'])}`)
+      }
     }
 
     // XP gain + watch time
     const leveling = getLevelingService()
-    await leveling.onMessage({
+    const levelResult = await leveling.onMessage({
       profileId: profile.id,
       activeEditionId: profile.activeEditionId,
       userName,
@@ -65,6 +83,10 @@ export class TwitchService {
       roomId: this.#roomId,
       lastActionAt: player.lastActionAt,
     })
+
+    if (levelResult.leveledUp && levelResult.newLevel) {
+      chatAnnouncements.push(`${userName} достиг уровня ${levelResult.newLevel}!`)
+    }
 
     // Update last action timestamp for watch time tracking
     await db.player.updateLastActionAt(player.id)
@@ -101,6 +123,13 @@ export class TwitchService {
         case 'сальто':
         case 'flip':
           return this.handleFlipCommand()
+      }
+    }
+
+    if (chatAnnouncements.length > 0) {
+      return {
+        ok: true,
+        message: chatAnnouncements.join(' | '),
       }
     }
   }

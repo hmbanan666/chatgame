@@ -233,6 +233,20 @@ export function usePlaygroundSimulator() {
     }
     scheduleLevelUp()
 
+    function scheduleNewViewer() {
+      const delay = randomInt(30_000, 70_000)
+      const timeout = setTimeout(() => {
+        alerts.value.push({
+          id: nextId(),
+          type: 'NEW_VIEWER',
+          data: { userName: `viewer_${randomInt(100, 999)}`, codename: pick(FAKE_CODENAMES) },
+        })
+        scheduleNewViewer()
+      }, delay)
+      intervals.push(timeout as unknown as ReturnType<typeof setInterval>)
+    }
+    scheduleNewViewer()
+
     function scheduleBacklog() {
       const delay = randomInt(8000, 15_000)
       const timeout = setTimeout(() => {

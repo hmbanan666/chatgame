@@ -77,6 +77,13 @@ export function useAlertSound() {
     playNote(1760, 0.3, 0.7, 'sine', 0.06) // A6
   }
 
+  function playNewViewer() {
+    // Friendly welcome chime
+    playNote(659, 0.15, 0, 'square', 0.08) // E5
+    playNote(784, 0.15, 0.12, 'square', 0.08) // G5
+    playNote(1047, 0.2, 0.24, 'square', 0.1) // C6
+  }
+
   function playCouponTaken() {
     // Quick coin-like pickup sound
     playNote(880, 0.1, 0, 'square', 0.1) // A5
@@ -91,6 +98,8 @@ export function useAlertSound() {
       playDonation()
     } else if (type === 'LEVEL_UP') {
       playLevelUp()
+    } else if (type === 'NEW_VIEWER') {
+      playNewViewer()
     } else if (type === 'COUPON_TAKEN') {
       playCouponTaken()
     }

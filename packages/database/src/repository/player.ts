@@ -23,23 +23,22 @@ export class PlayerRepository {
 
   static async findOrCreate({ userName, profileId }: { userName: string, profileId: string }) {
     const db = useDatabase()
-    let player = await db.query.players.findFirst({
+    const existing = await db.query.players.findFirst({
       where: (t, { eq }) => eq(t.profileId, profileId),
     })
-    if (!player) {
-      const playerId = createId()
-
-      const [newPlayer] = await db.insert(tables.players).values({
-        id: playerId,
-        name: userName,
-        inventoryId: playerId,
-        profileId,
-      }).returning()
-
-      player = newPlayer
+    if (existing) {
+      return { player: existing, isNew: false }
     }
 
-    return player
+    const playerId = createId()
+    const [player] = await db.insert(tables.players).values({
+      id: playerId,
+      name: userName,
+      inventoryId: playerId,
+      profileId,
+    }).returning()
+
+    return { player: player!, isNew: true }
   }
 
   static updateLastActionAt(id: string) {

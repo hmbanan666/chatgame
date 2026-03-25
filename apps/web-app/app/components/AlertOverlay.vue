@@ -120,6 +120,18 @@
             </div>
           </template>
 
+          <template v-else-if="currentAlert.type === 'NEW_VIEWER'">
+            <AlertHeader
+              icon="lucide:user-plus"
+              title="Новый зритель"
+              :user-name="currentAlert.data.userName"
+            />
+
+            <p class="text-base text-game-text mt-2">
+              Добро пожаловать в игру!
+            </p>
+          </template>
+
           <!-- Bottom shimmer -->
           <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-game-bright to-transparent animate-shimmer-reverse" />
         </div>
@@ -194,6 +206,7 @@ const ALERT_CONFIG = {
   QUEST_COMPLETE: { bursts: 6, burstDelay: 200, duration: 15000 },
   LEVEL_UP: { bursts: 8, burstDelay: 180, duration: 12000 },
   COUPON_TAKEN: { bursts: 3, burstDelay: 250, duration: 10000 },
+  NEW_VIEWER: { bursts: 4, burstDelay: 200, duration: 8000 },
 } as const
 
 function spawnParticles(burstCount: number, burstDelay: number) {

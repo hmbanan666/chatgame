@@ -82,10 +82,10 @@ export class ViewerQuestService {
     }
   }
 
-  async trackMessage(profileId: string): Promise<void> {
+  async trackMessage(profileId: string): Promise<{ completed: boolean, userName?: string, reward?: number }> {
     const quest = this.#quests.get(profileId)
     if (!quest) {
-      return
+      return { completed: false }
     }
 
     quest.progress++
@@ -93,7 +93,7 @@ export class ViewerQuestService {
 
     if (quest.progress >= quest.goal) {
       await this.#completeQuest(quest)
-      return
+      return { completed: true, userName: quest.userName, reward: quest.reward }
     }
 
     try {
@@ -101,6 +101,8 @@ export class ViewerQuestService {
     } catch (err) {
       logger.error('Failed to persist quest progress', err)
     }
+
+    return { completed: false }
   }
 
   async #completeQuest(quest: ActiveQuest): Promise<void> {

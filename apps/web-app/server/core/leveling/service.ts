@@ -1,5 +1,5 @@
+import { getXpForLevel } from '#shared/utils/level'
 import { sendAlertMessage } from '~~/server/api/websocket'
-import { getXpForLevel } from '~~/server/utils/level'
 
 const MAX_DELTA_MIN = 10
 
@@ -12,16 +12,23 @@ interface MessageContext {
   lastActionAt: Date
 }
 
+export interface LevelingResult {
+  leveledUp: boolean
+  newLevel?: number
+}
+
 export class LevelingService {
   /** Add XP, track watch time, check level-ups */
-  async onMessage(ctx: MessageContext) {
+  async onMessage(ctx: MessageContext): Promise<LevelingResult> {
     const deltaMin = this.calcDeltaMin(ctx.lastActionAt)
 
-    await Promise.all([
+    const [profileResult] = await Promise.all([
       this.addProfileXp(ctx),
       ctx.activeEditionId ? this.addCharacterXp(ctx.activeEditionId) : Promise.resolve(),
       deltaMin > 0 ? this.trackWatchTime(ctx.profileId, ctx.activeEditionId, deltaMin) : Promise.resolve(),
     ])
+
+    return profileResult ?? { leveledUp: false }
   }
 
   private calcDeltaMin(lastActionAt: Date): number {
@@ -37,12 +44,12 @@ export class LevelingService {
     }
   }
 
-  private async addProfileXp(ctx: MessageContext) {
+  private async addProfileXp(ctx: MessageContext): Promise<LevelingResult> {
     await db.profile.addXp(ctx.profileId)
 
     const profile = await db.profile.find(ctx.profileId)
     if (!profile) {
-      return
+      return { leveledUp: false }
     }
 
     const requiredXp = getXpForLevel(profile.level + 1)
@@ -62,7 +69,11 @@ export class LevelingService {
           reward,
         },
       })
+
+      return { leveledUp: true, newLevel }
     }
+
+    return { leveledUp: false }
   }
 
   private async addCharacterXp(editionId: string) {

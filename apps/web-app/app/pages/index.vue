@@ -101,6 +101,7 @@
           v-for="char in characters"
           :key="char.id"
           class="px-2 py-2 md:aspect-square flex flex-col items-center justify-center cursor-pointer"
+          :class="isCharacterOwned(char.id) ? '' : 'grayscale-50'"
           @click="
             () => {
               isCharacterOpened = true;
@@ -116,9 +117,36 @@
             :src="`/units/${char.codename}/idle.gif`"
             class="w-20 h-20 hidden group-hover:block"
           />
-          <p class="mt-2 text-site-bg-alt font-semibold">
+          <p class="mt-2 text-site-bg-alt font-semibold flex items-center gap-1">
             {{ char.nickname }}
+            <Icon
+              v-if="isActiveCharacter(char.id)"
+              name="lucide:star"
+              class="size-4 text-[#0EAF9B]"
+            />
           </p>
+          <div v-if="isCharacterOwned(char.id)" class="w-full mt-1 px-2">
+            <div class="flex justify-between text-xs text-site-bg-alt/60 mb-0.5">
+              <span>Ур. {{ getCharacterEdition(char.id)?.level ?? 1 }}</span>
+              <span>{{ formatWatchTime(getCharacterEdition(char.id)?.playTimeMin ?? 0) }}</span>
+            </div>
+            <div class="w-full h-1 bg-[#2E222F]/15 rounded-full overflow-hidden">
+              <div
+                class="h-full bg-[#0EAF9B]"
+                :style="{ width: `${getCharXpPercent(char.id)}%` }"
+              />
+            </div>
+          </div>
+          <div v-else class="w-full mt-1 px-2">
+            <p v-if="char.price > 0" class="text-xs text-site-bg-alt/60 flex items-center justify-center gap-1 mb-0.5">
+              <Image src="/coin.png" class="size-3" />
+              {{ char.price }}
+            </p>
+            <p v-else class="text-xs text-site-bg-alt/60 mb-0.5">
+              &nbsp;
+            </p>
+            <div class="w-full h-1" />
+          </div>
         </ActiveCard>
       </div>
     </div>
@@ -194,18 +222,25 @@
         <h2 class="text-2xl md:text-2xl lg:text-3xl">
           {{ profile?.userName }}
         </h2>
-        <div class="flex flex-row gap-2 justify-center items-center">
-          Игровой профиль с
-          <div class="flex flex-row gap-1 items-center">
-            <span class="text-site-accent-bright text-lg">{{
-              new Intl.NumberFormat().format(profile?.points ?? 0)
-            }}</span>
-            <Image src="/woodland-small.png" class="h-6 w-6" />
+        <div class="flex flex-row gap-3 justify-center items-center text-site-text">
+          <span>Уровень <span class="text-site-accent-bright font-bold">{{ profile?.level }}</span></span>
+          <span>·</span>
+          <span>{{ formatWatchTime(profile?.watchTimeMin ?? 0) }} на стримах</span>
+        </div>
+        <div v-if="xpProgress" class="max-w-xs mx-auto">
+          <div class="w-full h-1.5 bg-[#3E3546] rounded-full overflow-hidden">
+            <div
+              class="h-full bg-[#0EAF9B] transition-all duration-500"
+              :style="{ width: `${xpProgress.percent}%` }"
+            />
           </div>
+          <p class="text-xs text-site-text/60 mt-1">
+            {{ profile?.xp }} / {{ xpProgress.required }} XP
+          </p>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <ActiveCard
           class="px-4 py-0 flex flex-row gap-0 items-center justify-center text-site-bg-alt"
         >
@@ -260,6 +295,17 @@
             </div>
           </div>
         </ActiveCard>
+
+        <button
+          v-if="(profile?.coupons ?? 0) > 0"
+          :disabled="isExchanging"
+          class="col-span-1 md:col-span-2 px-4 py-3 bg-[#0EAF9B] border-b-4 border-[#0B8A8F] text-white text-base font-semibold rounded-none cursor-pointer hover:opacity-85 active:scale-95 duration-200 flex items-center justify-center gap-2"
+          @click="exchangeCoupon"
+        >
+          <Image src="/coupon-small.png" class="size-5" />
+          <span>Обменять купон на 2 монеты</span>
+          <Image src="/coin.png" class="size-5" />
+        </button>
       </div>
     </div>
   </ClientOnly>
@@ -312,11 +358,37 @@
       <p v-if="selectedCharacter?.description" class="text-base/5 text-site-text">
         {{ selectedCharacter.description }}
       </p>
+
+      <div v-if="loggedIn && selectedCharacter" class="mt-4 space-y-2">
+        <template v-if="isCharacterOwned(selectedCharacter.id)">
+          <button
+            v-if="!isActiveCharacter(selectedCharacter.id)"
+            class="px-6 py-3 w-full bg-[#625565] text-white text-base font-semibold rounded-none cursor-pointer hover:opacity-85 active:scale-95 duration-200 flex items-center justify-center gap-2"
+            @click="activateCharacter(selectedCharacter.id)"
+          >
+            <Icon name="lucide:star" class="size-5" />
+            <span>Сделать активным</span>
+          </button>
+          <p v-else class="text-sm text-[#FBB954] font-semibold text-center">
+            Активный персонаж
+          </p>
+        </template>
+        <button
+          v-else-if="selectedCharacter.price > 0"
+          :disabled="isBuyingCharacter || (profile?.coins ?? 0) < selectedCharacter.price"
+          class="px-6 py-3 w-full bg-[#0EAF9B] border-b-4 border-[#0B8A8F] text-white text-base font-semibold rounded-none cursor-pointer hover:opacity-85 active:scale-95 duration-200 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          @click="buyCharacter(selectedCharacter.id)"
+        >
+          <Image src="/coin.png" class="size-5" />
+          <span>Купить за {{ selectedCharacter.price }} монет</span>
+        </button>
+      </div>
     </template>
   </UModal>
 </template>
 
 <script setup lang="ts">
+import { getXpForLevel } from '#shared/utils/level'
 import { vElementVisibility } from '@vueuse/components'
 
 useHead({
@@ -389,6 +461,31 @@ const selectedCharacter = computed(() =>
 
 const { data: profile } = await useFetch(`/api/profile/${user.value?.id}`)
 
+const xpProgress = computed(() => {
+  if (!profile.value) {
+    return null
+  }
+  const currentXp = profile.value.xp ?? 0
+  const required = getXpForLevel((profile.value.level ?? 1) + 1)
+  const prevRequired = getXpForLevel(profile.value.level ?? 1)
+  const progress = currentXp - prevRequired
+  const needed = required - prevRequired
+  const percent = needed > 0 ? Math.min(100, Math.round((progress / needed) * 100)) : 0
+  return { required, percent }
+})
+
+function formatWatchTime(minutes: number): string {
+  if (minutes < 60) {
+    return `${minutes} мин`
+  }
+  const hours = Math.floor(minutes / 60)
+  const mins = minutes % 60
+  if (mins === 0) {
+    return `${hours} ч`
+  }
+  return `${hours} ч ${mins} мин`
+}
+
 const shopProducts = [
   {
     id: 'jehj4mxo0g6fp1eopf3jg641',
@@ -418,6 +515,90 @@ const shopProducts = [
 ]
 
 const isLoading = ref(false)
+const isExchanging = ref(false)
+const isBuyingCharacter = ref(false)
+
+function isCharacterOwned(characterId: string): boolean {
+  return profile.value?.characterEditions?.some(
+    (e: { characterId: string }) => e.characterId === characterId,
+  ) ?? false
+}
+
+function getCharacterEdition(characterId: string) {
+  return profile.value?.characterEditions?.find(
+    (e: { characterId: string }) => e.characterId === characterId,
+  )
+}
+
+function getCharXpPercent(characterId: string): number {
+  const edition = getCharacterEdition(characterId)
+  if (!edition) {
+    return 0
+  }
+  const currentXp = edition.xp ?? 0
+  const level = edition.level ?? 1
+  const prevRequired = getXpForLevel(level)
+  const nextRequired = getXpForLevel(level + 1)
+  const needed = nextRequired - prevRequired
+  if (needed <= 0) {
+    return 0
+  }
+  return Math.min(100, Math.round(((currentXp - prevRequired) / needed) * 100))
+}
+
+function isActiveCharacter(characterId: string): boolean {
+  const edition = getCharacterEdition(characterId)
+  return !!edition && edition.id === profile.value?.activeEditionId
+}
+
+async function activateCharacter(characterId: string) {
+  const edition = getCharacterEdition(characterId)
+  if (!profile.value || !edition) {
+    return
+  }
+  try {
+    await $fetch(`/api/profile/${profile.value.id}/character/activate`, {
+      method: 'POST',
+      body: { editionId: edition.id },
+    })
+    refreshNuxtData()
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+async function buyCharacter(characterId: string) {
+  if (!profile.value) {
+    return
+  }
+  try {
+    isBuyingCharacter.value = true
+    await $fetch(`/api/profile/${profile.value.id}/character/unlock`, {
+      method: 'POST',
+      body: { characterId },
+    })
+    refreshNuxtData()
+  } catch (e) {
+    console.error(e)
+  } finally {
+    isBuyingCharacter.value = false
+  }
+}
+
+async function exchangeCoupon() {
+  try {
+    isExchanging.value = true
+    await $fetch('/api/coupon', {
+      method: 'POST',
+      body: { type: 'COINS' },
+    })
+    refreshNuxtData()
+  } catch (e) {
+    console.error(e)
+  } finally {
+    isExchanging.value = false
+  }
+}
 
 async function buyProduct(productId: string) {
   try {

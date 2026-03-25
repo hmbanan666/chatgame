@@ -1,52 +1,45 @@
-import type { EventHandlerRequest } from 'h3'
 import { createId } from '@paralleldrive/cuid2'
 
-export default defineEventHandler<EventHandlerRequest, Promise<{ ok: boolean }>>(async (event) => {
+export default defineEventHandler(async (event) => {
   const profileId = getRouterParam(event, 'id')
   const body = await readBody(event)
   const session = await getUserSession(event)
 
   if (!body.characterId || !session?.user) {
-    throw createError({
-      statusCode: 400,
-      message: 'You must provide data',
-    })
+    throw createError({ statusCode: 400, message: 'Invalid data' })
   }
 
   if (session.user.id !== profileId) {
-    throw createError({
-      statusCode: 403,
-      message: 'Forbidden',
-    })
+    throw createError({ statusCode: 403, message: 'Forbidden' })
   }
 
   const profile = await db.profile.find(profileId!)
   if (!profile) {
-    throw createError({
-      status: 404,
-    })
+    throw createError({ status: 404 })
   }
 
   const character = await db.character.find(body.characterId)
   if (!character || !character.isReady) {
-    throw createError({
-      status: 404,
-    })
+    throw createError({ status: 404, message: 'Character not found' })
   }
 
-  // Check, if already have
+  if (profile.coins < character.price) {
+    throw createError({ status: 400, message: 'Not enough coins' })
+  }
+
+  // Check if already owned
   const profileWithEditions = await db.profile.findWithCharacterEditions(profileId!)
-  const editionAlready = profileWithEditions?.characterEditions?.find(
+  const alreadyOwned = profileWithEditions?.characterEditions?.some(
     (e: { characterId: string }) => e.characterId === body.characterId,
   )
-  if (editionAlready?.id) {
-    throw createError({
-      status: 400,
-      message: 'You already have this character',
-    })
+  if (alreadyOwned) {
+    throw createError({ status: 400, message: 'Already owned' })
   }
 
-  // Give new edition
+  // Deduct coins
+  await db.profile.addCoins(profileId!, -character.price)
+
+  // Create edition
   const [edition] = await db.characterEdition.create({
     id: createId(),
     profileId: profile.id,
@@ -61,7 +54,5 @@ export default defineEventHandler<EventHandlerRequest, Promise<{ ok: boolean }>>
     type: 'CHARACTER_UNLOCK',
   })
 
-  return {
-    ok: true,
-  }
+  return { ok: true }
 })

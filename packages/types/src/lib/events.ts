@@ -8,6 +8,7 @@ export type Events
     | EventDonation
     | EventCouponTaken
     | EventLevelUp
+    | EventNewViewer
 
 type EventNewPlayerMessage = {
   type: 'NEW_PLAYER_MESSAGE'
@@ -59,5 +60,13 @@ type EventLevelUp = {
     codename: string
     level: number
     reward: number
+  }
+}
+
+type EventNewViewer = {
+  type: 'NEW_VIEWER'
+  data: {
+    userName: string
+    codename: string
   }
 }
