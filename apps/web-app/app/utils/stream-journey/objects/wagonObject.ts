@@ -1,5 +1,5 @@
-import type { Sprite } from 'pixi.js'
 import type { Game, GameObjectWagon } from '../types'
+import { createWagonBase1, createWagonCloud, createWagonEngine, createWagonWheel } from '@chatgame/sprites'
 import { Container } from 'pixi.js'
 import { getRandInteger } from '../utils/random'
 import { BaseObject } from './baseObject'
@@ -12,8 +12,8 @@ interface WagonObjectOptions {
 
 export class WagonObject extends BaseObject implements GameObjectWagon {
   bottomOffset = 30
-  wheel1!: Sprite
-  wheel2!: Sprite
+  wheel1!: Container
+  wheel2!: Container
   engineClouds!: Container
   engineCloudsOffset = 0
 
@@ -83,13 +83,11 @@ export class WagonObject extends BaseObject implements GameObjectWagon {
   }
 
   initVisual() {
-    const spriteSide = this.game.assetService.getSprite('WAGON_BASE_1')
-    spriteSide.anchor.set(0.5, 1)
-    spriteSide.scale = 0.75
+    const spriteSide = createWagonBase1()
+    spriteSide.scale = 3
 
-    const engine = this.game.assetService.getSprite('WAGON_ENGINE')
-    engine.anchor.set(0.5, 1)
-    engine.scale = 0.75
+    const engine = createWagonEngine()
+    engine.scale = 3
     engine.x = -50
     engine.y = -36
     engine.visible = true
@@ -98,14 +96,11 @@ export class WagonObject extends BaseObject implements GameObjectWagon {
     this.engineClouds.x = -60
     this.engineClouds.y = -100
 
-    this.wheel1 = this.game.assetService.getSprite('WAGON_WHEEL')
-    this.wheel1.anchor.set(0.5, 0.5)
+    this.wheel1 = createWagonWheel()
+    this.wheel2 = createWagonWheel()
 
-    this.wheel2 = this.game.assetService.getSprite('WAGON_WHEEL')
-    this.wheel2.anchor.set(0.5, 0.5)
-
-    this.wheel1.scale = 0.75
-    this.wheel2.scale = 0.75
+    this.wheel1.scale = 3
+    this.wheel2.scale = 3
 
     this.addChild(
       engine,
@@ -153,7 +148,7 @@ export class WagonObject extends BaseObject implements GameObjectWagon {
 
       container.x -= speed / this.game.tick + 0.02
       container.y -= 0.12
-      container.scale = 0.75
+      container.scale = 3
       container.alpha -= 0.005
 
       if (container.alpha <= 0) {
@@ -162,26 +157,24 @@ export class WagonObject extends BaseObject implements GameObjectWagon {
     }
   }
 
-  private getRandomEngineCloudSpriteIndex() {
+  private getRandomCloudIndex() {
     const random = getRandInteger(1, 1000)
     if (random <= 500) {
-      return 'WAGON_ENGINE_CLOUD_1'
+      return 0
     }
     if (random <= 750) {
-      return 'WAGON_ENGINE_CLOUD_2'
+      return 1
     }
     if (random <= 995) {
-      return 'WAGON_ENGINE_CLOUD_3'
+      return 2
     }
-    return 'WAGON_ENGINE_CLOUD_4'
+    return 3
   }
 
   private createRandomEngineCloud() {
-    const sprite = this.game.assetService.getSprite(this.getRandomEngineCloudSpriteIndex())
-    sprite.anchor.set(0.5, 1)
-    sprite.scale = 0.75
-    sprite.visible = false
+    const cloud = createWagonCloud(this.getRandomCloudIndex())
+    cloud.visible = false
 
-    this.engineClouds.addChild(sprite)
+    this.engineClouds.addChild(cloud)
   }
 }

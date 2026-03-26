@@ -1,6 +1,6 @@
 import type { GameObjectUnit } from '../../types'
+import { PALETTE } from '@chatgame/sprites'
 import { Container, Graphics, Text } from 'pixi.js'
-import { PALETTE } from '../../palette'
 
 export class DialogueInterface extends Container {
   messages: { id: string, text: string, isShowed: boolean }[]

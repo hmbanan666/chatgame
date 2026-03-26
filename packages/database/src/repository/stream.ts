@@ -1,4 +1,4 @@
-import { and, eq, gte } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { useDatabase } from '../database'
 import * as tables from '../tables'
 

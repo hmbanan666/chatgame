@@ -1,10 +1,9 @@
-import type { AnimatedSprite } from 'pixi.js'
 import type {
   Game,
   GameObject,
   GameObjectUnit,
-  GameUnitCodename,
 } from '../../types'
+import { createUnitFrames } from '@chatgame/sprites'
 import { createId } from '@paralleldrive/cuid2'
 import { Container, Graphics, Text } from 'pixi.js'
 import { BaseObject } from '../baseObject'
@@ -26,11 +25,20 @@ export class UnitObject extends BaseObject implements GameObjectUnit {
   dialogue: GameObjectUnit['dialogue']
 
   private dialogueInterface!: DialogueInterface
-  private animationIdle!: AnimatedSprite | undefined
-  private animationMoving!: AnimatedSprite | undefined
+  private _idleFrames: Graphics[] = []
+  private _movingFrames: Graphics[] = []
+  private _currentFrameIndex = 0
+  private _animationTick = 0
+  private _lastState: string = ''
 
   constructor({ game, x, y, id, type }: UnitObjectOptions) {
     super({ game, x, y, id, type })
+
+    this._idleFrames = []
+    this._movingFrames = []
+    this._currentFrameIndex = 0
+    this._animationTick = 0
+    this._lastState = ''
 
     this.coins = 0
     this.state = 'IDLE'
@@ -55,32 +63,39 @@ export class UnitObject extends BaseObject implements GameObjectUnit {
   }
 
   async initVisual(codename: string | undefined | null): Promise<void> {
-    if (this.animationIdle) {
-      this.removeChild(this.animationIdle)
-      this.animationIdle = undefined
+    // Clean up old frames
+    if (this._idleFrames?.length) {
+      for (const f of this._idleFrames) {
+        this.removeChild(f)
+      }
     }
-    if (this.animationMoving) {
-      this.removeChild(this.animationMoving)
-      this.animationMoving = undefined
+    if (this._movingFrames?.length) {
+      for (const f of this._movingFrames) {
+        this.removeChild(f)
+      }
+    }
+    this._idleFrames = []
+    this._movingFrames = []
+    this._currentFrameIndex = 0
+    this._animationTick = 0
+
+    const name = codename || 'twitchy'
+
+    this._idleFrames = createUnitFrames(name, 'idle')
+    this._movingFrames = createUnitFrames(name, 'moving')
+
+    // Setup all frames: hidden, scaled, anchored at (0.5, 1.0)
+    for (const f of [...this._idleFrames, ...this._movingFrames]) {
+      f.visible = false
+      f.pivot.set(16, 32) // anchor point in pixel coords (center-x, bottom-y)
+      f.scale.set(4)
+      this.addChild(f)
     }
 
-    if (!codename) {
-      codename = 'twitchy'
+    // Show first idle frame immediately
+    if (this._idleFrames[0]) {
+      this._idleFrames[0].visible = true
     }
-
-    try {
-      this.animationIdle = await this.game.assetService.getAnimatedSprite(codename as GameUnitCodename, 'idle')
-    } catch {
-      this.animationIdle = await this.game.assetService.getAnimatedSprite('twitchy', 'idle')
-    }
-    this.addChild(this.animationIdle)
-
-    try {
-      this.animationMoving = await this.game.assetService.getAnimatedSprite(codename as GameUnitCodename, 'moving')
-    } catch {
-      this.animationMoving = await this.game.assetService.getAnimatedSprite('twitchy', 'moving')
-    }
-    this.addChild(this.animationMoving)
   }
 
   addMessage(message: string): void {
@@ -94,51 +109,45 @@ export class UnitObject extends BaseObject implements GameObjectUnit {
   }
 
   override animate() {
-    if (
-      !this.children?.length
-      || !this.animationIdle
-      || !this.animationMoving
-    ) {
+    if (!this._idleFrames?.length || !this._movingFrames?.length) {
       return
     }
 
     super.animate()
 
-    if (this.state === 'MOVING') {
-      this.animationIdle.visible = false
-      this.animationMoving.animationSpeed = 0.1
-      this.animationMoving.visible = true
-
-      if (this.direction === 'RIGHT') {
-        this.animationMoving.scale.x = 4
-        this.animationMoving.play()
-      }
-      if (this.direction === 'LEFT') {
-        this.animationMoving.scale.x = -4
-        this.animationMoving.play()
-      }
+    // Reset frame index on state change
+    if (this.state !== this._lastState) {
+      this._currentFrameIndex = 0
+      this._animationTick = 0
+      this._lastState = this.state
     }
 
-    if (
-      this.state === 'IDLE'
-      || this.state === 'CHOPPING'
-      || this.state === 'MINING'
-    ) {
-      this.animationMoving.animationSpeed = 0
-      this.animationMoving.currentFrame = 0
-      this.animationMoving.visible = false
+    this._animationTick++
 
-      this.animationIdle.animationSpeed = 0.05
-      this.animationIdle.visible = true
+    const isMoving = this.state === 'MOVING'
+    const activeFrames = isMoving ? this._movingFrames : this._idleFrames
+    const inactiveFrames = isMoving ? this._idleFrames : this._movingFrames
+    const speed = isMoving ? 10 : 20 // ticks per frame
 
-      if (this.direction === 'LEFT') {
-        this.animationIdle.scale.x = 4
-        this.animationIdle.play()
-      }
-      if (this.direction === 'RIGHT') {
-        this.animationIdle.scale.x = -4
-        this.animationIdle.play()
-      }
+    // Hide inactive
+    for (const f of inactiveFrames) {
+      f.visible = false
+    }
+
+    // Advance animation
+    if (this._animationTick % speed === 0) {
+      this._currentFrameIndex = (this._currentFrameIndex + 1) % activeFrames.length
+    }
+
+    // Show current frame
+    const flipX = isMoving
+      ? (this.direction === 'RIGHT' ? 4 : -4)
+      : (this.direction === 'LEFT' ? 4 : -4)
+
+    for (let i = 0; i < activeFrames.length; i++) {
+      const f = activeFrames[i]!
+      f.visible = i === this._currentFrameIndex
+      f.scale.x = flipX
     }
 
     this.dialogueInterface.animate()

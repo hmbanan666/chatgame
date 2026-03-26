@@ -128,9 +128,9 @@
       <!-- Avatar + name + level -->
       <div class="flex flex-col items-center gap-3 text-center">
         <div class="size-20 rounded-none ring-4 ring-site-highlight bg-[#1e1e24] flex items-center justify-center overflow-hidden">
-          <Image
+          <SpriteAnimation
             v-if="profile?.activeCharacter?.character.codename"
-            :src="`/units/${profile.activeCharacter.character.codename}/idle.gif`"
+            :codename="profile.activeCharacter.character.codename"
             class="size-16"
           />
           <Icon
@@ -168,9 +168,9 @@
       <div class="grid grid-cols-3 gap-4 text-center">
         <!-- Active character -->
         <ActiveCard class="py-4 flex flex-col items-center justify-center gap-1 text-white">
-          <Image
+          <SpriteAnimation
             v-if="profile?.activeCharacter?.character.codename"
-            :src="`/units/${profile.activeCharacter.character.codename}/idle.gif`"
+            :codename="profile.activeCharacter.character.codename"
             class="size-16"
           />
           <p class="text-sm font-semibold">
@@ -226,8 +226,8 @@
     class="py-6 px-4"
   >
     <div class="max-w-2xl mx-auto flex items-center gap-4 p-4 border-2 border-[#8b5cf6]/30 bg-[#8b5cf6]/10">
-      <Image
-        :src="`/units/${nextCharacterNudge.character.codename}/idle.gif`"
+      <SpriteAnimation
+        :codename="nextCharacterNudge.character.codename"
         class="size-14 shrink-0"
       />
       <div class="flex-1 min-w-0">
@@ -331,8 +331,8 @@
               :src="`/units/${char.codename}/128.png`"
               class="w-20 h-20 block group-hover:hidden"
             />
-            <Image
-              :src="`/units/${char.codename}/idle.gif`"
+            <SpriteAnimation
+              :codename="char.codename"
               class="w-20 h-20 hidden group-hover:block"
             />
             <p class="mt-2 text-white font-semibold flex items-center gap-1">
@@ -541,10 +541,10 @@
   >
     <template #header>
       <div class="flex items-center gap-4 flex-1">
-        <Image
+        <SpriteAnimation
           v-if="selectedCharacter?.codename"
-          :src="`/units/${selectedCharacter.codename}/idle.gif`"
-          class="size-16 image-rendering-pixelated"
+          :codename="selectedCharacter.codename"
+          class="size-16"
         />
         <div>
           <p class="text-lg font-bold text-site-highlight">

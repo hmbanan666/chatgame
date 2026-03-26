@@ -22,10 +22,11 @@
         <div class="absolute -top-8 left-1/2 w-72 h-72 rounded-full blur-[80px] alert-glow" />
 
         <!-- Character sprite (floating above card) -->
-        <img
-          :src="`/static/stream-journey/assets/units/${currentAlert.data.codename}/idle.gif`"
-          class="relative z-10 h-48 w-48 image-rendering-pixelated animate-alert-bounce"
-        >
+        <div
+          class="relative z-10 h-48 w-48 image-rendering-pixelated"
+          :class="spriteAnim.class"
+          :style="spriteAnim.style"
+        />
 
         <!-- Card body -->
         <div class="relative -mt-6 flex flex-col items-center gap-3 px-16 py-8 pb-10 bg-game-bg-alt min-w-[36rem]">
@@ -166,6 +167,20 @@ const props = defineProps<{
 }>()
 
 const { play: playSound } = useAlertSound()
+
+const spriteAnim = computed(() => {
+  if (!currentAlert.value) {
+    return { style: {}, class: '' }
+  }
+  const codename = currentAlert.value.data.codename ?? 'twitchy'
+  return {
+    style: {
+      'background-image': `url(/static/units/${codename}/moving.png)`,
+      'background-size': `${8 * 192}px 192px`,
+    },
+    class: 'sprite-frames-8',
+  }
+})
 
 const currentAlert = ref<EventMessage | null>(null)
 const particles = ref<{ id: number, color: string, style: string }[]>([])
@@ -325,9 +340,10 @@ watch(() => props.alerts.length, () => {
   animation: glow-pulse 2s ease-in-out infinite;
 }
 
-.animate-alert-bounce {
-  animation: char-bounce 1s ease-out;
-}
+/* 8 frames, 192px per frame */
+.sprite-frames-8 { animation: sprite-8 1.2s steps(8) infinite, char-bounce 1s ease-out; }
+
+@keyframes sprite-8 { from { background-position: 0 0; } to { background-position: -1536px 0; } }
 
 @keyframes char-bounce {
   0% { transform: translateY(-40px) scale(0.5); opacity: 0; }

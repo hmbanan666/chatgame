@@ -16,6 +16,7 @@
     "@chat-game/locale": "workspace:*",
     "@chat-game/types": "workspace:*",
     "@chatgame/database": "workspace:*",
+    "@chatgame/sprites": "workspace:*",
     "@number-flow/vue": "catalog:integrations",
     "@nuxt/ui": "catalog:integrations",
     "@paralleldrive/cuid2": "catalog:integrations",

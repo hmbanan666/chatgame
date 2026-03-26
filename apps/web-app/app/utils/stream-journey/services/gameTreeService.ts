@@ -1,8 +1,8 @@
+import type { BiomeType } from '@chatgame/sprites'
 import type { Container } from 'pixi.js'
-import type { BiomeType } from '../objects/proceduralTree'
 import type { Game, TreeService, TreeServiceCreateOptions } from '../types'
+import { createBush } from '@chatgame/sprites'
 import { createId } from '@paralleldrive/cuid2'
-import { createBush } from '../objects/bushObject'
 import { TreeObject } from '../objects/treeObject'
 import { getRandInteger } from '../utils/random'
 
@@ -117,7 +117,7 @@ export class GameTreeService implements TreeService {
       return
     }
 
-    const bush = createBush(undefined, this.getBiomeAt(x))
+    const bush = createBush({ biome: this.getBiomeAt(x) })
     bush.x = x
     bush.y = this.game.bottomY
     bush.zIndex = getRandInteger(-12, -6)

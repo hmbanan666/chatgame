@@ -1,0 +1,17 @@
+{
+  "name": "@chatgame/sprites",
+  "type": "module",
+  "private": true,
+  "main": "./src/index.ts",
+  "files": [
+    "src/**/*"
+  ],
+  "scripts": {
+    "generate": "node scripts/generate-sprites.mjs",
+    "digitize": "node scripts/digitize-indexed.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "pixi.js": "catalog:integrations"
+  }
+}

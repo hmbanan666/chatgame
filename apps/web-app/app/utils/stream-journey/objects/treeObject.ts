@@ -1,9 +1,8 @@
 import type { Game, GameObjectTree } from '../types'
+import { createProceduralTree, PALETTE } from '@chatgame/sprites'
 import { Graphics } from 'pixi.js'
-import { PALETTE } from '../palette'
 import { getRandInteger } from '../utils/random'
 import { BaseObject } from './baseObject'
-import { createProceduralTree } from './proceduralTree'
 import { StumpObject } from './stumpObject'
 
 interface TreeObjectOptions {

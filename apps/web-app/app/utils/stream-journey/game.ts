@@ -1,8 +1,8 @@
 import type { Game, GameObject, GameUnitCodename } from './types'
+import { PALETTE } from '@chatgame/sprites'
 import { createId } from '@paralleldrive/cuid2'
 import { Application, Container, Graphics } from 'pixi.js'
-import { PALETTE } from './palette'
-import { GameAssetService, GameEventService, GamePlayerService, GameTreeService, GameWagonService } from './services'
+import { GameEventService, GamePlayerService, GameTreeService, GameWagonService } from './services'
 
 interface StreamJourneyGameOptions {
   roomId?: string
@@ -38,7 +38,6 @@ export class StreamJourneyGame extends Container implements Game {
   app: Application
   override children: GameObject[] = []
 
-  assetService: GameAssetService
   eventService: GameEventService
   wagonService: GameWagonService
   playerService: GamePlayerService
@@ -68,7 +67,6 @@ export class StreamJourneyGame extends Container implements Game {
     this.demoNames = demoNames?.length ? demoNames : FALLBACK_DEMO_NAMES
 
     this.eventService = new GameEventService(this, roomId ?? '')
-    this.assetService = new GameAssetService(this)
     this.treeService = new GameTreeService(this)
     this.wagonService = new GameWagonService(this)
     this.playerService = new GamePlayerService(this)
@@ -86,7 +84,6 @@ export class StreamJourneyGame extends Container implements Game {
 
     this.app.ticker.maxFPS = 60
 
-    await this.assetService.init()
     this.drawGround()
     this.wagonService.init()
 

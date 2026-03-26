@@ -1,4 +1,4 @@
-import type { AnimatedSprite, Application, Container, Sprite } from 'pixi.js'
+import type { Application, Container } from 'pixi.js'
 
 export interface Game extends Container {
   id: string
@@ -7,7 +7,6 @@ export interface Game extends Container {
   app: Application
   worldContainer: Container
   children: GameObject[]
-  assetService: AssetService
   eventService: EventService
   wagonService: WagonService
   playerService: PlayerService
@@ -45,15 +44,6 @@ export type GameUnitCodename
     | 'sharky'
     | 'woody'
     | 'wooly'
-
-export type GameUnitAnimations = {
-  idle: { alias: GameUnitAnimationAlias, src: string }
-  moving: { alias: GameUnitAnimationAlias, src: string }
-}
-
-export type GameUnitAnimationType = keyof GameUnitAnimations
-
-export type GameUnitAnimationAlias = `units.${GameUnitCodename}.${'idle' | 'moving'}`
 
 /** Minimal interface for movement targets — coordinates + state */
 export interface MovementTarget {
@@ -134,11 +124,6 @@ export interface GameObjectPlayer extends GameObjectUnit {
   lastActionAt: Date
   initName: (name: string, level?: number) => void
   updateLastActionAt: () => void
-}
-
-export interface AssetService {
-  getSprite: (alias: string) => Sprite
-  getAnimatedSprite: (codename: GameUnitCodename, type: GameUnitAnimationType) => Promise<AnimatedSprite>
 }
 
 export interface EventService {
