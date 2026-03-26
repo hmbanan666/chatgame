@@ -1,4 +1,5 @@
-import { Container, Graphics } from 'pixi.js'
+import type { Renderer } from 'pixi.js'
+import { Container, Graphics, Sprite } from 'pixi.js'
 
 // Stump pixel data extracted from bottom 8 rows of each tree sprite (32x32)
 // Only trunk/root pixels, snapped to Resurrect 64 palette
@@ -72,9 +73,10 @@ export class StumpObject extends Container {
   private frameCount = 0
   private readonly LIFETIME = 600 // ~10 sec at 60fps
 
-  constructor(variant: number, scale: number) {
+  constructor(variant: number, scale: number, renderer: Renderer) {
     super()
 
+    const wrapper = new Container()
     const g = new Graphics()
     const index = variant % STUMPS.length
     const data = STUMPS[index]!
@@ -86,8 +88,19 @@ export class StumpObject extends Container {
 
     g.x = -anchor[0]!
     g.y = -anchor[1]! - 1
+    wrapper.addChild(g)
 
-    this.addChild(g)
+    const bounds = wrapper.getLocalBounds()
+    const texture = renderer.generateTexture({
+      target: wrapper,
+      textureSourceOptions: { scaleMode: 'nearest' },
+    })
+    wrapper.destroy({ children: true })
+
+    const sprite = new Sprite(texture)
+    sprite.pivot.set(-bounds.x, -bounds.y)
+
+    this.addChild(sprite)
     this.scale.set(scale)
   }
 

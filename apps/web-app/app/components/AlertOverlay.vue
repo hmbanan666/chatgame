@@ -172,7 +172,7 @@ const spriteAnim = computed(() => {
   if (!currentAlert.value) {
     return { style: {}, class: '' }
   }
-  const codename = currentAlert.value.data.codename ?? 'twitchy'
+  const codename = ('codename' in currentAlert.value.data ? currentAlert.value.data.codename : 'twitchy') as string
   return {
     style: {
       'background-image': `url(/static/units/${codename}/moving.png)`,

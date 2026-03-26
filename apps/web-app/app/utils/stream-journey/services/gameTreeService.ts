@@ -3,6 +3,7 @@ import type { Container } from 'pixi.js'
 import type { Game, TreeService, TreeServiceCreateOptions } from '../types'
 import { createBush } from '@chatgame/sprites'
 import { createId } from '@paralleldrive/cuid2'
+import { Sprite } from 'pixi.js'
 import { TreeObject } from '../objects/treeObject'
 import { getRandInteger } from '../utils/random'
 
@@ -117,7 +118,16 @@ export class GameTreeService implements TreeService {
       return
     }
 
-    const bush = createBush({ biome: this.getBiomeAt(x) })
+    const bushGraphics = createBush({ biome: this.getBiomeAt(x) })
+    const bounds = bushGraphics.getLocalBounds()
+    const texture = this.game.app.renderer.generateTexture({
+      target: bushGraphics,
+      textureSourceOptions: { scaleMode: 'nearest' },
+    })
+    bushGraphics.destroy({ children: true })
+
+    const bush = new Sprite(texture)
+    bush.pivot.set(-bounds.x, -bounds.y)
     bush.x = x
     bush.y = this.game.bottomY
     bush.zIndex = getRandInteger(-12, -6)

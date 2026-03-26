@@ -5,10 +5,6 @@ import {
   WAGON_BASE_1, WAGON_BASE_1_SIZE,
   WAGON_BASE_2, WAGON_BASE_2_SIZE,
   WAGON_CHEST, WAGON_CHEST_SIZE,
-  WAGON_CLOUD_1, WAGON_CLOUD_1_SIZE,
-  WAGON_CLOUD_2, WAGON_CLOUD_2_SIZE,
-  WAGON_CLOUD_3, WAGON_CLOUD_3_SIZE,
-  WAGON_CLOUD_4, WAGON_CLOUD_4_SIZE,
   WAGON_ENGINE, WAGON_ENGINE_SIZE,
   WAGON_WHEEL, WAGON_WHEEL_SIZE,
 } from './data'
@@ -55,16 +51,4 @@ export function createWagonWheel(palette?: number[]): Container {
 
 export function createWagonChest(palette?: number[]): Container {
   return createPart(WAGON_CHEST, WAGON_CHEST_SIZE, palette ?? DEFAULT_PALETTE)
-}
-
-const CLOUD_DATA = [
-  { data: WAGON_CLOUD_1, size: WAGON_CLOUD_1_SIZE },
-  { data: WAGON_CLOUD_2, size: WAGON_CLOUD_2_SIZE },
-  { data: WAGON_CLOUD_3, size: WAGON_CLOUD_3_SIZE },
-  { data: WAGON_CLOUD_4, size: WAGON_CLOUD_4_SIZE },
-]
-
-export function createWagonCloud(index: number, palette?: number[]): Container {
-  const cloud = CLOUD_DATA[index % CLOUD_DATA.length]!
-  return createPart(cloud.data, cloud.size, palette ?? DEFAULT_PALETTE)
 }

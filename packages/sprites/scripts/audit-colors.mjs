@@ -1,6 +1,7 @@
 /**
  * Audit all characters: find non-palette colors and show what they snap to.
  */
+import { Buffer } from 'node:buffer'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { inflateSync } from 'node:zlib'
@@ -38,7 +39,9 @@ function decodePNG(filePath) {
     const type = buf.toString('ascii', pos + 4, pos + 8)
     const data = buf.subarray(pos + 8, pos + 8 + len)
     if (type === 'IHDR') {
-      width = data.readUInt32BE(0); height = data.readUInt32BE(4); colorType = data[9]
+      width = data.readUInt32BE(0)
+      height = data.readUInt32BE(4)
+      colorType = data[9]
     } else if (type === 'IDAT') {
       idatChunks.push(data)
     } else if (type === 'IEND') {
@@ -51,24 +54,46 @@ function decodePNG(filePath) {
   const stride = width * bpp
   const pixels = new Uint8Array(width * height * 4)
   let rawPos = 0
-  const prevRow = new Uint8Array(stride); const currRow = new Uint8Array(stride)
+  const prevRow = new Uint8Array(stride)
+  const currRow = new Uint8Array(stride)
   for (let y = 0; y < height; y++) {
     const filter = raw[rawPos++]
     for (let i = 0; i < stride; i++) {
       currRow[i] = raw[rawPos++]
     }
     for (let i = 0; i < stride; i++) {
-      const a = i >= bpp ? currRow[i - bpp] : 0; const b = prevRow[i]; const c = i >= bpp ? prevRow[i - bpp] : 0
+      const a = i >= bpp ? currRow[i - bpp] : 0
+      const b = prevRow[i]
+      const c = i >= bpp ? prevRow[i - bpp] : 0
       switch (filter) {
-        case 0: break; case 1: currRow[i] = (currRow[i] + a) & 0xFF; break
-        case 2: currRow[i] = (currRow[i] + b) & 0xFF; break
-        case 3: currRow[i] = (currRow[i] + Math.floor((a + b) / 2)) & 0xFF; break
-        case 4: { const p = a + b - c; const pa = Math.abs(p - a); const pb = Math.abs(p - b); const pc = Math.abs(p - c); currRow[i] = (currRow[i] + (pa <= pb && pa <= pc ? a : pb <= pc ? b : c)) & 0xFF; break }
+        case 0:
+          break
+        case 1:
+          currRow[i] = (currRow[i] + a) & 0xFF
+          break
+        case 2:
+          currRow[i] = (currRow[i] + b) & 0xFF
+          break
+        case 3:
+          currRow[i] = (currRow[i] + Math.floor((a + b) / 2)) & 0xFF
+          break
+        case 4: {
+          const p = a + b - c
+          const pa = Math.abs(p - a)
+          const pb = Math.abs(p - b)
+          const pc = Math.abs(p - c)
+          currRow[i] = (currRow[i] + (pa <= pb && pa <= pc ? a : pb <= pc ? b : c)) & 0xFF
+          break
+        }
       }
     }
     for (let x = 0; x < width; x++) {
-      const si = x * bpp; const di = (y * width + x) * 4
-      pixels[di] = currRow[si]; pixels[di + 1] = currRow[si + 1]; pixels[di + 2] = currRow[si + 2]; pixels[di + 3] = bpp === 4 ? currRow[si + 3] : 255
+      const si = x * bpp
+      const di = (y * width + x) * 4
+      pixels[di] = currRow[si]
+      pixels[di + 1] = currRow[si + 1]
+      pixels[di + 2] = currRow[si + 2]
+      pixels[di + 3] = bpp === 4 ? currRow[si + 3] : 255
     }
     prevRow.set(currRow)
   }
@@ -76,13 +101,19 @@ function decodePNG(filePath) {
 }
 
 function snap(c) {
-  const r = (c >> 16) & 0xFF; const g = (c >> 8) & 0xFF; const b = c & 0xFF
-  let best = ''; let bestDist = Infinity
+  const r = (c >> 16) & 0xFF
+  const g = (c >> 8) & 0xFF
+  const b = c & 0xFF
+  let best = ''
+  let bestDist = Infinity
   for (const [name, pc] of entries) {
-    const pr = (pc >> 16) & 0xFF; const pg = (pc >> 8) & 0xFF; const pb = pc & 0xFF
+    const pr = (pc >> 16) & 0xFF
+    const pg = (pc >> 8) & 0xFF
+    const pb = pc & 0xFF
     const dist = (r - pr) ** 2 + (g - pg) ** 2 + (b - pb) ** 2
     if (dist < bestDist) {
-      bestDist = dist; best = name
+      bestDist = dist
+      best = name
     }
   }
   return { name: best, dist: Math.round(Math.sqrt(bestDist)) }
@@ -121,7 +152,10 @@ for (const codename of codenames.sort()) {
   const img = decodePNG(join(unitsDir, codename, 'idle.png'))
   const colors = new Map()
   for (let i = 0; i < img.width * img.height; i++) {
-    const r = img.pixels[i * 4]; const g = img.pixels[i * 4 + 1]; const b = img.pixels[i * 4 + 2]; const a = img.pixels[i * 4 + 3]
+    const r = img.pixels[i * 4]
+    const g = img.pixels[i * 4 + 1]
+    const b = img.pixels[i * 4 + 2]
+    const a = img.pixels[i * 4 + 3]
     if (a < 128) {
       continue
     }

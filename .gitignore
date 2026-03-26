@@ -55,6 +55,9 @@ vite.config.*.timestamp-*
 *.sw?
 .claude/
 
+### Generated sprites ###
+apps/web-app/public/static/trees/
+
 ### System ###
 .DS_Store
 /package

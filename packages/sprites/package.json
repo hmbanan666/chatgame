@@ -8,6 +8,8 @@
   ],
   "scripts": {
     "generate": "node scripts/generate-sprites.mjs",
+    "generate:trees": "node scripts/generate-trees.mjs",
+    "generate:variations": "node scripts/generate-tree-variations.mjs",
     "digitize": "node scripts/digitize-indexed.mjs",
     "typecheck": "tsc --noEmit"
   },

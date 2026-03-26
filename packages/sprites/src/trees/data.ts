@@ -48,10 +48,26 @@ export const BIOME_LEAF_PALETTES: Record<string, number[]> = {
   VIOLET: [PALETTE.darkViolet, PALETTE.violet1, PALETTE.violet2, PALETTE.violet3, PALETTE.paleViolet],
 }
 
-/** Build full palette for a biome */
-export function getTreePalette(biome: string): number[] {
+/** Leaf palette variants per biome — picked from generated variations */
+export const BIOME_LEAF_VARIANTS: Record<string, number[][]> = {
+  GREEN: [
+    [PALETTE.darkGreen, PALETTE.green1, PALETTE.green2, PALETTE.lightGreen, PALETTE.paleGreen],
+    [PALETTE.grayGreen1, PALETTE.green1, PALETTE.green2, PALETTE.paleGreen, PALETTE.paleGreen],
+    [PALETTE.darkGreen, PALETTE.green1, PALETTE.lightGreen, PALETTE.paleGreen, PALETTE.lightGreen],
+  ],
+}
+
+/** Build full palette for a biome (random variant if available) */
+export function getTreePalette(biome: string, variantIndex?: number): number[] {
   const palette = [...DEFAULT_PALETTE]
-  const leaves = BIOME_LEAF_PALETTES[biome]
+  const variants = BIOME_LEAF_VARIANTS[biome]
+  let leaves: number[] | undefined
+  if (variants && variants.length > 0) {
+    const idx = variantIndex ?? Math.floor(Math.random() * variants.length)
+    leaves = variants[idx % variants.length]
+  } else {
+    leaves = BIOME_LEAF_PALETTES[biome]
+  }
   if (leaves) {
     for (let i = 0; i < leaves.length; i++) {
       palette[LEAF_SLOT_START + i] = leaves[i]!

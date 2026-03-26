@@ -42,7 +42,6 @@ export {
   createWagonBase1,
   createWagonBase2,
   createWagonChest,
-  createWagonCloud,
   createWagonEngine,
   createWagonWheel,
   WAGON_DEFAULT_PALETTE,

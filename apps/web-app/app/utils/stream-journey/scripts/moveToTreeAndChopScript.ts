@@ -20,7 +20,7 @@ export class MoveToTreeAndChopScript extends BaseScript {
     this.tree.chopperCount++
 
     // Spread players around the tree so they don't stack
-    const offset = getRandInteger(-60, 60)
+    const offset = getRandInteger(-35, 35)
     const moveTarget = new TargetPoint(this.tree.x + offset, this.tree.y)
 
     this.tasks = [

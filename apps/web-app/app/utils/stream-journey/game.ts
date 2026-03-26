@@ -1,7 +1,7 @@
 import type { Game, GameObject, GameUnitCodename } from './types'
 import { PALETTE } from '@chatgame/sprites'
 import { createId } from '@paralleldrive/cuid2'
-import { Application, Container, Graphics } from 'pixi.js'
+import { Application, Container, Graphics, Sprite } from 'pixi.js'
 import { GameEventService, GamePlayerService, GameTreeService, GameWagonService } from './services'
 
 interface StreamJourneyGameOptions {
@@ -227,33 +227,43 @@ export class StreamJourneyGame extends Container implements Game {
       const biome = this.treeService.getBiomeAt(x)
       const [grass1, grass2, dirt1, dirt2] = GROUND_BIOMES[biome] ?? GROUND_BIOMES.GREEN!
 
-      const chunk = new Graphics()
+      const g = new Graphics()
 
       // Grass top with random height variation
       const grassH = 4 + Math.floor(Math.random() * 4)
-      chunk.rect(0, -grassH, chunkSize, grassH).fill(grass1)
+      g.rect(0, -grassH, chunkSize, grassH).fill(grass1)
 
       // Grass line
-      chunk.rect(0, 0, chunkSize, 4).fill(grass2)
+      g.rect(0, 0, chunkSize, 4).fill(grass2)
 
       // Dirt
-      chunk.rect(0, 4, chunkSize, 10).fill(dirt1)
-      chunk.rect(0, 14, chunkSize, 20).fill(dirt2)
+      g.rect(0, 4, chunkSize, 10).fill(dirt1)
+      g.rect(0, 14, chunkSize, 20).fill(dirt2)
 
       // Random dirt specks
       for (let s = 0; s < 3; s++) {
         const sx = Math.floor(Math.random() * (chunkSize - 4))
         const sy = 6 + Math.floor(Math.random() * 16)
-        chunk.rect(sx, sy, 3, 2).fill(P.brownOrange)
+        g.rect(sx, sy, 3, 2).fill(P.brownOrange)
       }
 
       // Random grass tufts on top
       if (Math.random() > 0.5) {
         const tx = Math.floor(Math.random() * (chunkSize - 6))
-        chunk.rect(tx, -grassH - 2, 2, 3).fill(grass1)
-        chunk.rect(tx + 3, -grassH - 3, 2, 4).fill(grass2)
+        g.rect(tx, -grassH - 2, 2, 3).fill(grass1)
+        g.rect(tx + 3, -grassH - 3, 2, 4).fill(grass2)
       }
 
+      // Bake into texture
+      const bounds = g.getLocalBounds()
+      const texture = this.app.renderer.generateTexture({
+        target: g,
+        textureSourceOptions: { scaleMode: 'nearest' },
+      })
+      g.destroy()
+
+      const chunk = new Sprite(texture)
+      chunk.pivot.set(-bounds.x, -bounds.y)
       chunk.x = x
       chunk.y = this.bottomY
       ground.addChild(chunk)

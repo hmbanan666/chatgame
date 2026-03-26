@@ -1,6 +1,6 @@
 import type { Game, GameObjectTree } from '../types'
-import { createProceduralTree, PALETTE } from '@chatgame/sprites'
-import { Graphics } from 'pixi.js'
+import { getTreePalette, PALETTE, TREE_ANCHORS, TREES } from '@chatgame/sprites'
+import { Graphics, Sprite } from 'pixi.js'
 import { getRandInteger } from '../utils/random'
 import { BaseObject } from './baseObject'
 import { StumpObject } from './stumpObject'
@@ -57,14 +57,33 @@ export class TreeObject extends BaseObject implements GameObjectTree {
 
   initVisual() {
     const variantIndex = Number.parseInt(this.treeType) - 1
-    const tree = createProceduralTree({ variant: variantIndex, size: 1, biome: this.variant })
-    this.addChild(tree)
+    const treeIndex = variantIndex % TREES.length
+    const data = TREES[treeIndex]!
+    const anchor = TREE_ANCHORS[treeIndex]!
+    const palette = getTreePalette(this.variant)
+
+    // Draw raw pixels without offset — full 32×32 frame for correct bounds
+    const g = new Graphics()
+    g.rect(0, 0, 32, 32).fill({ color: 0, alpha: 0 })
+    for (const [x, y, slot] of data) {
+      g.rect(x, y, 1, 1).fill(palette[slot]!)
+    }
+
+    // Bake into texture, then use Sprite with original anchor as pivot
+    const texture = this.game.app.renderer.generateTexture({
+      target: g,
+      textureSourceOptions: { scaleMode: 'nearest' },
+    })
+    g.destroy()
+
+    const sprite = new Sprite(texture)
+    sprite.pivot.set(anchor[0]!, anchor[1]! + 1)
+    this.addChild(sprite)
   }
 
   chop() {
     this.state = 'CHOPPING'
     this.health -= getRandInteger(9, 15)
-    this.alpha = 0.9
     this.spawnLeafParticles(5)
   }
 
@@ -142,7 +161,7 @@ export class TreeObject extends BaseObject implements GameObjectTree {
 
   private spawnStump() {
     const variantIndex = Number.parseInt(this.treeType) - 1
-    const stump = new StumpObject(variantIndex, this.BASE_SCALE * (this.maxSize / 100))
+    const stump = new StumpObject(variantIndex, this.BASE_SCALE * (this.maxSize / 100), this.game.app.renderer)
     stump.x = this.x
     stump.y = this.y
     stump.zIndex = -20
@@ -224,7 +243,6 @@ export class TreeObject extends BaseObject implements GameObjectTree {
     const random = getRandInteger(1, 20)
     if (random <= 1) {
       this.state = 'IDLE'
-      this.alpha = 1
     }
   }
 

@@ -7,8 +7,10 @@
  * Writes to:  src/units/<codename>.ts
  */
 
+import { Buffer } from 'node:buffer'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import process from 'node:process'
 import { inflateSync } from 'node:zlib'
 import { COLOR_OVERRIDES } from './color-overrides.mjs'
 
@@ -68,7 +70,7 @@ function decodePNG(filePath) {
     }
   }
 
-  let width, height, bitDepth, colorType
+  let width, height, colorType
   const idatChunks = []
   let pos = 8
 
@@ -77,7 +79,9 @@ function decodePNG(filePath) {
     const type = buf.toString('ascii', pos + 4, pos + 8)
     const data = buf.subarray(pos + 8, pos + 8 + len)
     if (type === 'IHDR') {
-      width = data.readUInt32BE(0); height = data.readUInt32BE(4); bitDepth = data[8]; colorType = data[9]
+      width = data.readUInt32BE(0)
+      height = data.readUInt32BE(4)
+      colorType = data[9]
     } else if (type === 'IDAT') {
       idatChunks.push(data)
     } else if (type === 'IEND') {
@@ -106,15 +110,32 @@ function decodePNG(filePath) {
       const c = i >= bpp ? prevRow[i - bpp] : 0
       switch (filter) {
         case 0: break
-        case 1: currRow[i] = (currRow[i] + a) & 0xFF; break
-        case 2: currRow[i] = (currRow[i] + b) & 0xFF; break
-        case 3: currRow[i] = (currRow[i] + Math.floor((a + b) / 2)) & 0xFF; break
-        case 4: { const p = a + b - c; const pa = Math.abs(p - a); const pb = Math.abs(p - b); const pc = Math.abs(p - c); currRow[i] = (currRow[i] + (pa <= pb && pa <= pc ? a : pb <= pc ? b : c)) & 0xFF; break }
+        case 1:
+          currRow[i] = (currRow[i] + a) & 0xFF
+          break
+        case 2:
+          currRow[i] = (currRow[i] + b) & 0xFF
+          break
+        case 3:
+          currRow[i] = (currRow[i] + Math.floor((a + b) / 2)) & 0xFF
+          break
+        case 4: {
+          const p = a + b - c
+          const pa = Math.abs(p - a)
+          const pb = Math.abs(p - b)
+          const pc = Math.abs(p - c)
+          currRow[i] = (currRow[i] + (pa <= pb && pa <= pc ? a : pb <= pc ? b : c)) & 0xFF
+          break
+        }
       }
     }
     for (let x = 0; x < width; x++) {
-      const si = x * bpp; const di = (y * width + x) * 4
-      pixels[di] = currRow[si]; pixels[di + 1] = currRow[si + 1]; pixels[di + 2] = currRow[si + 2]; pixels[di + 3] = bpp === 4 ? currRow[si + 3] : 255
+      const si = x * bpp
+      const di = (y * width + x) * 4
+      pixels[di] = currRow[si]
+      pixels[di + 1] = currRow[si + 1]
+      pixels[di + 2] = currRow[si + 2]
+      pixels[di + 3] = bpp === 4 ? currRow[si + 3] : 255
     }
     prevRow.set(currRow)
   }
@@ -136,13 +157,17 @@ function snapToPalette(r, g, b) {
     }
   }
 
-  let bestDist = Infinity; let bestIdx = 0
+  let bestDist = Infinity
+  let bestIdx = 0
   for (let i = 0; i < PALETTE_VALUES.length; i++) {
     const c = PALETTE_VALUES[i]
-    const pr = (c >> 16) & 0xFF; const pg = (c >> 8) & 0xFF; const pb = c & 0xFF
+    const pr = (c >> 16) & 0xFF
+    const pg = (c >> 8) & 0xFF
+    const pb = c & 0xFF
     const dist = (r - pr) ** 2 + (g - pg) ** 2 + (b - pb) ** 2
     if (dist < bestDist) {
-      bestDist = dist; bestIdx = i
+      bestDist = dist
+      bestIdx = i
     }
   }
   return { paletteIdx: bestIdx, color: PALETTE_VALUES[bestIdx], name: PALETTE_NAMES[bestIdx] }
@@ -159,7 +184,10 @@ function processSprite(img, frameWidth, frameHeight) {
     for (let y = 0; y < frameHeight; y++) {
       for (let x = 0; x < frameWidth; x++) {
         const si = (y * img.width + (col * frameWidth + x)) * 4
-        const r = img.pixels[si]; const g = img.pixels[si + 1]; const b = img.pixels[si + 2]; const a = img.pixels[si + 3]
+        const r = img.pixels[si]
+        const g = img.pixels[si + 1]
+        const b = img.pixels[si + 2]
+        const a = img.pixels[si + 3]
         if (a < 128) {
           continue
         }

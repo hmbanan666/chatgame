@@ -5,7 +5,7 @@ import type {
 } from '../../types'
 import { createUnitFrames } from '@chatgame/sprites'
 import { createId } from '@paralleldrive/cuid2'
-import { Container, Graphics, Text } from 'pixi.js'
+import { Container, Graphics, Sprite, Text } from 'pixi.js'
 import { BaseObject } from '../baseObject'
 import { getRandInteger } from './../../utils/random'
 import { DialogueInterface } from './dialogueInterface'
@@ -25,8 +25,8 @@ export class UnitObject extends BaseObject implements GameObjectUnit {
   dialogue: GameObjectUnit['dialogue']
 
   private dialogueInterface!: DialogueInterface
-  private _idleFrames: Graphics[] = []
-  private _movingFrames: Graphics[] = []
+  private _idleFrames: Sprite[] = []
+  private _movingFrames: Sprite[] = []
   private _currentFrameIndex = 0
   private _animationTick = 0
   private _lastState: string = ''
@@ -81,13 +81,29 @@ export class UnitObject extends BaseObject implements GameObjectUnit {
 
     const name = codename || 'twitchy'
 
-    this._idleFrames = createUnitFrames(name, 'idle')
-    this._movingFrames = createUnitFrames(name, 'moving')
+    const idleGraphics = createUnitFrames(name, 'idle')
+    const movingGraphics = createUnitFrames(name, 'moving')
 
-    // Setup all frames: hidden, scaled, anchored at (0.5, 1.0)
+    // Bake Graphics into textures, then use Sprites (no per-frame redraw)
+    const bakeFrames = (graphics: Graphics[]) => graphics.map((g) => {
+      const bounds = g.getLocalBounds()
+      const texture = this.game.app.renderer.generateTexture({
+        target: g,
+        textureSourceOptions: { scaleMode: 'nearest' },
+      })
+      g.destroy()
+      const sprite = new Sprite(texture)
+      // Preserve original pivot (16, 32) relative to texture offset
+      sprite.pivot.set(16 - bounds.x, 32 - bounds.y)
+      return sprite
+    })
+
+    this._idleFrames = bakeFrames(idleGraphics)
+    this._movingFrames = bakeFrames(movingGraphics)
+
+    // Setup all frames: hidden, scaled
     for (const f of [...this._idleFrames, ...this._movingFrames]) {
       f.visible = false
-      f.pivot.set(16, 32) // anchor point in pixel coords (center-x, bottom-y)
       f.scale.set(4)
       this.addChild(f)
     }

@@ -1,6 +1,7 @@
+import type { Texture } from 'pixi.js'
 import type { Game, GameObjectWagon } from '../types'
-import { createWagonBase1, createWagonCloud, createWagonEngine, createWagonWheel } from '@chatgame/sprites'
-import { Container } from 'pixi.js'
+import { createWagonBase1, createWagonEngine, createWagonWheel, PALETTE } from '@chatgame/sprites'
+import { Container, Graphics, Sprite } from 'pixi.js'
 import { getRandInteger } from '../utils/random'
 import { BaseObject } from './baseObject'
 
@@ -10,10 +11,56 @@ interface WagonObjectOptions {
   y: number
 }
 
+const STEAM_COLOR = PALETTE.white
+
+/**
+ * Generate a procedural steam puff as pixel art on a 16×16 grid.
+ * Classic cloud shape: flat bottom, puffy rounded top with bumps.
+ */
+function generateSteamCloud(): Graphics {
+  const g = new Graphics()
+  const size = 20
+  const grid = new Uint8Array(size * size)
+
+  // Main body — wide ellipse in lower-center
+  fillEllipse(grid, size, 10, 12, getRandInteger(6, 8), getRandInteger(3, 4))
+  // Top puffs — 2-3 bumps along the top
+  const puffCount = getRandInteger(2, 3)
+  for (let i = 0; i < puffCount; i++) {
+    const px = getRandInteger(5, 15)
+    const py = getRandInteger(6, 10)
+    const pr = getRandInteger(2, 3)
+    fillEllipse(grid, size, px, py, pr + 1, pr)
+  }
+
+  // Render to Graphics — white only
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      if (grid[y * size + x]) {
+        g.rect(x, y, 1, 1).fill(STEAM_COLOR)
+      }
+    }
+  }
+
+  return g
+}
+
+function fillEllipse(grid: Uint8Array, size: number, cx: number, cy: number, rx: number, ry: number) {
+  for (let y = Math.max(0, cy - ry); y <= Math.min(size - 1, cy + ry); y++) {
+    for (let x = Math.max(0, cx - rx); x <= Math.min(size - 1, cx + rx); x++) {
+      const dx = (x - cx) / rx
+      const dy = (y - cy) / ry
+      if (dx * dx + dy * dy <= 1) {
+        grid[y * size + x] = 1
+      }
+    }
+  }
+}
+
 export class WagonObject extends BaseObject implements GameObjectWagon {
   bottomOffset = 30
-  wheel1!: Container
-  wheel2!: Container
+  wheel1!: Sprite
+  wheel2!: Sprite
   engineClouds!: Container
   engineCloudsOffset = 0
 
@@ -21,6 +68,7 @@ export class WagonObject extends BaseObject implements GameObjectWagon {
   private flipProgress = 0
   private flipDuration = 90 // frames (~1.5 seconds at 60fps)
   private baseY = 0
+  private cloudTextures: Texture[] = []
 
   constructor({ game, x, y }: WagonObjectOptions) {
     super({ game, x, y, type: 'WAGON' })
@@ -83,28 +131,54 @@ export class WagonObject extends BaseObject implements GameObjectWagon {
   }
 
   initVisual() {
-    const spriteSide = createWagonBase1()
-    spriteSide.scale = 3
+    const opts = { textureSourceOptions: { scaleMode: 'nearest' as const } }
 
-    const engine = createWagonEngine()
+    const bakeToSprite = (container: Container) => {
+      const bounds = container.getLocalBounds()
+      const texture = this.game.app.renderer.generateTexture({ target: container, ...opts })
+      container.destroy({ children: true })
+      const sprite = new Sprite(texture)
+      sprite.pivot.set(-bounds.x, -bounds.y)
+      return sprite
+    }
+
+    // Bake wagon parts into textures
+    const base = bakeToSprite(createWagonBase1())
+    base.scale = 3
+
+    const engine = bakeToSprite(createWagonEngine())
     engine.scale = 3
     engine.x = -50
     engine.y = -36
-    engine.visible = true
+
+    // Bake wheel texture once, reuse for both wheels
+    const wheelContainer = createWagonWheel()
+    const wheelBounds = wheelContainer.getLocalBounds()
+    const wheelTexture = this.game.app.renderer.generateTexture({ target: wheelContainer, ...opts })
+    wheelContainer.destroy({ children: true })
+
+    this.wheel1 = new Sprite(wheelTexture)
+    this.wheel1.pivot.set(-wheelBounds.x, -wheelBounds.y)
+    this.wheel1.scale = 3
+    this.wheel2 = new Sprite(wheelTexture)
+    this.wheel2.pivot.set(-wheelBounds.x, -wheelBounds.y)
+    this.wheel2.scale = 3
+
+    // Pre-bake procedural steam cloud textures
+    for (let i = 0; i < 16; i++) {
+      const cloudGraphics = generateSteamCloud()
+      const cloudTexture = this.game.app.renderer.generateTexture({ target: cloudGraphics, ...opts })
+      cloudGraphics.destroy()
+      this.cloudTextures.push(cloudTexture)
+    }
 
     this.engineClouds = new Container()
-    this.engineClouds.x = -60
-    this.engineClouds.y = -100
-
-    this.wheel1 = createWagonWheel()
-    this.wheel2 = createWagonWheel()
-
-    this.wheel1.scale = 3
-    this.wheel2.scale = 3
+    this.engineClouds.x = -50
+    this.engineClouds.y = -125
 
     this.addChild(
       engine,
-      spriteSide,
+      base,
       this.wheel1,
       this.wheel2,
       this.engineClouds,
@@ -143,37 +217,36 @@ export class WagonObject extends BaseObject implements GameObjectWagon {
       this.engineCloudsOffset = speed * getRandInteger(30, 70) + 3
     }
 
-    for (const container of [...this.engineClouds.children]) {
-      container.visible = true
+    const FADE_IN = 20 // frames to reach full opacity
+    const LIFETIME = 200 // total frames
 
-      container.x -= speed / this.game.tick + 0.02
-      container.y -= 0.12
-      container.scale = 3
-      container.alpha -= 0.005
+    for (const cloud of [...this.engineClouds.children]) {
+      const age = Number(cloud.label) + 1
+      cloud.label = String(age)
 
-      if (container.alpha <= 0) {
-        this.engineClouds.removeChild(container)
+      cloud.x -= speed / this.game.tick + 0.02
+      cloud.y -= 0.12
+      cloud.scale = 3
+
+      // Fade in → hold → fade out
+      if (age < FADE_IN) {
+        cloud.alpha = 0.3 + 0.7 * (age / FADE_IN)
+      } else {
+        cloud.alpha = Math.max(0, 1 - (age - FADE_IN) / (LIFETIME - FADE_IN))
+      }
+
+      if (age >= LIFETIME) {
+        this.engineClouds.removeChild(cloud)
       }
     }
   }
 
-  private getRandomCloudIndex() {
-    const random = getRandInteger(1, 1000)
-    if (random <= 500) {
-      return 0
-    }
-    if (random <= 750) {
-      return 1
-    }
-    if (random <= 995) {
-      return 2
-    }
-    return 3
-  }
-
   private createRandomEngineCloud() {
-    const cloud = createWagonCloud(this.getRandomCloudIndex())
-    cloud.visible = false
+    const texture = this.cloudTextures[getRandInteger(0, this.cloudTextures.length - 1)]!
+    const cloud = new Sprite(texture)
+    cloud.anchor.set(0.5, 0.5)
+    cloud.alpha = 0
+    cloud.label = '0' // frame counter stored in label
 
     this.engineClouds.addChild(cloud)
   }
