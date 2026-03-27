@@ -3,11 +3,11 @@ import type {
   GameObject,
   GameObjectUnit,
 } from '../../types'
+import { getRandInteger } from '#shared/utils/random'
 import { createUnitFrames } from '@chatgame/sprites'
 import { createId } from '@paralleldrive/cuid2'
 import { Container, Graphics, Sprite, Text } from 'pixi.js'
 import { BaseObject } from '../baseObject'
-import { getRandInteger } from './../../utils/random'
 import { DialogueInterface } from './dialogueInterface'
 
 interface UnitObjectOptions {

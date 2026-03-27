@@ -1,7 +1,7 @@
 import type { Game, GameObjectPlayer } from '../../types'
+import { getRandInteger } from '#shared/utils/random'
 import { MoveToTargetScript } from '../../scripts/moveToTargetScript'
 import { MoveToTreeAndChopScript } from '../../scripts/moveToTreeAndChopScript'
-import { getRandInteger } from '../../utils/random'
 import { TargetPoint } from '../targetPoint'
 import { UnitObject } from './unitObject'
 

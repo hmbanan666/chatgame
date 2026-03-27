@@ -103,6 +103,10 @@ export class TwitchEventSub {
 
     if (type === 'session_reconnect') {
       const reconnectUrl = msg.payload.session.reconnect_url
+      if (!this.#isAllowedUrl(reconnectUrl)) {
+        logger.error(`EventSub reconnect URL rejected: ${reconnectUrl}`)
+        return
+      }
       logger.info(`EventSub reconnecting to ${reconnectUrl}`)
       // Close old WS as destroyed so its close handler doesn't trigger a parallel reconnect
       this.#isDestroyed = true
@@ -120,6 +124,18 @@ export class TwitchEventSub {
       logger.warn('EventSub keepalive timeout, reconnecting...')
       this.#ws?.close()
     }, (seconds + 5) * 1000)
+  }
+
+  #isAllowedUrl(url: unknown): url is string {
+    if (typeof url !== 'string') {
+      return false
+    }
+    try {
+      const parsed = new URL(url)
+      return parsed.protocol === 'wss:' && parsed.hostname.endsWith('.twitch.tv')
+    } catch {
+      return false
+    }
   }
 
   #handleNotification(msg: any) {

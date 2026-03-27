@@ -1,8 +1,8 @@
 import type { Texture } from 'pixi.js'
 import type { Game, GameObjectWagon } from '../types'
+import { getRandInteger } from '#shared/utils/random'
 import { createWagonBase1, createWagonEngine, createWagonWheel, PALETTE } from '@chatgame/sprites'
 import { Container, Graphics, Sprite } from 'pixi.js'
-import { getRandInteger } from '../utils/random'
 import { BaseObject } from './baseObject'
 
 interface WagonObjectOptions {

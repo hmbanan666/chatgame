@@ -1,8 +1,8 @@
 import type { TreeObject } from '../objects/treeObject'
 import type { GameObject, GameScriptTask, MovementTarget } from '../types'
+import { getRandInteger } from '#shared/utils/random'
 import { createId } from '@paralleldrive/cuid2'
 import { TargetPoint } from '../objects/targetPoint'
-import { getRandInteger } from '../utils/random'
 import { BaseScript } from './baseScript'
 
 interface MoveToTreeAndChopOptions {

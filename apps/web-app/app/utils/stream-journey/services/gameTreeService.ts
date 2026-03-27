@@ -1,11 +1,11 @@
 import type { BiomeType } from '@chatgame/sprites'
 import type { Container } from 'pixi.js'
 import type { Game, TreeService, TreeServiceCreateOptions } from '../types'
+import { getRandInteger } from '#shared/utils/random'
 import { createBush } from '@chatgame/sprites'
 import { createId } from '@paralleldrive/cuid2'
 import { Sprite } from 'pixi.js'
 import { TreeObject } from '../objects/treeObject'
-import { getRandInteger } from '../utils/random'
 
 const BIOME_LENGTH = 5000 // pixels per biome
 

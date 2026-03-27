@@ -1,7 +1,7 @@
 import type { Game, GameObjectTree } from '../types'
+import { getRandInteger } from '#shared/utils/random'
 import { getTreePalette, PALETTE, TREE_ANCHORS, TREES } from '@chatgame/sprites'
 import { Graphics, Sprite } from 'pixi.js'
-import { getRandInteger } from '../utils/random'
 import { BaseObject } from './baseObject'
 import { StumpObject } from './stumpObject'
 

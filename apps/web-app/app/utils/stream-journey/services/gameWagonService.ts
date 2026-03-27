@@ -1,11 +1,11 @@
 import type { TreeObject } from '../objects/treeObject'
 import type { Game, GameObject, GameObjectWagon, WagonService } from '../types'
+import { getRandInteger } from '#shared/utils/random'
 import { PALETTE } from '@chatgame/sprites'
 import { Container, Graphics } from 'pixi.js'
 import { TargetPoint } from '../objects/targetPoint'
 import { WagonObject } from '../objects/wagonObject'
 import { MoveToFlagAndCheckScript } from '../scripts/moveToFlagAndCheckScript'
-import { getRandInteger } from '../utils/random'
 
 export class GameWagonService implements WagonService {
   wagon: GameObjectWagon | null = null

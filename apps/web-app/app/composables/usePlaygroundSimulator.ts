@@ -2,6 +2,7 @@ import type { WagonEffect, WagonSessionStats } from '#shared/types/charge'
 import type { EventMessage } from '@chat-game/types'
 import type { BacklogItem } from '~/components/BacklogList.vue'
 import { QUEST_TEMPLATES } from '#shared/quest/templates'
+import { getRandInteger } from '#shared/utils/random'
 
 const FAKE_NAMES = ['kungfux010', 'sava5621', 'BezSovesty', 'mr_pickles', 'night_owl', 'pixel_ninja', 'stream_queen', 'code_wizard']
 const FAKE_CODENAMES = ['twitchy', 'banana', 'burger', 'catchy', 'claw', 'gentleman', 'marshmallow', 'pioneer', 'pup', 'santa', 'shape', 'sharky', 'woody', 'wooly']
@@ -44,11 +45,11 @@ export function usePlaygroundSimulator() {
   }
 
   function pick<T>(arr: T[]): T {
-    return arr[Math.floor(Math.random() * arr.length)]!
+    return arr[getRandInteger(0, arr.length - 1)]!
   }
 
   function randomInt(min: number, max: number) {
-    return Math.floor(Math.random() * (max - min + 1)) + min
+    return getRandInteger(min, max)
   }
 
   function wagonTick() {
@@ -76,7 +77,7 @@ export function usePlaygroundSimulator() {
     }
 
     // Fake tree chop
-    if (Math.random() < 0.02) {
+    if (getRandInteger(1, 100) <= 2) {
       stats.value.treesChopped++
     }
 
@@ -161,7 +162,7 @@ export function usePlaygroundSimulator() {
   const activeQuestViewers = new Set<string>()
 
   function addBacklogItem() {
-    const isQuest = Math.random() < 0.5
+    const isQuest = getRandInteger(0, 1) === 0
 
     if (isQuest) {
       const available = FAKE_NAMES.filter((n) => !activeQuestViewers.has(n))
