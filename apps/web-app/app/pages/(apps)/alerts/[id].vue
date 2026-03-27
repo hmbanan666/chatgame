@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import type { EventMessage } from '@chat-game/types'
+import type { EventMessage } from '@chatgame/types'
 import { createId } from '@paralleldrive/cuid2'
 
 definePageMeta({

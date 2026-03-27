@@ -1,4 +1,4 @@
-import type { EventMessage } from '@chat-game/types'
+import type { EventMessage } from '@chatgame/types'
 
 interface AlertStream {
   push: (data: string) => void

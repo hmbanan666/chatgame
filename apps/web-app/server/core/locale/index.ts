@@ -1,5 +1,5 @@
-import type { Dictionary } from '@chat-game/locale'
-import { en, ru } from '@chat-game/locale'
+import type { Dictionary } from '@chatgame/locale'
+import { en, ru } from '@chatgame/locale'
 
 export function dictionary(locale: string | undefined = 'en'): Dictionary {
   if (locale === 'ru') {

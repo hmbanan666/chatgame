@@ -1,4 +1,4 @@
-import type { TwitchServiceStatus } from '@chat-game/types'
+import type { TwitchServiceStatus } from '@chatgame/types'
 import type { EventHandlerRequest } from 'h3'
 import { getTwitchController } from '../../utils/twitch/twitch.controller'
 

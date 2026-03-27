@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import type { TransactionWithProfile } from '@chat-game/types'
+import type { TransactionWithProfile } from '@chatgame/types'
 
 defineProps<{
   transaction: TransactionWithProfile

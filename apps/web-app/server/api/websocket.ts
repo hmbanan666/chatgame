@@ -1,5 +1,5 @@
 import type { WebSocketPeer } from '#shared/types/room'
-import type { WebSocketConnectAddon, WebSocketEvents, WebSocketMessage } from '@chat-game/types'
+import type { WebSocketConnectAddon, WebSocketEvents, WebSocketMessage } from '@chatgame/types'
 import { createId } from '@paralleldrive/cuid2'
 import { chargeRooms } from '~~/server/core/charge'
 

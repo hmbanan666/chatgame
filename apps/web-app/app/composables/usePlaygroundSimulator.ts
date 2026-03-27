@@ -1,5 +1,5 @@
 import type { WagonEffect, WagonSessionStats } from '#shared/types/charge'
-import type { EventMessage } from '@chat-game/types'
+import type { EventMessage } from '@chatgame/types'
 import type { BacklogItem } from '~/components/BacklogList.vue'
 import { QUEST_TEMPLATES } from '#shared/quest/templates'
 import { getRandInteger } from '#shared/utils/random'

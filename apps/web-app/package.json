@@ -12,11 +12,10 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@chat-game/game": "workspace:*",
-    "@chat-game/locale": "workspace:*",
-    "@chat-game/types": "workspace:*",
     "@chatgame/database": "workspace:*",
+    "@chatgame/locale": "workspace:*",
     "@chatgame/sprites": "workspace:*",
+    "@chatgame/types": "workspace:*",
     "@nuxt/ui": "catalog:integrations",
     "@paralleldrive/cuid2": "catalog:integrations",
     "@vueuse/components": "catalog:integrations",

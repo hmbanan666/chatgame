@@ -158,7 +158,7 @@
 </template>
 
 <script setup lang="ts">
-import type { EventMessage } from '@chat-game/types'
+import type { EventMessage } from '@chatgame/types'
 import { pluralizationRu } from '#shared/utils/pluralize'
 import { useAlertSound } from '~/composables/useAlertSound'
 

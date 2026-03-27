@@ -1,4 +1,4 @@
-import type { TokenCreateResponse, TwitchToken } from '@chat-game/types'
+import type { TokenCreateResponse, TwitchToken } from '@chatgame/types'
 import type { EventHandlerRequest } from 'h3'
 import { createId } from '@paralleldrive/cuid2'
 

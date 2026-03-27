@@ -1,5 +1,5 @@
 {
-  "name": "@chat-game/locale",
+  "name": "@chatgame/locale",
   "private": true,
   "main": "./src/index.ts",
   "files": [

@@ -149,21 +149,18 @@ importers:
 
   apps/web-app:
     dependencies:
-      '@chat-game/game':
-        specifier: workspace:*
-        version: link:../../packages/game
-      '@chat-game/locale':
-        specifier: workspace:*
-        version: link:../../packages/locale
-      '@chat-game/types':
-        specifier: workspace:*
-        version: link:../../packages/types
       '@chatgame/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@chatgame/locale':
+        specifier: workspace:*
+        version: link:../../packages/locale
       '@chatgame/sprites':
         specifier: workspace:*
         version: link:../../packages/sprites
+      '@chatgame/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       '@nuxt/ui':
         specifier: catalog:integrations
         version: 4.6.0(@netlify/blobs@9.1.2)(@tiptap/extensions@3.20.5(@tiptap/core@3.20.5(@tiptap/pm@3.20.5))(@tiptap/pm@3.20.5))(@tiptap/y-tiptap@3.0.2(prosemirror-model@1.25.4)(prosemirror-state@1.4.4)(prosemirror-view@1.41.7)(y-protocols@1.0.7(yjs@13.6.30))(yjs@13.6.30))(change-case@5.4.4)(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.0)(@prisma/client@6.2.1(prisma@6.2.1))(@types/pg@8.20.0)(pg@8.20.0)(prisma@6.2.1)))(embla-carousel@8.6.0)(ioredis@5.10.1)(jwt-decode@4.0.0)(magicast@0.5.2)(tailwindcss@4.2.2)(typescript@5.9.3)(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(vue-router@5.0.4(@vue/compiler-sfc@3.5.31)(vue@3.5.31(typescript@5.9.3)))(vue@3.5.31(typescript@5.9.3))(yjs@13.6.30)(zod@4.3.6)
@@ -244,21 +241,6 @@ importers:
       typescript:
         specifier: catalog:dev
         version: 5.9.3
-
-  packages/game:
-    dependencies:
-      '@chat-game/types':
-        specifier: workspace:*
-        version: link:../types
-      '@paralleldrive/cuid2':
-        specifier: catalog:integrations
-        version: 3.3.0
-      '@vueuse/core':
-        specifier: catalog:integrations
-        version: 14.2.1(vue@3.5.31(typescript@5.9.3))
-      pixi.js:
-        specifier: catalog:integrations
-        version: 8.17.1
 
   packages/locale: {}
 

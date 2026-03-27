@@ -1,4 +1,4 @@
-import type { TwitchTokenWithProfile } from '@chat-game/types'
+import type { TwitchTokenWithProfile } from '@chatgame/types'
 import type { EventHandlerRequest } from 'h3'
 import { getDateMinusMinutes } from '#shared/utils/date'
 
