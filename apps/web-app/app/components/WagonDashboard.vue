@@ -9,10 +9,8 @@
       />
       <div class="absolute inset-0 flex items-center px-2 gap-1">
         <Icon name="lucide:fuel" class="size-3! text-game-text" />
-        <NumberFlow
+        <AnimatedNumber
           :value="fuel"
-          :format="{ style: 'decimal', maximumFractionDigits: 0 }"
-          locales="en-US"
           class="text-sm font-bold text-game-text"
         />
         <span class="text-xs text-game-text/60">/{{ maxFuel }}</span>
@@ -51,7 +49,7 @@
         <template v-for="i in maxSlots" :key="i">
           <WagonEffectBadge
             v-if="effects[i - 1]"
-            :effect="effects[i - 1]"
+            :effect="effects[i - 1]!"
           />
           <div
             v-else
@@ -65,7 +63,6 @@
 
 <script setup lang="ts">
 import type { WagonEffect, WagonSessionStats } from '#shared/types/charge'
-import NumberFlow from '@number-flow/vue'
 
 const props = withDefaults(defineProps<{
   fuel: number

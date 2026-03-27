@@ -2,10 +2,8 @@
   <div class="flex flex-row justify-start items-center gap-1 w-14 h-6 px-1" :class="effectColor">
     <Icon :name="effectIcon" class="size-3! shrink-0 opacity-50" />
 
-    <NumberFlow
+    <AnimatedNumber
       :value="remaining"
-      :format="{ style: 'decimal', maximumFractionDigits: 0 }"
-      locales="en-US"
       class="text-sm font-semibold"
     />
   </div>
@@ -13,7 +11,6 @@
 
 <script setup lang="ts">
 import type { WagonEffect } from '#shared/types/charge'
-import NumberFlow from '@number-flow/vue'
 
 const { effect } = defineProps<{
   effect: WagonEffect

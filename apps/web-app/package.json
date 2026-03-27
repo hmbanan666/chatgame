@@ -17,7 +17,6 @@
     "@chat-game/types": "workspace:*",
     "@chatgame/database": "workspace:*",
     "@chatgame/sprites": "workspace:*",
-    "@number-flow/vue": "catalog:integrations",
     "@nuxt/ui": "catalog:integrations",
     "@paralleldrive/cuid2": "catalog:integrations",
     "@vueuse/components": "catalog:integrations",
@@ -29,7 +28,6 @@
   "devDependencies": {
     "@iconify-json/lucide": "catalog:dev",
     "@iconify-json/simple-icons": "catalog:dev",
-    "@nuxt/devtools": "catalog:dev",
     "@nuxtjs/i18n": "catalog:dev",
     "@types/node": "catalog:types",
     "nuxt": "catalog:dev",
