@@ -54,6 +54,32 @@
       </div>
     </section>
 
+    <!-- Unit Variations -->
+    <section v-if="unitVariations" class="mb-12">
+      <h2 class="text-lg font-semibold text-neutral-300 mb-4">
+        {{ unitVariations.codename }} Variations ({{ unitVariations.count }})
+      </h2>
+
+      <div
+        v-for="variation in unitVariations.variations"
+        :key="variation.id"
+        class="mb-6"
+      >
+        <div class="flex items-center gap-3 mb-2">
+          <span class="text-sm font-mono text-neutral-400">{{ variation.id }}</span>
+          <span class="text-xs text-neutral-600">[{{ Object.entries(variation.slots).map(([k, v]) => `${k}=${v}`).join(', ') }}]</span>
+        </div>
+        <div class="bg-neutral-900 border border-neutral-800 rounded-lg p-2 inline-block">
+          <img
+            :src="`/static/units/variations/${variation.file}`"
+            :alt="variation.file"
+            class="image-rendering-pixelated"
+            style="width: 128px; height: 128px"
+          >
+        </div>
+      </div>
+    </section>
+
     <!-- Biome Trees -->
     <section v-if="manifest" class="mb-12">
       <h2 class="text-lg font-semibold text-neutral-300 mb-4">
@@ -142,6 +168,24 @@ interface Variation {
   files: string[]
 }
 
+interface UnitVariation {
+  id: string
+  slots: Record<string, string>
+  file: string
+}
+
+interface UnitVariationsManifest {
+  codename: string
+  count: number
+  scale: number
+  frameSize: number
+  slotRoles: string[]
+  defaultPalette: string[]
+  variableSlots: string[]
+  variations: UnitVariation[]
+  generated: string
+}
+
 interface VariationsManifest {
   biome: string
   count: number
@@ -153,6 +197,7 @@ interface VariationsManifest {
 
 const manifest = ref<TreeManifest | null>(null)
 const variations = ref<VariationsManifest | null>(null)
+const unitVariations = ref<UnitVariationsManifest | null>(null)
 const picked = reactive(new Set<string>())
 
 const unitCodenames = [
@@ -162,15 +207,19 @@ const unitCodenames = [
 ]
 
 onMounted(async () => {
-  const [treeData, varData] = await Promise.allSettled([
+  const [treeData, varData, unitVarData] = await Promise.allSettled([
     $fetch<TreeManifest>('/static/trees/manifest.json'),
     $fetch<VariationsManifest>('/static/trees/variations/manifest.json'),
+    $fetch<UnitVariationsManifest>('/static/units/variations/manifest.json'),
   ])
   if (treeData.status === 'fulfilled') {
     manifest.value = treeData.value
   }
   if (varData.status === 'fulfilled') {
     variations.value = varData.value
+  }
+  if (unitVarData.status === 'fulfilled') {
+    unitVariations.value = unitVarData.value
   }
 })
 

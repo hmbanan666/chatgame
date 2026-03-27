@@ -55,6 +55,34 @@ export const BIOME_LEAF_VARIANTS: Record<string, number[][]> = {
     [PALETTE.grayGreen1, PALETTE.green1, PALETTE.green2, PALETTE.paleGreen, PALETTE.paleGreen],
     [PALETTE.darkGreen, PALETTE.green1, PALETTE.lightGreen, PALETTE.paleGreen, PALETTE.lightGreen],
   ],
+  BLUE: [
+    [PALETTE.darkBlue, PALETTE.blue1, PALETTE.blue2, PALETTE.blue3, PALETTE.lightBlue],
+    [PALETTE.darkGray, PALETTE.grayGreen1, PALETTE.violet2, PALETTE.blue3, PALETTE.lightBlue],
+    [PALETTE.darkTeal, PALETTE.blue1, PALETTE.violet2, PALETTE.blue3, PALETTE.mint],
+  ],
+  TEAL: [
+    [PALETTE.darkTeal, PALETTE.teal1, PALETTE.teal2, PALETTE.teal3, PALETTE.paleTeal],
+    [PALETTE.darkTeal, PALETTE.grayGreen2, PALETTE.grayGreen3, PALETTE.teal3, PALETTE.paleGreen],
+    [PALETTE.darkGray, PALETTE.grayGreen2, PALETTE.teal2, PALETTE.teal3, PALETTE.paleTeal],
+  ],
+  TOXIC: [
+    [PALETTE.darkBrown, PALETTE.olive, PALETTE.yellowGreen, PALETTE.lime, PALETTE.paleYellow],
+    [PALETTE.darkBrown, PALETTE.olive, PALETTE.grayGreen2, PALETTE.gold, PALETTE.paleGreen],
+    [PALETTE.olive, PALETTE.grayGreen1, PALETTE.brown2, PALETTE.gold, PALETTE.paleGreen],
+    [PALETTE.olive, PALETTE.darkMagenta, PALETTE.yellowGreen, PALETTE.gold, PALETTE.mint],
+  ],
+  STONE: [
+    [PALETTE.darkGray, PALETTE.grayGreen1, PALETTE.grayGreen2, PALETTE.grayGreen3, PALETTE.grayGreen4],
+    [PALETTE.darkGreen, PALETTE.plum, PALETTE.teal1, PALETTE.grayGreen4, PALETTE.paleGreen],
+    [PALETTE.darkBrown, PALETTE.grayGreen1, PALETTE.grayGreen2, PALETTE.tan, PALETTE.paleGreen],
+    [PALETTE.darkBrown, PALETTE.grayGreen1, PALETTE.brown2, PALETTE.silver, PALETTE.grayGreen4],
+  ],
+  VIOLET: [
+    [PALETTE.darkViolet, PALETTE.violet1, PALETTE.violet2, PALETTE.violet3, PALETTE.paleViolet],
+    [PALETTE.darkPink, PALETTE.violet1, PALETTE.violet2, PALETTE.violet3, PALETTE.paleViolet],
+    [PALETTE.darkBlue, PALETTE.blue1, PALETTE.blue2, PALETTE.violet3, PALETTE.peach],
+    [PALETTE.darkViolet, PALETTE.violet1, PALETTE.pink2, PALETTE.pink3, PALETTE.peach],
+  ],
 }
 
 /** Build full palette for a biome (random variant if available) */

@@ -57,6 +57,7 @@ vite.config.*.timestamp-*
 
 ### Generated sprites ###
 apps/web-app/public/static/trees/
+apps/web-app/public/static/units/variations
 
 ### System ###
 .DS_Store
