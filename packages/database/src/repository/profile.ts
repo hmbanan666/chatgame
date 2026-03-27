@@ -145,6 +145,40 @@ export class ProfileRepository {
       .where(eq(tables.profiles.id, id))
   }
 
+  static async findTop(sortBy: 'level' | 'coins' | 'coupons' | 'watchTimeMin' = 'level', limit = 50) {
+    const db = useDatabase()
+    const column = tables.profiles[sortBy]
+    return db.query.profiles.findMany({
+      columns: {
+        id: true,
+        userName: true,
+        level: true,
+        xp: true,
+        coins: true,
+        coupons: true,
+        watchTimeMin: true,
+        activeEditionId: true,
+      },
+      with: {
+        characterEditions: {
+          with: {
+            character: {
+              columns: {
+                codename: true,
+              },
+            },
+          },
+          columns: {
+            id: true,
+            characterId: true,
+          },
+        },
+      },
+      orderBy: (_, { desc }) => desc(column),
+      limit,
+    })
+  }
+
   static async getPlaceInTopByCoupons(profileId: string) {
     const db = useDatabase()
     const topProfiles = await db.query.profiles.findMany({

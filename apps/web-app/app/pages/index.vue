@@ -38,9 +38,13 @@
       <p class="text-lg md:text-xl text-white/80">
         Пиши в чат — управляй персонажем. Руби деревья, зарабатывай монеты, собирай героев.
       </p>
-      <p v-if="profileCount?.count" class="text-sm text-white/50">
+      <NuxtLink
+        v-if="profileCount?.count"
+        to="/top"
+        class="text-sm text-white/50 hover:text-[#a78bfa] transition-colors duration-200"
+      >
         {{ profileCount.count }}+ игроков уже в игре
-      </p>
+      </NuxtLink>
     </div>
 
     <UButton
@@ -218,6 +222,54 @@
     </div>
   </div>
 
+  <!-- TOP VIEWERS -->
+  <div v-if="topViewers?.length" class="px-4 py-16 text-center space-y-6">
+    <h2 class="font-pixel text-2xl md:text-3xl font-bold text-amber-300">
+      Топ зрителей
+    </h2>
+    <p class="text-white/50">
+      Самые активные игроки сообщества
+    </p>
+    <div class="max-w-md mx-auto space-y-1">
+      <div
+        v-for="(viewer, index) in topViewers"
+        :key="viewer.id"
+        class="flex items-center gap-3 px-4 py-3 bg-[#1e1e24]/60"
+      >
+        <span
+          class="w-7 h-7 shrink-0 flex items-center justify-center text-xs font-bold"
+          :class="index === 0 ? 'bg-amber-400 text-black' : index === 1 ? 'bg-gray-300 text-black' : index === 2 ? 'bg-amber-700 text-white' : 'bg-transparent text-white/40'"
+        >
+          {{ index + 1 }}
+        </span>
+        <div class="size-9 shrink-0 bg-[#141418] flex items-center justify-center overflow-hidden">
+          <SpriteIdle
+            v-if="getTopViewerCodename(viewer)"
+            :codename="getTopViewerCodename(viewer)!"
+            class="size-7"
+          />
+          <Icon
+            v-else
+            name="lucide:user"
+            class="size-5 text-white/40"
+          />
+        </div>
+        <p class="flex-1 text-white font-semibold text-sm text-left truncate">
+          {{ viewer.userName }}
+        </p>
+        <span class="text-xs text-white/50 shrink-0">Ур. {{ viewer.level }}</span>
+      </div>
+    </div>
+    <NuxtLink
+      to="/top"
+      class="btn-pixel inline-block px-6 py-3 bg-[#1e1e24] text-white text-sm font-semibold hover:bg-[#2a2a30] transition-colors duration-200"
+    >
+      Весь топ
+    </NuxtLink>
+  </div>
+
+  <div class="pixel-divider" />
+
   <!-- THANKS / COMMUNITY -->
   <div class="px-4 py-16 mx-auto text-center space-y-6">
     <h2 class="font-pixel text-2xl md:text-3xl font-bold text-site-highlight">
@@ -317,4 +369,12 @@ const thanksNames = [
 
 const { data: profileCount } = await useFetch('/api/stats/count')
 const { data: characters } = await useFetch('/api/character')
+const { data: topViewers } = await useFetch('/api/top', { query: { sort: 'level', limit: 5 } })
+
+function getTopViewerCodename(viewer: NonNullable<typeof topViewers.value>[number]): string | null {
+  const edition = viewer.characterEditions?.find(
+    (e: { id: string }) => e.id === viewer.activeEditionId,
+  )
+  return (edition as { character?: { codename?: string } })?.character?.codename ?? null
+}
 </script>

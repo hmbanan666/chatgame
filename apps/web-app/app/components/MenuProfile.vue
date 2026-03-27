@@ -8,22 +8,40 @@
       <span class="text-[#30E1B9] text-lg font-semibold">{{ profile?.coins ?? 0 }}</span>
     </NuxtLink>
 
-    <NuxtLink
-      to="/profile"
-      class="size-11 overflow-hidden cursor-pointer duration-200 hover:opacity-85 hover:scale-105"
-    >
-      <img
-        :src="user?.imageUrl ?? '/icons/twitch/112.png'"
-        class="size-full object-cover"
-        alt=""
-      >
-    </NuxtLink>
+    <UPopover :ui="{ content: 'bg-[#18181b]! ring-white/10!' }">
+      <button class="size-11 overflow-hidden cursor-pointer duration-200 hover:opacity-85 hover:scale-105">
+        <img
+          :src="user?.imageUrl ?? '/icons/twitch/112.png'"
+          class="size-full object-cover"
+          alt=""
+        >
+      </button>
+
+      <template #content>
+        <div class="flex flex-col py-1 min-w-36">
+          <NuxtLink
+            to="/profile"
+            class="px-4 py-2 text-sm text-white hover:bg-[#1e1e24] transition-colors duration-150 flex items-center gap-2"
+          >
+            <Icon name="lucide:user" class="size-4" />
+            Мой профиль
+          </NuxtLink>
+          <button
+            class="px-4 py-2 text-sm text-red-400 hover:bg-[#1e1e24] transition-colors duration-150 flex items-center gap-2 cursor-pointer w-full text-left"
+            @click="logout"
+          >
+            <Icon name="lucide:log-out" class="size-4" />
+            Выйти
+          </button>
+        </div>
+      </template>
+    </UPopover>
   </div>
   <LoginButton v-else />
 </template>
 
 <script setup lang="ts">
-const { loggedIn, user } = useUserSession()
+const { loggedIn, user, clear } = useUserSession()
 
 const { data: profile } = useFetch(() => `/api/profile/${user.value?.id}`, {
   watch: false,
@@ -36,4 +54,9 @@ onMounted(() => {
     localStorage.setItem('redirectTo', redirectTo)
   }
 })
+
+async function logout() {
+  await clear()
+  await navigateTo('/')
+}
 </script>

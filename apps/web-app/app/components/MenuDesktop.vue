@@ -22,6 +22,7 @@ const guestLinks = [
   { name: 'Игра', path: '/' },
   { name: 'Персонажи', path: '/#characters' },
   { name: 'Монеты', path: '/#shop' },
+  { name: 'Топ', path: '/top' },
   { name: 'Донат', path: '/donate' },
 ]
 
@@ -29,6 +30,7 @@ const authLinks = [
   { name: 'Мой профиль', path: '/profile' },
   { name: 'Персонажи', path: '/profile#characters' },
   { name: 'Монеты', path: '/profile#shop' },
+  { name: 'Топ', path: '/top' },
   { name: 'Донат', path: '/donate' },
 ]
 
