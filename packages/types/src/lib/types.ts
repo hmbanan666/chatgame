@@ -218,7 +218,7 @@ export interface ProductItem {
   createdAt: Date
   updatedAt: Date
   productId: string
-  type: 'COIN' | 'TROPHY' | 'CHARACTER' | 'PATRON_POINT'
+  type: 'COIN' | 'CHARACTER'
   amount: number
   priority: number
   entityId: string | null

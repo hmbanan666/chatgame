@@ -21,6 +21,9 @@ export default defineTask({
       try {
         const status = await checkPayment(payment.externalId)
         if (status === 'PAID' && payment.status !== 'PAID') {
+          // Mark as PROCESSING first to prevent double activation on retry
+          await db.payment.updateStatus(payment.id, 'PROCESSING')
+
           await activateProduct({ productId: payment.productId, profileId: payment.profileId })
           await db.payment.updateStatus(payment.id, 'PAID')
 

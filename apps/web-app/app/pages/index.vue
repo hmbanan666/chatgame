@@ -431,7 +431,7 @@
 
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 items-end">
       <div
-        v-for="(product, index) in shopProducts"
+        v-for="(product, index) in (shopProducts ?? [])"
         :key="product.id"
         class="relative transition-all duration-200 hover:-translate-y-1"
         :class="[
@@ -447,13 +447,13 @@
         </div>
         <div
           v-else-if="index === 2"
-          class="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 bg-[#FBB954] text-[#2B2416] text-xs font-bold whitespace-nowrap"
+          class="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 bg-[#2a2a2e] text-white text-xs font-bold whitespace-nowrap"
         >
           Популярное
         </div>
         <div
           v-else-if="index >= 3"
-          class="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 bg-[#A884F3] text-white text-xs font-bold whitespace-nowrap"
+          class="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 bg-[#2a2a2e] text-white text-xs font-bold whitespace-nowrap"
         >
           Выгодно
         </div>
@@ -469,18 +469,29 @@
               :src="`/shop-assets/${product.id}/512.png`"
               class="w-36 h-auto relative z-10"
             />
+            <SpriteIdle
+              v-if="getProductCharacterCodename(product)"
+              :codename="getProductCharacterCodename(product)!"
+              class="absolute -bottom-2 -right-2 z-20 w-20 h-20"
+            />
           </div>
 
           <!-- Content -->
           <div class="p-4 text-center">
-            <div class="mb-3">
+            <div class="mb-1">
               <span class="font-pixel text-3xl font-bold" :style="{ color: shopTierColors[index] }">{{ product.coins }}</span>
               <p class="text-sm text-white/50 mt-0.5">
                 Монет
               </p>
             </div>
+            <p class="text-xs font-bold text-emerald-400 mb-1 h-4">
+              <span v-if="product.bonusCoins > 0">+ {{ product.bonusCoins }} бонусом</span>
+            </p>
+            <p class="text-xs font-bold text-emerald-400 mb-1 h-4">
+              <span v-if="getProductCharacterNickname(product)">+ {{ getProductCharacterNickname(product) }}</span>
+            </p>
             <p class="text-xs text-white/40 mb-3">
-              {{ (product.price / product.coins).toFixed(1) }} ₽/монета
+              {{ (product.price / (product.coins + product.bonusCoins)).toFixed(1) }} ₽/монета
             </p>
 
             <div>
@@ -763,7 +774,7 @@ const recommendedProduct = computed(() => {
     return null
   }
   const deficit = nextCharacterNudge.value.deficit
-  return shopProducts.find((p) => p.coins >= deficit) ?? shopProducts.at(-1)
+  return shopProducts.value?.find((p) => p.coins + p.bonusCoins >= deficit) ?? shopProducts.value?.at(-1) ?? null
 })
 
 function formatWatchTime(minutes: number): string {
@@ -781,33 +792,25 @@ function formatWatchTime(minutes: number): string {
 const shopTierColors = ['#1EBC73', '#4D9BE6', '#A884F3', '#FBB954', '#E6904E']
 const shopTierBg = ['#162B23', '#161E2B', '#1E162B', '#2B2416', '#2B1C16']
 
-const shopProducts = [
-  {
-    id: 'jehj4mxo0g6fp1eopf3jg641',
-    price: 110,
-    coins: 10,
-  },
-  {
-    id: 'w0895g3t9q75ys2maod0zd1a',
-    price: 450,
-    coins: 60,
-  },
-  {
-    id: 'nar1acws8c3s4w3cxs6i8qdn',
-    price: 1250,
-    coins: 180,
-  },
-  {
-    id: 'tp5w874gchf6hjfca9vory2r',
-    price: 2150,
-    coins: 330,
-  },
-  {
-    id: 'izh5v4vxztqi55gquts9ukn2',
-    price: 3900,
-    coins: 650,
-  },
-]
+const { data: shopProducts } = await useFetch('/api/shop')
+
+function getProductCharacterCodename(product: { items?: { type: string, entityId: string | null }[] }) {
+  const charItem = product.items?.find((i) => i.type === 'CHARACTER')
+  if (!charItem?.entityId) {
+    return null
+  }
+  const char = characters.value?.find((c: { id: string }) => c.id === charItem.entityId)
+  return (char as { codename?: string })?.codename ?? null
+}
+
+function getProductCharacterNickname(product: { items?: { type: string, entityId: string | null }[] }) {
+  const charItem = product.items?.find((i) => i.type === 'CHARACTER')
+  if (!charItem?.entityId) {
+    return null
+  }
+  const char = characters.value?.find((c: { id: string }) => c.id === charItem.entityId)
+  return (char as { nickname?: string })?.nickname ?? null
+}
 
 const isLoading = ref(false)
 const isExchanging = ref(false)

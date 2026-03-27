@@ -71,7 +71,7 @@ function writePng(filePath, width, height, pixels) {
 const DEFAULT_PALETTE_RE = /export const DEFAULT_PALETTE[^=]*=\s*\[([\s\S]*?)\]/
 const PALETTE_REF_RE = /PALETTE\.(\w+)/g
 const FRAME_ARRAY_RE = /export const (\w+):\s*\[number,\s*number,\s*number\]\[\]\s*=\s*\[/g
-const PIXEL_TUPLE_RE = /\[(\d+),(\d+),(\d+)\]/g
+const PIXEL_TUPLE_RE = /\[(\d+),\s*(\d+),\s*(\d+)\]/g
 const FRAME_SIZE_RE = /FRAME_SIZE\s*=\s*(\d+)/
 
 function parseDataFile(filePath) {
@@ -169,6 +169,17 @@ for (const file of files) {
     writePng(join(unitOutDir, 'moving.png'), w, h, buf)
   }
 
+  // Idle sprite sheet (used for CSS sprite animation on website)
+  if (idleFrames.length) {
+    const w = idleFrames.length * frameSize * scale
+    const h = frameSize * scale
+    const buf = Buffer.alloc(w * h * 4)
+    for (let i = 0; i < idleFrames.length; i++) {
+      renderFrame(buf, w, idleFrames[i][1], i * frameSize * scale, scale, palette)
+    }
+    writePng(join(unitOutDir, 'idle.png'), w, h, buf)
+  }
+
   // 128x128 static icon (first idle frame at 4x)
   if (idleFrames.length) {
     const w = frameSize * 4
@@ -178,7 +189,7 @@ for (const file of files) {
     writePng(join(unitOutDir, '128.png'), w, h, buf)
   }
 
-  console.log(`  ${codename}: moving(${movingFrames.length}f) + 128.png`)
+  console.log(`  ${codename}: idle(${idleFrames.length}f) + moving(${movingFrames.length}f) + 128.png`)
 }
 
 console.log('\nDone!')

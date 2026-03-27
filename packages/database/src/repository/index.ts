@@ -9,6 +9,7 @@ import { InventoryItemEditionRepository } from './inventoryItemEdition'
 import { PaymentRepository } from './payment'
 import { PlayerRepository } from './player'
 import { ProductRepository } from './product'
+import { ProductItemRepository } from './productItem'
 import { ProfileRepository } from './profile'
 import { StreamRepository } from './stream'
 import { StreamerRepository } from './streamer'
@@ -29,6 +30,7 @@ class Repository {
   readonly transaction = TransactionRepository
   readonly payment = PaymentRepository
   readonly product = ProductRepository
+  readonly productItem = ProductItemRepository
   readonly inventoryItem = InventoryItemRepository
   readonly inventoryItemEdition = InventoryItemEditionRepository
   readonly twitchToken = TwitchTokenRepository
