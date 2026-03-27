@@ -9,6 +9,9 @@ export type Events
     | EventCouponTaken
     | EventLevelUp
     | EventNewViewer
+    | EventNewFollower
+    | EventRaid
+    | EventPurchase
     | EventWagonAction
 
 type EventNewPlayerMessage = {
@@ -30,6 +33,7 @@ type EventQuestComplete = {
     codename: string
     questText: string
     reward: number
+    xpReward: number
     totalCoins: number
   }
 }
@@ -42,6 +46,7 @@ type EventDonation = {
     amount: number
     currency: string
     message: string
+    xpEarned: number
   }
 }
 
@@ -69,6 +74,32 @@ type EventNewViewer = {
   data: {
     userName: string
     codename: string
+  }
+}
+
+type EventNewFollower = {
+  type: 'NEW_FOLLOWER'
+  data: {
+    userName: string
+  }
+}
+
+type EventRaid = {
+  type: 'RAID'
+  data: {
+    userName: string
+    viewers: number
+    xpEarned: number
+  }
+}
+
+type EventPurchase = {
+  type: 'PURCHASE'
+  data: {
+    userName: string
+    coins: number
+    price: number
+    xpEarned: number
   }
 }
 

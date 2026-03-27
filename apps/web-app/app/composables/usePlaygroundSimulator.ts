@@ -5,7 +5,6 @@ import { QUEST_TEMPLATES } from '#shared/quest/templates'
 import { getRandInteger } from '#shared/utils/random'
 
 const FAKE_NAMES = ['kungfux010', 'sava5621', 'BezSovesty', 'mr_pickles', 'night_owl', 'pixel_ninja', 'stream_queen', 'code_wizard']
-const FAKE_CODENAMES = ['twitchy', 'banana', 'burger', 'catchy', 'claw', 'gentleman', 'marshmallow', 'pioneer', 'pup', 'santa', 'shape', 'sharky', 'woody', 'wooly']
 
 const FAKE_DONATIONS = [
   { text: 'Крутой стрим, продолжай!', amount: 100 },
@@ -88,73 +87,6 @@ export function usePlaygroundSimulator() {
     }
   }
 
-  function addFakeAction() {
-    const actions = ['REFUEL', 'STEAL_FUEL', 'SPEED_BOOST', 'SABOTAGE'] as const
-    const action = pick([...actions])
-    const userName = pick(FAKE_NAMES)
-
-    stats.value.totalRedemptions++
-
-    const ACTION_TITLES: Record<string, string> = {
-      REFUEL: 'Заправить вагон',
-      STEAL_FUEL: 'Украсть топливо',
-      SPEED_BOOST: 'Ускорение',
-      SABOTAGE: 'Саботаж',
-    }
-    const ACTION_DESCRIPTIONS: Record<string, string> = {
-      REFUEL: 'Заправил вагон!',
-      STEAL_FUEL: 'Украл топливо!',
-      SPEED_BOOST: 'Ускорил вагон!',
-      SABOTAGE: 'Саботировал вагон!',
-    }
-
-    alerts.value.push({
-      id: nextId(),
-      type: 'WAGON_ACTION',
-      data: {
-        userName,
-        codename: pick(FAKE_CODENAMES),
-        action,
-        actionTitle: ACTION_TITLES[action] ?? action,
-        actionDescription: ACTION_DESCRIPTIONS[action] ?? action,
-        xpEarned: randomInt(1, 20),
-      },
-    })
-
-    switch (action) {
-      case 'REFUEL':
-        fuel.value = Math.min(maxFuel.value, fuel.value + 15)
-        stats.value.fuelAdded += 15
-        break
-      case 'STEAL_FUEL':
-        fuel.value = Math.max(0, fuel.value - 10)
-        stats.value.fuelStolen += 10
-        break
-      case 'SPEED_BOOST':
-        effects.value.push({
-          id: nextId(),
-          createdAt: Date.now(),
-          expiredAt: Date.now() + 120_000,
-          action: 'SPEED_BOOST',
-          userName,
-          isExpired: false,
-        })
-        speed.value = 2
-        break
-      case 'SABOTAGE':
-        effects.value.push({
-          id: nextId(),
-          createdAt: Date.now(),
-          expiredAt: Date.now() + 30_000,
-          action: 'SABOTAGE',
-          userName,
-          isExpired: false,
-        })
-        isStopped.value = true
-        break
-    }
-  }
-
   function addFakeMessage() {
     stats.value.messagesCount++
   }
@@ -201,11 +133,6 @@ export function usePlaygroundSimulator() {
         }
         if (item.questProgress >= item.questGoal!) {
           item.status = 'done'
-          alerts.value.push({
-            id: nextId(),
-            type: 'QUEST_COMPLETE',
-            data: { userName: item.authorName, codename: pick(FAKE_CODENAMES), questText: item.text, reward: item.questReward ?? 1, totalCoins: randomInt(5, 120) },
-          })
           setTimeout(() => {
             backlogItems.value = backlogItems.value.filter((i) => i.id !== item.id)
             activeQuestViewers.delete(item.authorName)
@@ -225,11 +152,6 @@ export function usePlaygroundSimulator() {
       stats.value.donationsTotal += donation.amount
       stats.value.fuelAdded += fuelAmount
 
-      alerts.value.push({
-        id: nextId(),
-        type: 'DONATION',
-        data: { userName: donorName, codename: pick(FAKE_CODENAMES), amount: donation.amount, currency: 'RUB', message: donation.text },
-      })
       backlogItems.value.push({
         id: nextId(),
         text: donation.text,
@@ -260,58 +182,6 @@ export function usePlaygroundSimulator() {
       intervals.push(timeout as unknown as ReturnType<typeof setInterval>)
     }
     scheduleMessage()
-
-    function scheduleAction() {
-      const delay = randomInt(20_000, 45_000)
-      const timeout = setTimeout(() => {
-        addFakeAction()
-        scheduleAction()
-      }, delay)
-      intervals.push(timeout as unknown as ReturnType<typeof setInterval>)
-    }
-    scheduleAction()
-
-    function scheduleCoupon() {
-      const delay = randomInt(40_000, 80_000)
-      const timeout = setTimeout(() => {
-        alerts.value.push({
-          id: nextId(),
-          type: 'COUPON_TAKEN',
-          data: { userName: pick(FAKE_NAMES), codename: pick(FAKE_CODENAMES), totalCoupons: randomInt(1, 15) },
-        })
-        scheduleCoupon()
-      }, delay)
-      intervals.push(timeout as unknown as ReturnType<typeof setInterval>)
-    }
-    scheduleCoupon()
-
-    function scheduleLevelUp() {
-      const delay = randomInt(50_000, 100_000)
-      const timeout = setTimeout(() => {
-        alerts.value.push({
-          id: nextId(),
-          type: 'LEVEL_UP',
-          data: { userName: pick(FAKE_NAMES), codename: pick(FAKE_CODENAMES), level: randomInt(2, 15), reward: 1 },
-        })
-        scheduleLevelUp()
-      }, delay)
-      intervals.push(timeout as unknown as ReturnType<typeof setInterval>)
-    }
-    scheduleLevelUp()
-
-    function scheduleNewViewer() {
-      const delay = randomInt(30_000, 70_000)
-      const timeout = setTimeout(() => {
-        alerts.value.push({
-          id: nextId(),
-          type: 'NEW_VIEWER',
-          data: { userName: `viewer_${randomInt(100, 999)}`, codename: pick(FAKE_CODENAMES) },
-        })
-        scheduleNewViewer()
-      }, delay)
-      intervals.push(timeout as unknown as ReturnType<typeof setInterval>)
-    }
-    scheduleNewViewer()
 
     function scheduleBacklog() {
       const delay = randomInt(8000, 15_000)

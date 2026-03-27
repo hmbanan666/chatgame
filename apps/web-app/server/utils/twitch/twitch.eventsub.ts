@@ -8,6 +8,8 @@ import { twitchFetch } from './twitch.api'
 const logger = useLogger('twitch:eventsub')
 
 type RedemptionHandler = (userId: string, rewardId: string) => void
+type FollowHandler = (userName: string) => void
+type RaidHandler = (userName: string, viewers: number) => void
 
 export class TwitchEventSub {
   #ws: WebSocket | null = null
@@ -17,6 +19,8 @@ export class TwitchEventSub {
   #reconnectTimer: ReturnType<typeof setTimeout> | null = null
   #keepaliveTimeout: ReturnType<typeof setTimeout> | null = null
   #redemptionHandlers: RedemptionHandler[] = []
+  #followHandlers: FollowHandler[] = []
+  #raidHandlers: RaidHandler[] = []
 
   constructor(userId: string) {
     this.#userId = userId
@@ -24,6 +28,14 @@ export class TwitchEventSub {
 
   onRedemption(handler: RedemptionHandler) {
     this.#redemptionHandlers.push(handler)
+  }
+
+  onFollow(handler: FollowHandler) {
+    this.#followHandlers.push(handler)
+  }
+
+  onRaid(handler: RaidHandler) {
+    this.#raidHandlers.push(handler)
   }
 
   connect(url = 'wss://eventsub.wss.twitch.tv/ws') {
@@ -69,6 +81,8 @@ export class TwitchEventSub {
   destroy() {
     this.disconnect()
     this.#redemptionHandlers = []
+    this.#followHandlers = []
+    this.#raidHandlers = []
   }
 
   #cleanup() {
@@ -89,6 +103,13 @@ export class TwitchEventSub {
       this.#sessionId = msg.payload.session.id
       logger.info(`EventSub session: ${this.#sessionId}`)
       await this.#subscribe('channel.channel_points_custom_reward_redemption.add')
+      await this.#subscribe('channel.follow', '2', {
+        broadcaster_user_id: this.#userId,
+        moderator_user_id: this.#userId,
+      })
+      await this.#subscribe('channel.raid', '1', {
+        to_broadcaster_user_id: this.#userId,
+      })
       this.#resetKeepalive(msg.payload.session.keepalive_timeout_seconds)
     }
 
@@ -147,9 +168,23 @@ export class TwitchEventSub {
         handler(event.user_id, event.reward.id)
       }
     }
+
+    if (subType === 'channel.follow') {
+      const event = msg.payload.event
+      for (const handler of this.#followHandlers) {
+        handler(event.user_name)
+      }
+    }
+
+    if (subType === 'channel.raid') {
+      const event = msg.payload.event
+      for (const handler of this.#raidHandlers) {
+        handler(event.from_broadcaster_user_name, event.viewers)
+      }
+    }
   }
 
-  async #subscribe(type: string) {
+  async #subscribe(type: string, version = '1', condition?: Record<string, string>) {
     if (!this.#sessionId) {
       return
     }
@@ -159,8 +194,8 @@ export class TwitchEventSub {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         type,
-        version: '1',
-        condition: { broadcaster_user_id: this.#userId },
+        version,
+        condition: condition ?? { broadcaster_user_id: this.#userId },
         transport: { method: 'websocket', session_id: this.#sessionId },
       }),
     })

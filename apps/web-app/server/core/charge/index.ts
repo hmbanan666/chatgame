@@ -1,4 +1,6 @@
 import type { RewardMapping } from './stream'
+import { sendAlertMessage } from '~~/server/api/websocket'
+import { getLevelingService } from '~~/server/core/leveling/service'
 import { getViewerQuestService } from '~~/server/core/quest'
 import { createCustomReward, getCustomRewards } from '~~/server/utils/twitch/twitch.api'
 import { getTwitchController } from '../../utils/twitch/twitch.controller'
@@ -54,6 +56,22 @@ export async function initCharges() {
 
     controller.onRedemption((userId, rewardId) => {
       session.handleRedemption(userId, rewardId)
+    })
+
+    controller.onFollow((userName) => {
+      sendAlertMessage(session.id, {
+        type: 'NEW_FOLLOWER',
+        data: { userName },
+      })
+    })
+
+    controller.onRaid((userName, viewers) => {
+      const xpEarned = viewers * 2
+      sendAlertMessage(session.id, {
+        type: 'RAID',
+        data: { userName, viewers, xpEarned },
+      })
+      getLevelingService().addXpForAction(userName, xpEarned, session.id, true).catch(() => {})
     })
 
     // Stream lifecycle

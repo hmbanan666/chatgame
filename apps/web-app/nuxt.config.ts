@@ -49,12 +49,12 @@ export default defineNuxtConfig({
   },
   devtools: { enabled: true },
   devServer: {
-    port: 3000,
-    // host: 'app.local',
-    // https: {
-    //   key: '../../.cert/localhost-key.pem',
-    //   cert: '../../.cert/localhost.pem',
-    // },
+    port: 4300,
+    host: 'app.local',
+    https: {
+      key: '../../.cert/localhost-key.pem',
+      cert: '../../.cert/localhost.pem',
+    },
   },
   fonts: {
     provider: 'google',
@@ -112,6 +112,7 @@ export default defineNuxtConfig({
     },
     scheduledTasks: {
       '*/2 * * * *': ['payment:status'],
+      '0 * * * *': ['game:cleanup'],
     },
   },
   compatibilityDate: '2024-08-18',

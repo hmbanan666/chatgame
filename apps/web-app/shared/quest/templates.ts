@@ -5,6 +5,7 @@ export interface QuestTemplate {
   goalMax: number
   rewardMin: number
   rewardMax: number
+  xpReward: number
   textRu: (goal: number) => string
   textEn: (goal: number) => string
 }
@@ -28,6 +29,7 @@ export const QUEST_TEMPLATES: QuestTemplate[] = [
     goalMax: 10,
     rewardMin: 1,
     rewardMax: 1,
+    xpReward: 3,
     textRu: (g) => `Напиши ${g} ${pluralRu(g, 'сообщение', 'сообщения', 'сообщений')} в чат`,
     textEn: (g) => `Send ${g} ${g === 1 ? 'message' : 'messages'} in chat`,
   },
@@ -38,6 +40,7 @@ export const QUEST_TEMPLATES: QuestTemplate[] = [
     goalMax: 25,
     rewardMin: 1,
     rewardMax: 2,
+    xpReward: 5,
     textRu: (g) => `Напиши ${g} ${pluralRu(g, 'сообщение', 'сообщения', 'сообщений')} в чат`,
     textEn: (g) => `Send ${g} ${g === 1 ? 'message' : 'messages'} in chat`,
   },
@@ -48,6 +51,7 @@ export const QUEST_TEMPLATES: QuestTemplate[] = [
     goalMax: 50,
     rewardMin: 2,
     rewardMax: 3,
+    xpReward: 10,
     textRu: (g) => `Напиши ${g} ${pluralRu(g, 'сообщение', 'сообщения', 'сообщений')} в чат`,
     textEn: (g) => `Send ${g} ${g === 1 ? 'message' : 'messages'} in chat`,
   },

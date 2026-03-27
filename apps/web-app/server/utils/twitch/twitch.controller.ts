@@ -9,6 +9,8 @@ const logger = useLogger('twitch:controller')
 
 type MessageHandler = (channel: string, userName: string, text: string) => void
 type RedemptionHandler = (userId: string, rewardId: string) => void
+type FollowHandler = (userName: string) => void
+type RaidHandler = (userName: string, viewers: number) => void
 
 class TwitchController {
   #channel!: string
@@ -30,6 +32,8 @@ class TwitchController {
 
   #messageHandlers: MessageHandler[] = []
   #redemptionHandlers: RedemptionHandler[] = []
+  #followHandlers: FollowHandler[] = []
+  #raidHandlers: RaidHandler[] = []
   #onlineHandlers: (() => void)[] = []
   #offlineHandlers: (() => void)[] = []
 
@@ -73,6 +77,14 @@ class TwitchController {
     this.#redemptionHandlers.push(handler)
   }
 
+  onFollow(handler: FollowHandler) {
+    this.#followHandlers.push(handler)
+  }
+
+  onRaid(handler: RaidHandler) {
+    this.#raidHandlers.push(handler)
+  }
+
   onStreamOnline(handler: () => void) {
     this.#onlineHandlers.push(handler)
   }
@@ -114,6 +126,18 @@ class TwitchController {
     this.#eventSub.onRedemption((userId, rewardId) => {
       for (const handler of this.#redemptionHandlers) {
         handler(userId, rewardId)
+      }
+    })
+
+    this.#eventSub.onFollow((userName) => {
+      for (const handler of this.#followHandlers) {
+        handler(userName)
+      }
+    })
+
+    this.#eventSub.onRaid((userName, viewers) => {
+      for (const handler of this.#raidHandlers) {
+        handler(userName, viewers)
       }
     })
 
@@ -222,6 +246,8 @@ class TwitchController {
 
     this.#messageHandlers = []
     this.#redemptionHandlers = []
+    this.#followHandlers = []
+    this.#raidHandlers = []
     this.#onlineHandlers = []
     this.#offlineHandlers = []
 

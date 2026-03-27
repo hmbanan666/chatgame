@@ -16,15 +16,39 @@
         </div>
       </div>
 
-      <!-- Sound unlock -->
-      <div v-if="!soundUnlocked" class="absolute top-4 left-4 z-50">
+      <!-- Top-left controls -->
+      <div class="absolute top-4 left-4 z-50 flex flex-col gap-2">
+        <!-- Sound unlock -->
         <button
+          v-if="!soundUnlocked"
           class="flex items-center gap-2 px-4 py-2 bg-game-bg-alt text-game-text text-sm cursor-pointer hover:bg-game-muted transition-colors"
           @click="soundUnlocked = true"
         >
           <Icon name="lucide:volume-2" class="!size-4" />
           <span>Включить звук</span>
         </button>
+
+        <!-- Alert triggers -->
+        <div class="relative">
+          <button
+            class="flex items-center gap-2 px-4 py-2 bg-game-bg-alt text-game-text text-sm cursor-pointer hover:bg-game-muted transition-colors"
+            @click="alertMenuOpen = !alertMenuOpen"
+          >
+            <Icon name="lucide:zap" class="!size-4" />
+            <span>Вызвать Алерт</span>
+          </button>
+          <div v-if="alertMenuOpen" class="absolute top-full left-0 right-0 mt-1 flex flex-col gap-1">
+            <button
+              v-for="btn in alertButtons"
+              :key="btn.type"
+              class="px-3 py-1.5 text-xs font-semibold cursor-pointer transition-colors text-left"
+              :class="btn.class"
+              @click="triggerAlert(btn.type); alertMenuOpen = false"
+            >
+              {{ btn.label }}
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Alerts overlay -->
@@ -63,11 +87,36 @@
 </template>
 
 <script setup lang="ts">
+import type { EventMessage } from '@chatgame/types'
+import { getRandInteger } from '#shared/utils/random'
+
 definePageMeta({
   layout: 'game',
 })
 
+const NAMES = ['kungfux010', 'sava5621', 'BezSovesty', 'pixel_ninja', 'stream_queen']
+const CODENAMES = ['twitchy', 'banana', 'burger', 'gentleman', 'marshmallow', 'pup', 'shape']
+
+function pick<T>(arr: T[]): T {
+  return arr[getRandInteger(0, arr.length - 1)]!
+}
+
+let alertId = 0
+
+const alertButtons = [
+  { type: 'NEW_VIEWER', label: 'Новый зритель', class: 'bg-sky-600 hover:bg-sky-500 text-white' },
+  { type: 'NEW_FOLLOWER', label: 'Новый фолловер', class: 'bg-pink-600 hover:bg-pink-500 text-white' },
+  { type: 'QUEST_COMPLETE', label: 'Квест', class: 'bg-amber-600 hover:bg-amber-500 text-white' },
+  { type: 'LEVEL_UP', label: 'Уровень', class: 'bg-emerald-600 hover:bg-emerald-500 text-white' },
+  { type: 'COUPON_TAKEN', label: 'Купон', class: 'bg-violet-600 hover:bg-violet-500 text-white' },
+  { type: 'DONATION', label: 'Донат', class: 'bg-red-600 hover:bg-red-500 text-white' },
+  { type: 'RAID', label: 'Рейд', class: 'bg-indigo-600 hover:bg-indigo-500 text-white' },
+  { type: 'PURCHASE', label: 'Покупка', class: 'bg-teal-600 hover:bg-teal-500 text-white' },
+  { type: 'WAGON_ACTION', label: 'Вагон', class: 'bg-orange-600 hover:bg-orange-500 text-white' },
+]
+
 const soundUnlocked = ref(false)
+const alertMenuOpen = ref(false)
 const stage = ref<HTMLDivElement>()
 const {
   fuel,
@@ -82,6 +131,42 @@ const {
   start,
   stop,
 } = usePlaygroundSimulator()
+
+function triggerAlert(type: string) {
+  const id = `manual-${++alertId}`
+  const userName = pick(NAMES)
+  const codename = pick(CODENAMES)
+
+  const generators: Record<string, () => EventMessage> = {
+    NEW_VIEWER: () => ({ id, type: 'NEW_VIEWER', data: { userName, codename } }),
+    NEW_FOLLOWER: () => ({ id, type: 'NEW_FOLLOWER', data: { userName } }),
+    QUEST_COMPLETE: () => ({ id, type: 'QUEST_COMPLETE', data: { userName, codename, questText: 'Срубить 10 деревьев', reward: getRandInteger(1, 3), xpReward: pick([3, 5, 10]), totalCoins: getRandInteger(10, 200) } }),
+    LEVEL_UP: () => ({ id, type: 'LEVEL_UP', data: { userName, codename, level: getRandInteger(2, 20), reward: 1 } }),
+    COUPON_TAKEN: () => ({ id, type: 'COUPON_TAKEN', data: { userName, codename, totalCoupons: getRandInteger(1, 10) } }),
+    DONATION: () => {
+      const amount = getRandInteger(50, 500)
+      return { id, type: 'DONATION', data: { userName, codename, amount, currency: 'RUB', message: 'Крутой стрим!', xpEarned: Math.max(1, Math.floor(amount / 5)) } }
+    },
+    RAID: () => {
+      const v = getRandInteger(5, 300)
+      return { id, type: 'RAID', data: { userName: pick(NAMES), viewers: v, xpEarned: v * 2 } }
+    },
+    PURCHASE: () => {
+      const price = pick([100, 200, 500, 1000, 2000])
+      return { id, type: 'PURCHASE', data: { userName, coins: price, price, xpEarned: Math.max(1, Math.floor(price / 5)) } }
+    },
+    WAGON_ACTION: () => ({
+      id,
+      type: 'WAGON_ACTION',
+      data: { userName, codename, action: 'REFUEL', actionTitle: 'Заправить вагон', actionDescription: 'Заправил вагон!', xpEarned: getRandInteger(1, 20) },
+    }),
+  }
+
+  const generator = generators[type]
+  if (generator) {
+    alerts.value.push(generator())
+  }
+}
 
 const game = shallowRef<InstanceType<typeof import('~/utils/stream-journey/game').StreamJourneyGame>>()
 const currentBiome = ref('GREEN')

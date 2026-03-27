@@ -1,4 +1,5 @@
 import { sendAlertMessage } from '~~/server/api/websocket'
+import { getLevelingService } from '~~/server/core/leveling/service'
 import { QUEST_TEMPLATES } from './templates'
 
 const logger = useLogger('quest:service')
@@ -13,6 +14,7 @@ interface ActiveQuest {
   progress: number
   goal: number
   reward: number
+  xpReward: number
 }
 
 export class ViewerQuestService {
@@ -77,6 +79,7 @@ export class ViewerQuestService {
         progress: 0,
         goal,
         reward,
+        xpReward: template.xpReward,
       })
 
       logger.info(`Quest assigned: ${template.id} (goal=${goal}, reward=${reward}) to ${userName}`)
@@ -113,6 +116,10 @@ export class ViewerQuestService {
       await db.backlogItem.completeQuest(quest.backlogItemId, quest.goal)
       await db.profile.addCoins(quest.profileId, quest.reward)
 
+      if (quest.xpReward > 0) {
+        await getLevelingService().addXpForAction(quest.profileId, quest.xpReward, this.#channelId)
+      }
+
       const profile = await db.profile.find(quest.profileId)
 
       sendAlertMessage(this.#channelId, {
@@ -122,6 +129,7 @@ export class ViewerQuestService {
           codename: quest.codename,
           questText: quest.questText,
           reward: quest.reward,
+          xpReward: quest.xpReward,
           totalCoins: profile?.coins ?? 0,
         },
       })

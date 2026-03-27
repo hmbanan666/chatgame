@@ -416,6 +416,7 @@ export class WagonSession {
         amount: Math.round(event.amount),
         currency: event.currency,
         message: event.message ?? '',
+        xpEarned: xpAmount,
       },
     })
 

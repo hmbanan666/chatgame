@@ -42,7 +42,7 @@ export default defineEventHandler(async (event) => {
       },
       confirmation: {
         type: 'redirect',
-        return_url: 'https://chatgame.space/#shop',
+        return_url: 'https://chatgame.space/profile#shop',
       },
     }
 

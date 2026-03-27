@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { and, eq, lt } from 'drizzle-orm'
 import { useDatabase } from '../database'
 import * as tables from '../tables'
 
@@ -13,10 +13,12 @@ export class BacklogItemRepository {
 
   static findActiveByStreamerId(streamerId: string) {
     const db = useDatabase()
+    const cutoff = new Date(Date.now() - 60 * 60 * 1000)
     return db.query.backlogItems.findMany({
-      where: (t, { eq, and }) => and(
+      where: (t, { eq, and, gte }) => and(
         eq(t.streamerId, streamerId),
         eq(t.status, 'new'),
+        gte(t.updatedAt, cutoff),
       ),
       orderBy: (t, { asc }) => asc(t.updatedAt),
       limit: 20,
@@ -74,6 +76,20 @@ export class BacklogItemRepository {
         gte(t.createdAt, since),
       ),
     })
+  }
+
+  static expireStaleQuests(staleMinutes = 60) {
+    const db = useDatabase()
+    const cutoff = new Date(Date.now() - staleMinutes * 60 * 1000)
+    return db.update(tables.backlogItems)
+      .set({ status: 'expired' })
+      .where(
+        and(
+          eq(tables.backlogItems.source, 'quest'),
+          eq(tables.backlogItems.status, 'new'),
+          lt(tables.backlogItems.updatedAt, cutoff),
+        ),
+      )
   }
 
   static expireQuest(id: string, finalProgress: number) {

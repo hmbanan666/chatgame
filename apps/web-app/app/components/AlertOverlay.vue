@@ -49,6 +49,8 @@
             </AlertRewardBlock>
 
             <div class="flex items-center justify-center gap-3 mt-3">
+              <span v-if="currentAlert.data.xpReward" class="text-2xl font-black text-game-bright">+{{ currentAlert.data.xpReward }} XP</span>
+              <span v-if="currentAlert.data.xpReward" class="text-game-muted">·</span>
               <span class="text-base text-game-text">
                 У тебя <span class="font-black text-game-bright">{{ currentAlert.data.totalCoins }}</span> монет
               </span>
@@ -75,9 +77,11 @@
               {{ currentAlert.data.message }}
             </p>
 
-            <p class="text-base text-game-secondary-5 mt-2">
-              Спасибо за поддержку!
-            </p>
+            <div class="flex items-center justify-center gap-3 mt-2">
+              <span v-if="currentAlert.data.xpEarned" class="text-2xl font-black text-game-bright">+{{ currentAlert.data.xpEarned }} XP</span>
+              <span v-if="currentAlert.data.xpEarned" class="text-game-muted">·</span>
+              <span class="text-base text-game-secondary-5">Спасибо за поддержку!</span>
+            </div>
           </template>
 
           <template v-else-if="currentAlert.type === 'LEVEL_UP'">
@@ -131,6 +135,56 @@
             <p class="text-base text-game-text mt-2">
               Добро пожаловать в игру!
             </p>
+          </template>
+
+          <template v-else-if="currentAlert.type === 'NEW_FOLLOWER'">
+            <AlertHeader
+              icon="lucide:heart"
+              title="Новый фолловер"
+              :user-name="currentAlert.data.userName"
+            />
+
+            <p class="text-base text-game-text mt-2">
+              Спасибо за подписку на канал!
+            </p>
+          </template>
+
+          <template v-else-if="currentAlert.type === 'RAID'">
+            <AlertHeader
+              icon="lucide:swords"
+              title="Рейд!"
+              :user-name="currentAlert.data.userName"
+            />
+
+            <AlertRewardBlock>
+              <span class="text-5xl font-black text-game-bright">{{ currentAlert.data.viewers }}</span>
+              <span class="text-xl text-game-text ml-2">{{ pluralizationRu(currentAlert.data.viewers, ['зритель', 'зрителя', 'зрителей']) }}</span>
+            </AlertRewardBlock>
+
+            <div class="flex items-center justify-center gap-3 mt-2">
+              <span v-if="currentAlert.data.xpEarned" class="text-2xl font-black text-game-bright">+{{ currentAlert.data.xpEarned }} XP</span>
+              <span v-if="currentAlert.data.xpEarned" class="text-game-muted">·</span>
+              <span class="text-base text-game-secondary-5">Спасибо за рейд!</span>
+            </div>
+          </template>
+
+          <template v-else-if="currentAlert.type === 'PURCHASE'">
+            <AlertHeader
+              icon="lucide:shopping-bag"
+              title="Покупка"
+              :user-name="currentAlert.data.userName"
+            />
+
+            <AlertRewardBlock>
+              <span class="text-5xl font-black text-game-bright">+{{ currentAlert.data.coins }}</span>
+              <Image src="/coin.png" class="h-12 w-12 image-rendering-pixelated" />
+            </AlertRewardBlock>
+
+            <div class="flex items-center justify-center gap-3 mt-2">
+              <span v-if="currentAlert.data.xpEarned" class="text-2xl font-black text-game-bright">+{{ currentAlert.data.xpEarned }} XP</span>
+              <span v-if="currentAlert.data.xpEarned" class="text-game-muted">·</span>
+              <span class="text-base text-game-secondary-5">Спасибо за поддержку!</span>
+            </div>
           </template>
 
           <template v-else-if="currentAlert.type === 'WAGON_ACTION'">
@@ -250,6 +304,9 @@ const ALERT_CONFIG = {
   LEVEL_UP: { bursts: 8, burstDelay: 180, duration: 12000 },
   COUPON_TAKEN: { bursts: 3, burstDelay: 250, duration: 10000 },
   NEW_VIEWER: { bursts: 4, burstDelay: 200, duration: 8000 },
+  NEW_FOLLOWER: { bursts: 5, burstDelay: 180, duration: 8000 },
+  RAID: { bursts: 12, burstDelay: 150, duration: 15000 },
+  PURCHASE: { bursts: 16, burstDelay: 120, duration: 20000 },
   WAGON_ACTION: { bursts: 5, burstDelay: 180, duration: 8000 },
 } as const
 

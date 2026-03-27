@@ -2,18 +2,12 @@
   <nav class="hidden md:flex">
     <ul class="text-lg">
       <li
-        v-for="link in links"
+        v-for="link in currentLinks"
         :key="link.path"
-        :class="{ active: visibleBlock === link.block }"
+        :class="{ active: route.path === link.path }"
       >
         <NuxtLink :to="link.path">
           {{ link.name }}
-        </NuxtLink>
-      </li>
-
-      <li v-if="loggedIn" :class="{ active: visibleBlock === 'profile' }">
-        <NuxtLink to="/#profile">
-          Мой профиль
         </NuxtLink>
       </li>
     </ul>
@@ -21,26 +15,24 @@
 </template>
 
 <script setup lang="ts">
-const { visibleBlock } = useNavigation()
 const { loggedIn } = useUserSession()
+const route = useRoute()
 
-const links = [
-  {
-    name: 'Игра',
-    path: '/',
-    block: 'game',
-  },
-  {
-    name: 'Персонажи',
-    path: '/#characters',
-    block: 'characters',
-  },
-  {
-    name: 'Монеты',
-    path: '/#shop',
-    block: 'shop',
-  },
+const guestLinks = [
+  { name: 'Игра', path: '/' },
+  { name: 'Персонажи', path: '/#characters' },
+  { name: 'Монеты', path: '/#shop' },
+  { name: 'Донат', path: '/donate' },
 ]
+
+const authLinks = [
+  { name: 'Мой профиль', path: '/profile' },
+  { name: 'Персонажи', path: '/profile#characters' },
+  { name: 'Монеты', path: '/profile#shop' },
+  { name: 'Донат', path: '/donate' },
+]
+
+const currentLinks = computed(() => loggedIn.value ? authLinks : guestLinks)
 </script>
 
 <style scoped>

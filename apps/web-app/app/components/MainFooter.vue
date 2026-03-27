@@ -29,13 +29,12 @@ const links = [
     isOnNewTab: true,
   },
   {
-    title: 'Twitch',
-    url: 'https://twitch.tv/hmbanan666',
-    isOnNewTab: true,
+    title: 'Донат',
+    url: '/donate',
   },
   {
-    title: 'Bluesky',
-    url: 'https://bsky.app/profile/kosarev.space',
+    title: 'Twitch',
+    url: 'https://twitch.tv/hmbanan666',
     isOnNewTab: true,
   },
   {

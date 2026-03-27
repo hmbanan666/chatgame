@@ -4,6 +4,8 @@
 
 <script setup lang="ts">
 onMounted(() => {
-  location.href = localStorage.getItem('redirectTo') ? decodeURIComponent(localStorage.getItem('redirectTo') ?? '/') : '/'
+  const stored = localStorage.getItem('redirectTo')
+  const target = stored ? decodeURIComponent(stored) : '/profile'
+  location.href = target === '/' ? '/profile' : target
 })
 </script>
