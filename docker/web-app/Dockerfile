@@ -1,4 +1,4 @@
-FROM node:24-slim AS build
+FROM node:24.14.1-slim AS build
 
 LABEL org.opencontainers.image.source=https://github.com/hmbanan666/chatgame
 LABEL org.opencontainers.image.description="Chat Game for Twitch"
@@ -13,7 +13,7 @@ COPY apps/web-app ./apps/web-app
 RUN corepack enable pnpm && pnpm install --frozen-lockfile
 RUN pnpm --filter @chatgame/web-app build
 
-FROM node:24-slim
+FROM node:24.14.1-slim
 WORKDIR /app
 
 RUN chown node:node /app

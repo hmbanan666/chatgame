@@ -14,14 +14,14 @@ packages:
 
 catalogs:
   dev:
-    '@antfu/eslint-config': ^7.0.0
-    '@iconify-json/lucide': ^1.2.99
-    '@iconify-json/simple-icons': ^1.2.75
+    '@antfu/eslint-config': ^7.7.3
+    '@iconify-json/lucide': ^1.2.101
+    '@iconify-json/simple-icons': ^1.2.76
     '@nuxtjs/i18n': ^10.2.4
     bumpp: ^11.0.1
-    dotenv: ^17.3.1
+    dotenv: ^17.4.1
     drizzle-kit: ^0.31.10
-    eslint: ^10.1.0
+    eslint: ^10.2.0
     husky: ^9.1.7
     nano-staged: ^0.9.0
     nuxt: ^4.4.2
@@ -31,22 +31,22 @@ catalogs:
     typescript: ^5.9.3
     vue-tsc: ^3.2.6
   integrations:
-    '@nuxt/ui': ^4.6.0
+    '@nuxt/ui': ^4.6.1
     '@paralleldrive/cuid2': 3.3.0
     '@vueuse/components': ^14.2.1
     '@vueuse/core': ^14.2.1
     '@vueuse/nuxt': ^14.2.1
     drizzle-cuid2: ^2.2.0
-    drizzle-orm: ^0.45.1
+    drizzle-orm: ^0.45.2
     pg: ^8.20.0
     pixi.js: ^8.17.1
     zod: ^4.3.6
   test:
     '@vitest/browser': ^4.1.2
     '@vitest/coverage-v8': ^4.1.2
-    playwright: ^1.58.2
+    playwright: ^1.59.1
     vitest: ^4.1.2
     vitest-browser-vue: ^2.1.0
   types:
-    '@types/node': ^25.5.0
+    '@types/node': ^25.5.2
     '@types/pg': ^8.20.0
