@@ -11,6 +11,7 @@ import { PlayerRepository } from './player'
 import { ProductRepository } from './product'
 import { ProductItemRepository } from './productItem'
 import { ProfileRepository } from './profile'
+import { SpriteRepository } from './sprite'
 import { StreamRepository } from './stream'
 import { StreamerRepository } from './streamer'
 import { TransactionRepository } from './transaction'
@@ -20,6 +21,7 @@ import { TwitchTokenRepository } from './twitchToken'
 class Repository {
   readonly backlogItem = BacklogItemRepository
   readonly profile = ProfileRepository
+  readonly sprite = SpriteRepository
   readonly character = CharacterRepository
   readonly characterEdition = CharacterEditionRepository
   readonly characterLevel = CharacterLevelRepository

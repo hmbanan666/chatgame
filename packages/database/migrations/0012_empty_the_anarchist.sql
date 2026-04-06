@@ -1,0 +1,1 @@
+ALTER TABLE "sprite" DROP COLUMN "head_size";

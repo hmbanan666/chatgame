@@ -106,10 +106,10 @@ export const ru: Dictionary = {
     github: '👨‍💻 https://chatgame.space | ⭐ https://github.com/hmbanan666/chatgame',
     info: {
       supportStreamer: 'Поддержи стримера: https://chatgame.space/donate',
-      buyCoins: 'Приобретай Монеты в ChatGame: https://chatgame.space/#shop. Разблокируй вручную созданных персонажей. Спасибо за поддержку!',
+      buyCoins: 'Приобретай Монеты в ChatGame: https://chatgame.space/profile#shop. Разблокируй уникальных персонажей. Спасибо за поддержку!',
       followChannel: 'Еще не подписан? Стань фолловером, подпишись на канал!',
-      channelPoints: 'Активируй разные модификаторы за Баллы Канала! Влияй на изменение Заряженности.',
-      donateEffect: 'Донаты имеют сильное влияние на Заряженность: разовый буст и рандомные эффекты.',
+      channelPoints: 'Используй Баллы Канала чтобы заправить вагон и получить XP!',
+      donateEffect: 'Донаты заправляют вагон и дают XP. Сообщение появится на стриме!',
     },
   },
   availableUntil: 'Доступен до',

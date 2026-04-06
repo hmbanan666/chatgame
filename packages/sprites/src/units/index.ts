@@ -11,13 +11,14 @@ export * as shape from './data/shape'
 export * as sharky from './data/sharky'
 export * as telegramo from './data/telegramo'
 export * as twitchy from './data/twitchy'
+export * as villager from './data/villager'
 export * as woody from './data/woody'
 export * as wooly from './data/wooly'
 
 export const UNIT_CODENAMES = [
   'banana', 'burger', 'catchy', 'claw', 'gentleman',
   'marshmallow', 'pioneer', 'pup', 'santa', 'shape',
-  'sharky', 'telegramo', 'twitchy', 'woody', 'wooly',
+  'sharky', 'telegramo', 'twitchy', 'villager', 'woody', 'wooly',
 ] as const
 
 export type UnitCodename = typeof UNIT_CODENAMES[number]

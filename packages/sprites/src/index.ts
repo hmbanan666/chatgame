@@ -32,7 +32,7 @@ export {
   claw,
   createUnitFrames, gentleman, getUnitData, marshmallow, pioneer,
   pup, renderFrame, santa, shape, sharky,
-  telegramo, twitchy, UNIT_CODENAMES, woody, wooly,
+  telegramo, twitchy, UNIT_CODENAMES, villager, woody, wooly,
 } from './units'
 
 export type { UnitCodename } from './units'

@@ -16,7 +16,7 @@ export interface Game extends Container {
   removeObject: (id: string) => void
 }
 
-export type GameObjectType = 'PLAYER' | 'TREE' | 'WAGON'
+export type GameObjectType = 'PLAYER' | 'NPC' | 'TREE' | 'WAGON'
 
 export type GameObjectState
   = | 'MOVING'

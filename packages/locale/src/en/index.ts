@@ -107,10 +107,10 @@ export const en = {
     github: '👨‍💻 https://chatgame.space | ⭐ https://github.com/hmbanan666/chatgame',
     info: {
       supportStreamer: 'Support the streamer: https://chatgame.space/donate',
-      buyCoins: 'Buy Coins in ChatGame: https://chatgame.space/#shop. Unlock hand-crafted characters. Thanks for the support!',
+      buyCoins: 'Buy Coins in ChatGame: https://chatgame.space/profile#shop. Unlock unique characters. Thanks for the support!',
       followChannel: 'Not subscribed yet? Become a follower, subscribe to the channel!',
-      channelPoints: 'Activate different modifiers with Channel Points! Influence the Charge level.',
-      donateEffect: 'Donations have a strong influence on Charge: instant boost and random effects.',
+      channelPoints: 'Use Channel Points to refuel the wagon and earn XP!',
+      donateEffect: 'Donations refuel the wagon and give XP. Your message will appear on stream!',
     },
   },
   availableUntil: 'Available until',

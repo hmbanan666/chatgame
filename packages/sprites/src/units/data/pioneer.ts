@@ -5,7 +5,6 @@
 import { PALETTE } from '../../palette'
 
 export const FRAME_SIZE = 32
-export const HEAD_SIZE = 80
 
 /** Semantic role for each color slot */
 export const SLOT_ROLES = [

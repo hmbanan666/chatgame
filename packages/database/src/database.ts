@@ -10,7 +10,21 @@ let _db: ReturnType<typeof drizzle<typeof tables>> | null = null
 let _migrationPromise: Promise<void> | null = null
 
 export function useCreateDatabase(url: string) {
-  const pool = new pg.Pool({ connectionString: url })
+  const pool = new pg.Pool({
+    connectionString: url,
+    max: 10,
+    min: 2,
+    idleTimeoutMillis: 30_000,
+    connectionTimeoutMillis: 10_000,
+    allowExitOnIdle: false,
+    keepAlive: true,
+    keepAliveInitialDelayMillis: 10_000,
+  })
+
+  pool.on('error', (err) => {
+    console.error('[database] Pool connection error:', err.message)
+  })
+
   _db = drizzle({ client: pool, schema: tables })
 }
 

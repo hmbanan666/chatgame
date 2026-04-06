@@ -1,6 +1,6 @@
 import { cuid2 } from 'drizzle-cuid2/postgres'
 import { relations } from 'drizzle-orm'
-import { boolean, integer, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import { boolean, integer, jsonb, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
 
 // ── Profile ──────────────────────────────────────────────
 
@@ -308,4 +308,34 @@ export const transactions = pgTable('transaction', {
 
 export const transactionsRelations = relations(transactions, ({ one }) => ({
   profile: one(profiles, { fields: [transactions.profileId], references: [profiles.id] }),
+}))
+
+// ── Sprite ──────────────────────────────────────────────
+
+export const sprites = pgTable('sprite', {
+  id: cuid2('id').defaultRandom().primaryKey(),
+  createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+  codename: text('codename').notNull().unique(),
+  type: text('type').notNull().default('character'),
+  frameSize: integer('frame_size').notNull().default(32),
+  slotRoles: jsonb('slot_roles').$type<string[]>().notNull(),
+  defaultPalette: jsonb('default_palette').$type<number[]>().notNull(),
+})
+
+export const spritesRelations = relations(sprites, ({ many }) => ({
+  frames: many(spriteFrames),
+}))
+
+export const spriteFrames = pgTable('sprite_frame', {
+  id: cuid2('id').defaultRandom().primaryKey(),
+  createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+  name: text('name').notNull(),
+  pixels: jsonb('pixels').$type<[number, number, number][]>().notNull(),
+  spriteId: text('sprite_id').notNull(),
+})
+
+export const spriteFramesRelations = relations(spriteFrames, ({ one }) => ({
+  sprite: one(sprites, { fields: [spriteFrames.spriteId], references: [sprites.id] }),
 }))

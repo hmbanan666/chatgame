@@ -1,0 +1,1 @@
+ALTER TABLE "sprite" ADD COLUMN "type" text DEFAULT 'character' NOT NULL;

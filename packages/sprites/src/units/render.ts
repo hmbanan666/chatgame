@@ -13,6 +13,7 @@ import * as shape from './data/shape'
 import * as sharky from './data/sharky'
 import * as telegramo from './data/telegramo'
 import * as twitchy from './data/twitchy'
+import * as villager from './data/villager'
 import * as woody from './data/woody'
 import * as wooly from './data/wooly'
 
@@ -26,7 +27,7 @@ interface UnitSpriteData {
 const UNITS: Record<string, UnitSpriteData> = {
   banana, burger, catchy, claw, gentleman,
   marshmallow, pioneer, pup, santa, shape,
-  sharky, telegramo, twitchy, woody, wooly,
+  sharky, telegramo, twitchy, villager, woody, wooly,
 }
 
 /** Render a single frame of indexed pixel data onto a Graphics object */

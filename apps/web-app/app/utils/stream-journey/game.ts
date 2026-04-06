@@ -2,6 +2,7 @@ import type { Game, GameObject, GameUnitCodename } from './types'
 import { PALETTE } from '@chatgame/sprites'
 import { createId } from '@paralleldrive/cuid2'
 import { Application, Container, Graphics, Sprite } from 'pixi.js'
+import { NpcObject } from './objects/unit/npcObject'
 import { GameEventService, GamePlayerService, GameTreeService, GameWagonService } from './services'
 
 interface StreamJourneyGameOptions {
@@ -92,6 +93,8 @@ export class StreamJourneyGame extends Container implements Game {
     this.worldContainer.addChild(this)
     this.app.stage.addChild(this.worldContainer)
     this.app.ticker.add(this.baseTicker, 'baseTicker')
+
+    this.spawnNpc()
 
     if (this.demoMode) {
       this.startDemo()
@@ -203,6 +206,16 @@ export class StreamJourneyGame extends Container implements Game {
     const player = players[Math.floor(Math.random() * players.length)]!
     const message = DEMO_MESSAGES[Math.floor(Math.random() * DEMO_MESSAGES.length)]!
     player.addMessage(message)
+  }
+
+  private async spawnNpc() {
+    const spawnPoint = this.wagonService.getRandomNearPoint()
+    const npc = new NpcObject({
+      game: this,
+      x: spawnPoint.x,
+      y: spawnPoint.y,
+    })
+    await npc.initNpc()
   }
 
   private drawGround() {

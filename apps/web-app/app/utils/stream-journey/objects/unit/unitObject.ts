@@ -25,8 +25,8 @@ export class UnitObject extends BaseObject implements GameObjectUnit {
   dialogue: GameObjectUnit['dialogue']
 
   private dialogueInterface!: DialogueInterface
-  private _idleFrames: Sprite[] = []
-  private _movingFrames: Sprite[] = []
+  protected _idleFrames: Sprite[] = []
+  protected _movingFrames: Sprite[] = []
   private _currentFrameIndex = 0
   private _animationTick = 0
   private _lastState: string = ''
@@ -62,7 +62,7 @@ export class UnitObject extends BaseObject implements GameObjectUnit {
     }
   }
 
-  async initVisual(codename: string | undefined | null): Promise<void> {
+  async initVisual(codename: string | undefined | null, palette?: number[]): Promise<void> {
     // Clean up old frames
     if (this._idleFrames?.length) {
       for (const f of this._idleFrames) {
@@ -81,8 +81,8 @@ export class UnitObject extends BaseObject implements GameObjectUnit {
 
     const name = codename || 'twitchy'
 
-    const idleGraphics = createUnitFrames(name, 'idle')
-    const movingGraphics = createUnitFrames(name, 'moving')
+    const idleGraphics = createUnitFrames(name, 'idle', palette)
+    const movingGraphics = createUnitFrames(name, 'moving', palette)
 
     // Bake Graphics into textures, then use Sprites (no per-frame redraw)
     const bakeFrames = (graphics: Graphics[]) => graphics.map((g) => {
