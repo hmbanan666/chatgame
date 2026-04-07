@@ -50,8 +50,8 @@ export async function initCharges() {
     }
 
     // Subscribe to shared Twitch events
-    controller.onMessage(() => {
-      session.handleMessage()
+    controller.onMessage((_channel, _userName, userId) => {
+      session.handleMessage(userId)
     })
 
     controller.onRedemption((userId, rewardId) => {

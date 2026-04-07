@@ -211,6 +211,45 @@
             </div>
           </template>
 
+          <template v-else-if="currentAlert.type === 'CARAVAN_ARRIVED'">
+            <AlertHeader
+              icon="lucide:map-pin"
+              title="Караван прибыл!"
+              :user-name="currentAlert.data.toVillage"
+            />
+
+            <p class="text-lg text-game-text mt-2">
+              Доставлено: {{ currentAlert.data.cargo }}
+            </p>
+
+            <AlertRewardBlock label="Награда участникам">
+              <span class="text-5xl font-black text-game-bright">+{{ currentAlert.data.xpReward }} XP</span>
+            </AlertRewardBlock>
+
+            <!-- Viewer sprites -->
+            <div
+              v-if="currentAlert.data.viewers?.length"
+              class="mt-3 flex flex-wrap items-center justify-center gap-5"
+            >
+              <div
+                v-for="v in currentAlert.data.viewers.slice(0, 8)"
+                :key="v.name"
+                class="flex flex-col items-center gap-1"
+              >
+                <SpriteAnimation
+                  :codename="v.codename"
+                  animation="idle"
+                  class="h-16 w-16"
+                />
+                <span class="text-sm font-bold text-game-bright">{{ v.name }}</span>
+              </div>
+              <span
+                v-if="currentAlert.data.viewers.length > 8"
+                class="text-lg font-bold text-game-text"
+              >+{{ currentAlert.data.viewers.length - 8 }}</span>
+            </div>
+          </template>
+
           <template v-else-if="currentAlert.type === 'STREAMER_REWARD'">
             <AlertHeader
               icon="lucide:gift"
@@ -353,6 +392,7 @@ const ALERT_CONFIG = {
   RAID: { bursts: 12, burstDelay: 150, duration: 15000 },
   PURCHASE: { bursts: 16, burstDelay: 120, duration: 20000 },
   WAGON_ACTION: { bursts: 5, burstDelay: 180, duration: 8000 },
+  CARAVAN_ARRIVED: { bursts: 10, burstDelay: 150, duration: 25000 },
   STREAMER_REWARD: { bursts: 4, burstDelay: 200, duration: 6000 },
 } as const
 
@@ -450,7 +490,6 @@ watch(() => props.alerts.length, () => {
 
 /* 8 frames, 192px per frame */
 .sprite-frames-8 { animation: sprite-8 1.2s steps(8) infinite, char-bounce 1s ease-out; }
-
 @keyframes sprite-8 { from { background-position: 0 0; } to { background-position: -1536px 0; } }
 
 @keyframes char-bounce {
@@ -494,6 +533,17 @@ watch(() => props.alerts.length, () => {
 @keyframes reward-pop {
   0% { transform: scale(0.5); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
+}
+
+/* ── Caravan names marquee ── */
+
+.caravan-marquee {
+  animation: caravan-marquee 10s linear infinite;
+}
+
+@keyframes caravan-marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
 /* ── Wagon action full-screen effects ── */

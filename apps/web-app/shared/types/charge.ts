@@ -40,6 +40,22 @@ export interface WagonState {
   stats: WagonSessionStats
   viewerCount: number
   biome: string
+  caravan: CaravanState
+}
+
+// ── Caravan State ───────────────────────────────────────
+
+export interface CaravanState {
+  fromVillage: string
+  toVillage: string
+  cargo: string
+  cargoIcon: string
+  xpReward: number
+  distanceTraveled: number
+  distanceTotal: number
+  isPaused: boolean
+  pauseEndsAt: number | null
+  departedAt: number
 }
 
 // ── Wagon Action Config ─────────────────────────────────

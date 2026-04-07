@@ -23,6 +23,7 @@ export default defineEventHandler(async (event) => {
     stats: session.stats,
     viewerCount: session.viewerCount,
     biome: session.biome,
+    caravan: session.caravan,
     nextCouponAt: twitch.nextCouponAt?.toISOString() ?? null,
   }
 })

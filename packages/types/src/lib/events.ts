@@ -14,6 +14,7 @@ export type Events
     | EventPurchase
     | EventWagonAction
     | EventStreamerReward
+    | EventCaravanArrived
 
 type EventNewPlayerMessage = {
   type: 'NEW_PLAYER_MESSAGE'
@@ -123,5 +124,18 @@ type EventStreamerReward = {
     codename: string
     amount: number
     rewardType: 'coins'
+  }
+}
+
+type EventCaravanArrived = {
+  type: 'CARAVAN_ARRIVED'
+  data: {
+    fromVillage: string
+    toVillage: string
+    cargo: string
+    xpReward: number
+    activeViewers: number
+    viewers: { name: string, codename: string }[]
+    travelTimeSec: number
   }
 }

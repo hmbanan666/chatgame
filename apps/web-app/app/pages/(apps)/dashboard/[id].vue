@@ -754,6 +754,7 @@ function formatEventText(ev: DashboardEvent): string {
     case 'RAID': return `рейд (${d.viewers} зрителей)`
     case 'WAGON_ACTION': return `${d.actionTitle}`
     case 'STREAMER_REWARD': return `награда +${d.amount} coins`
+    case 'CARAVAN_ARRIVED': return `Караван прибыл в ${d.toVillage}! ${d.activeViewers} чел. +${d.xpReward} XP`
     case 'PURCHASE': return `покупка (${d.coins} coins)`
     default: return `${ev.type}`
   }
@@ -768,6 +769,7 @@ function eventColor(type: string): string {
     case 'STREAMER_REWARD': return 'border-amber-500 bg-amber-500/5'
     case 'NEW_FOLLOWER': return 'border-pink-500 bg-pink-500/5'
     case 'RAID': return 'border-blue-500 bg-blue-500/5'
+    case 'CARAVAN_ARRIVED': return 'border-emerald-500 bg-emerald-500/5'
     default: return 'border-white/20 bg-white/5'
   }
 }

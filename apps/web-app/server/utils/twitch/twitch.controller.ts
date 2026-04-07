@@ -11,7 +11,7 @@ import { TwitchService } from './twitch.service'
 
 const logger = useLogger('twitch:controller')
 
-type MessageHandler = (channel: string, userName: string, text: string) => void
+type MessageHandler = (channel: string, userName: string, userId: string, text: string) => void
 type RedemptionHandler = (userId: string, rewardId: string) => void
 type FollowHandler = (userName: string) => void
 type RaidHandler = (userName: string, viewers: number) => void
@@ -123,7 +123,7 @@ class TwitchController {
         }
 
         for (const handler of this.#messageHandlers) {
-          handler(this.#channel, userName, text)
+          handler(this.#channel, userName, userId, text)
         }
       } catch (err) {
         logger.error('Failed to handle chat message', err)

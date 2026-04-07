@@ -69,6 +69,7 @@
           :effects="effects"
           :stats="stats"
           :viewer-count="viewerCount"
+          :caravan="caravan"
         />
 
         <!-- Webcam -->
@@ -112,6 +113,7 @@ const alertButtons = [
   { type: 'DONATION', label: 'Донат', class: 'bg-red-600 hover:bg-red-500 text-white' },
   { type: 'RAID', label: 'Рейд', class: 'bg-indigo-600 hover:bg-indigo-500 text-white' },
   { type: 'PURCHASE', label: 'Покупка', class: 'bg-teal-600 hover:bg-teal-500 text-white' },
+  { type: 'CARAVAN_ARRIVED', label: 'Караван', class: 'bg-emerald-600 hover:bg-emerald-500 text-white' },
   { type: 'WAGON_FLIP', label: 'Сальто', class: 'bg-orange-600 hover:bg-orange-500 text-white' },
   { type: 'WAGON_REFUEL', label: 'Заправка', class: 'bg-orange-600 hover:bg-orange-500 text-white' },
   { type: 'WAGON_STEAL', label: 'Кража', class: 'bg-orange-600 hover:bg-orange-500 text-white' },
@@ -131,6 +133,7 @@ const {
   effects,
   stats,
   viewerCount,
+  caravan,
   backlogItems,
   alerts,
   start,
@@ -159,6 +162,11 @@ function triggerAlert(type: string) {
     PURCHASE: () => {
       const price = pick([100, 200, 500, 1000, 2000])
       return { id, type: 'PURCHASE', data: { userName, coins: price, price, xpEarned: Math.max(1, Math.floor(price / 5)) } }
+    },
+    CARAVAN_ARRIVED: () => {
+      const count = getRandInteger(3, NAMES.length)
+      const viewers = NAMES.slice(0, count).map((n) => ({ name: n, codename: pick(CODENAMES) }))
+      return { id, type: 'CARAVAN_ARRIVED', data: { fromVillage: 'Дубровка', toVillage: 'Камнеград', cargo: 'Древесина', xpReward: getRandInteger(3, 15), activeViewers: viewers.length, viewers, travelTimeSec: getRandInteger(300, 600) } }
     },
     WAGON_FLIP: () => ({ id, type: 'WAGON_ACTION', data: { userName, codename, action: 'FLIP', actionTitle: 'Сальто вагона', actionDescription: 'Сальто!', xpEarned: getRandInteger(1, 5) } }),
     WAGON_REFUEL: () => ({ id, type: 'WAGON_ACTION', data: { userName, codename, action: 'REFUEL', actionTitle: 'Заправить вагон', actionDescription: 'Заправил вагон!', xpEarned: getRandInteger(1, 10) } }),

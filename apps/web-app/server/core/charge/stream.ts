@@ -1,9 +1,10 @@
-import type { WagonActionCode, WagonActionConfig, WagonEffect, WagonSessionStats } from '#shared/types/charge'
+import type { CaravanState, WagonActionCode, WagonActionConfig, WagonEffect, WagonSessionStats } from '#shared/types/charge'
 import type { DonateController } from './donateClient'
 import { createId } from '@paralleldrive/cuid2'
 import { sendAlertMessage, sendGameMessage } from '~~/server/api/websocket'
 import { getLevelingService } from '~~/server/core/leveling/service'
 import { getStreamInfo, sendChatAnnouncement, updateCustomReward } from '~~/server/utils/twitch/twitch.api'
+import { createNextRoute, createPausedState } from './caravan'
 
 // ── Action Configs ──────────────────────────────────────
 
@@ -61,6 +62,8 @@ export class WagonSession {
 
   effects: WagonEffect[] = []
   donations: WagonDonation[] = []
+  caravan!: CaravanState
+  #caravanActiveViewers = new Set<string>()
 
   stats: WagonSessionStats = {
     fuelAdded: 0,
@@ -103,6 +106,7 @@ export class WagonSession {
     this.twitchChannelName = data.twitchChannelName
 
     this.donate?.onDonation(this.handleDonation.bind(this))
+    this.caravan = createPausedState('Дубровка')
 
     this.#initFuelTicker()
     this.#initEffectsTicker()
@@ -142,6 +146,9 @@ export class WagonSession {
       // Fuel drains based on wagon speed: faster wagon = more fuel
       this.fuel = Math.max(0, this.fuel - 0.05 * this.speed)
 
+      // Caravan distance tracking
+      this.#tickCaravan()
+
       // Fuel warnings + sync state to game client
       this.#checkFuelWarnings()
       this.#syncFuelState()
@@ -179,6 +186,90 @@ export class WagonSession {
       this.#lastFuelWarning = now
       sendChatAnnouncement(this.twitchChannelId, `Топлива мало — ${Math.ceil(this.fuel)}/${this.maxFuel}. Вагон замедляется!`)
     }
+  }
+
+  // ── Caravan ─────────────────────────────────────────
+
+  #tickCaravan() {
+    const c = this.caravan
+
+    // If paused in village, check if pause ended
+    if (c.isPaused) {
+      if (c.pauseEndsAt && Date.now() >= c.pauseEndsAt) {
+        this.caravan = createNextRoute(c.fromVillage)
+        this.#logger.info(`Caravan departing ${this.caravan.fromVillage} → ${this.caravan.toVillage} (${this.caravan.cargo})`)
+        sendChatAnnouncement(this.twitchChannelId, `Караван выезжает из ${this.caravan.fromVillage}! Везём ${this.caravan.cargo} в ${this.caravan.toVillage}`)
+      }
+      return
+    }
+
+    // Track distance (1 unit per second at speed 1)
+    c.distanceTraveled += this.speed
+
+    // Check if arrived
+    if (c.distanceTraveled >= c.distanceTotal) {
+      this.#onCaravanArrived()
+    }
+  }
+
+  async #onCaravanArrived() {
+    const c = this.caravan
+    const travelTimeSec = Math.floor((Date.now() - c.departedAt) / 1000)
+    const activeViewers = this.#caravanActiveViewers.size
+    const twitchIds = [...this.#caravanActiveViewers]
+
+    this.#logger.info(`Caravan arrived at ${c.toVillage}! Cargo: ${c.cargo}, viewers: ${activeViewers}, travel: ${travelTimeSec}s`)
+
+    // Resolve viewer names + codenames
+    const viewers: { name: string, codename: string }[] = []
+    for (const twitchId of twitchIds) {
+      try {
+        const profile = await db.profile.findByTwitchId(twitchId)
+        if (profile?.userName) {
+          let codename = 'twitchy'
+          if (profile.activeEditionId) {
+            const edition = await db.characterEdition.findWithCharacter(profile.activeEditionId)
+            if (edition?.character?.codename) {
+              codename = edition.character.codename
+            }
+          }
+          viewers.push({ name: profile.userName, codename })
+        }
+      } catch {
+        // skip
+      }
+    }
+
+    // Distribute XP to active viewers
+    if (c.xpReward > 0) {
+      for (const twitchId of twitchIds) {
+        getLevelingService().addXpForAction(twitchId, c.xpReward, this.id).catch(() => {})
+      }
+    }
+
+    // Send alert
+    sendAlertMessage(this.id, {
+      type: 'CARAVAN_ARRIVED',
+      data: {
+        fromVillage: c.fromVillage,
+        toVillage: c.toVillage,
+        cargo: c.cargo,
+        xpReward: c.xpReward,
+        activeViewers,
+        viewers,
+        travelTimeSec,
+      },
+    })
+
+    // Announce in chat
+    sendChatAnnouncement(
+      this.twitchChannelId,
+      `Караван прибыл в ${c.toVillage}! ${activeViewers} зрителей получают +${c.xpReward} XP!`,
+    )
+
+    // Reset and pause at village
+    this.#caravanActiveViewers.clear()
+    this.caravan = createPausedState(c.toVillage)
   }
 
   // ── Effects expiry ──────────────────────────────────
@@ -379,8 +470,11 @@ export class WagonSession {
 
   // ── Handle chat message ─────────────────────────────
 
-  handleMessage() {
+  handleMessage(userId?: string) {
     this.stats.messagesCount++
+    if (userId && !this.caravan.isPaused) {
+      this.#caravanActiveViewers.add(userId)
+    }
   }
 
   // ── Handle donation ─────────────────────────────────
