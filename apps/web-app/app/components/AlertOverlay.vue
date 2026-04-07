@@ -1,4 +1,12 @@
 <template>
+  <!-- Full-screen action effects -->
+  <div
+    v-if="actionEffect"
+    :key="actionEffect"
+    class="fixed inset-0 z-50 pointer-events-none"
+    :class="actionEffectClass"
+  />
+
   <Transition name="alert">
     <div
       v-if="currentAlert"
@@ -250,12 +258,36 @@ const spriteAnim = computed(() => {
 })
 
 const currentAlert = ref<EventMessage | null>(null)
+const actionEffect = ref<string | null>(null)
+const actionEffectClass = ref('')
+
+const ACTION_EFFECTS: Record<string, string> = {
+  FLIP: 'effect-flip',
+  SABOTAGE: 'effect-sabotage',
+  SPEED_BOOST: 'effect-speed',
+  STEAL_FUEL: 'effect-steal',
+  REFUEL: 'effect-refuel',
+  RESET_EFFECTS: 'effect-reset',
+}
+
+function triggerActionEffect(action: string) {
+  const effectClass = ACTION_EFFECTS[action]
+  if (!effectClass) {
+    return
+  }
+  actionEffect.value = `${action}-${Date.now()}`
+  actionEffectClass.value = effectClass
+  setTimeout(() => {
+    actionEffect.value = null
+  }, 1500)
+}
 const particles = ref<{ id: number, color: string, style: string }[]>([])
 let particleId = 0
 let processing = false
 let lastProcessedIndex = 0
 
 const ACTION_ICONS: Record<string, string> = {
+  FLIP: 'lucide:rotate-3d',
   REFUEL: 'lucide:fuel',
   STEAL_FUEL: 'lucide:flame',
   SPEED_BOOST: 'lucide:zap',
@@ -370,6 +402,11 @@ function showNext() {
     spawnParticles(config.bursts, config.burstDelay)
   }
 
+  // Trigger full-screen effect for wagon actions
+  if (alert.type === 'WAGON_ACTION' && 'action' in alert.data) {
+    triggerActionEffect(alert.data.action as string)
+  }
+
   playSound(alert.type)
 
   const duration = config?.duration ?? 15000
@@ -457,5 +494,71 @@ watch(() => props.alerts.length, () => {
 @keyframes reward-pop {
   0% { transform: scale(0.5); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
+}
+
+/* ── Wagon action full-screen effects ── */
+
+.effect-sabotage {
+  background: radial-gradient(circle, rgba(220, 38, 38, 0.4) 0%, rgba(220, 38, 38, 0) 70%);
+  animation: effect-shake 0.5s ease-in-out 3, effect-fade 1.5s ease-out forwards;
+}
+
+.effect-speed {
+  background: linear-gradient(90deg, transparent 0%, rgba(59, 130, 246, 0.15) 30%, rgba(59, 130, 246, 0.15) 70%, transparent 100%);
+  animation: effect-speed-lines 0.3s ease-out 3, effect-fade 1.5s ease-out forwards;
+}
+
+.effect-steal {
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.35) 0%, transparent 70%);
+  animation: effect-pulse 0.4s ease-in-out 2, effect-fade 1.5s ease-out forwards;
+}
+
+.effect-refuel {
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.3) 0%, transparent 70%);
+  animation: effect-pulse 0.5s ease-in-out 2, effect-fade 1.5s ease-out forwards;
+}
+
+.effect-reset {
+  background: rgba(255, 255, 255, 0.2);
+  animation: effect-flash 0.3s ease-out, effect-fade 1s ease-out forwards;
+}
+
+.effect-flip {
+  background: radial-gradient(circle, rgba(250, 204, 21, 0.25) 0%, transparent 60%);
+  animation: effect-flip-bounce 0.6s ease-in-out 2, effect-fade 1.5s ease-out forwards;
+}
+
+@keyframes effect-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
+
+@keyframes effect-speed-lines {
+  0% { background-position: 0 0; opacity: 0.8; }
+  100% { background-position: 100px 0; opacity: 0; }
+}
+
+@keyframes effect-pulse {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+@keyframes effect-flash {
+  0% { opacity: 0.8; }
+  100% { opacity: 0; }
+}
+
+@keyframes effect-fade {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes effect-flip-bounce {
+  0%, 100% { transform: translateY(0); opacity: 0.3; }
+  30% { transform: translateY(-6px); opacity: 0.7; }
+  60% { transform: translateY(3px); opacity: 0.5; }
 }
 </style>

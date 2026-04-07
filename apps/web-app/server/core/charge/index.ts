@@ -2,7 +2,7 @@ import type { RewardMapping } from './stream'
 import { sendAlertMessage } from '~~/server/api/websocket'
 import { getLevelingService } from '~~/server/core/leveling/service'
 import { getViewerQuestService } from '~~/server/core/quest'
-import { createCustomReward, getCustomRewards } from '~~/server/utils/twitch/twitch.api'
+import { createCustomReward, getCustomRewards, updateCustomReward } from '~~/server/utils/twitch/twitch.api'
 import { getTwitchController } from '../../utils/twitch/twitch.controller'
 import { DonateController } from './donateClient'
 import { WAGON_ACTIONS, WagonSession } from './stream'
@@ -110,6 +110,8 @@ async function createWagonRewards(broadcasterId: string, logger: ReturnType<type
           actionCode: action.code,
           currentCost: found.cost,
         })
+        // Update description if changed
+        await updateCustomReward(broadcasterId, found.id, { prompt: action.description })
         logger.info(`Reusing existing Twitch reward: ${action.title} (${found.id})`)
         continue
       }
@@ -117,6 +119,7 @@ async function createWagonRewards(broadcasterId: string, logger: ReturnType<type
       const reward = await createCustomReward(broadcasterId, {
         title: action.title,
         cost: action.baseCost,
+        prompt: action.description,
         is_enabled: true,
       })
 

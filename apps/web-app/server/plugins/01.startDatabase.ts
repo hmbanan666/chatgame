@@ -1,13 +1,12 @@
-import process from 'node:process'
 import { useCreateDatabase, useMigrateDatabase } from '@chatgame/database'
 
 export default defineNitroPlugin(async () => {
   const config = useRuntimeConfig()
   const logger = useLogger('plugin:database')
 
-  const url = config.databaseUrl || process.env.DATABASE_URL
+  const url = config.databaseUrl
   if (!url) {
-    throw new Error('DATABASE_URL is not defined')
+    throw new Error('NUXT_DATABASE_URL is not defined')
   }
 
   useCreateDatabase(url)

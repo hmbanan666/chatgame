@@ -31,7 +31,7 @@
         <!-- Alert triggers -->
         <div class="relative">
           <button
-            class="flex items-center gap-2 px-4 py-2 bg-game-bg-alt text-game-text text-sm cursor-pointer hover:bg-game-muted transition-colors"
+            class="flex items-center gap-2 px-4 py-2 w-full bg-game-bg-alt text-game-text text-sm cursor-pointer hover:bg-game-muted transition-colors"
             @click="alertMenuOpen = !alertMenuOpen"
           >
             <Icon name="lucide:zap" class="!size-4" />
@@ -112,7 +112,12 @@ const alertButtons = [
   { type: 'DONATION', label: 'Донат', class: 'bg-red-600 hover:bg-red-500 text-white' },
   { type: 'RAID', label: 'Рейд', class: 'bg-indigo-600 hover:bg-indigo-500 text-white' },
   { type: 'PURCHASE', label: 'Покупка', class: 'bg-teal-600 hover:bg-teal-500 text-white' },
-  { type: 'WAGON_ACTION', label: 'Вагон', class: 'bg-orange-600 hover:bg-orange-500 text-white' },
+  { type: 'WAGON_FLIP', label: 'Сальто', class: 'bg-orange-600 hover:bg-orange-500 text-white' },
+  { type: 'WAGON_REFUEL', label: 'Заправка', class: 'bg-orange-600 hover:bg-orange-500 text-white' },
+  { type: 'WAGON_STEAL', label: 'Кража', class: 'bg-orange-600 hover:bg-orange-500 text-white' },
+  { type: 'WAGON_SPEED', label: 'Ускорение', class: 'bg-orange-600 hover:bg-orange-500 text-white' },
+  { type: 'WAGON_SABOTAGE', label: 'Саботаж', class: 'bg-orange-600 hover:bg-orange-500 text-white' },
+  { type: 'WAGON_RESET', label: 'Сброс', class: 'bg-orange-600 hover:bg-orange-500 text-white' },
 ]
 
 const soundUnlocked = ref(false)
@@ -155,16 +160,26 @@ function triggerAlert(type: string) {
       const price = pick([100, 200, 500, 1000, 2000])
       return { id, type: 'PURCHASE', data: { userName, coins: price, price, xpEarned: Math.max(1, Math.floor(price / 5)) } }
     },
-    WAGON_ACTION: () => ({
-      id,
-      type: 'WAGON_ACTION',
-      data: { userName, codename, action: 'REFUEL', actionTitle: 'Заправить вагон', actionDescription: 'Заправил вагон!', xpEarned: getRandInteger(1, 20) },
-    }),
+    WAGON_FLIP: () => ({ id, type: 'WAGON_ACTION', data: { userName, codename, action: 'FLIP', actionTitle: 'Сальто вагона', actionDescription: 'Сальто!', xpEarned: getRandInteger(1, 5) } }),
+    WAGON_REFUEL: () => ({ id, type: 'WAGON_ACTION', data: { userName, codename, action: 'REFUEL', actionTitle: 'Заправить вагон', actionDescription: 'Заправил вагон!', xpEarned: getRandInteger(1, 10) } }),
+    WAGON_STEAL: () => ({ id, type: 'WAGON_ACTION', data: { userName, codename, action: 'STEAL_FUEL', actionTitle: 'Украсть топливо', actionDescription: 'Украл топливо!', xpEarned: getRandInteger(1, 10) } }),
+    WAGON_SPEED: () => ({ id, type: 'WAGON_ACTION', data: { userName, codename, action: 'SPEED_BOOST', actionTitle: 'Ускорение', actionDescription: 'Ускорил вагон!', xpEarned: getRandInteger(1, 15) } }),
+    WAGON_SABOTAGE: () => ({ id, type: 'WAGON_ACTION', data: { userName, codename, action: 'SABOTAGE', actionTitle: 'Саботаж', actionDescription: 'Саботировал вагон!', xpEarned: getRandInteger(1, 20) } }),
+    WAGON_RESET: () => ({ id, type: 'WAGON_ACTION', data: { userName, codename, action: 'RESET_EFFECTS', actionTitle: 'Сбросить эффекты', actionDescription: 'Сбросил все эффекты!', xpEarned: getRandInteger(1, 10) } }),
   }
 
   const generator = generators[type]
   if (generator) {
-    alerts.value.push(generator())
+    const alert = generator()
+    alerts.value.push(alert)
+
+    // Trigger game effects for wagon actions
+    if (alert.type === 'WAGON_ACTION' && alert.data.action === 'FLIP') {
+      const wagon = game.value?.wagonService?.wagon
+      if (wagon && !wagon.destroyed) {
+        wagon.startFlip()
+      }
+    }
   }
 }
 

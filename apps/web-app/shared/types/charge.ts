@@ -1,6 +1,6 @@
 // ── Wagon Action Codes ──────────────────────────────────
 
-export type WagonActionCode = 'REFUEL' | 'STEAL_FUEL' | 'SPEED_BOOST' | 'SABOTAGE' | 'RESET_EFFECTS'
+export type WagonActionCode = 'REFUEL' | 'STEAL_FUEL' | 'SPEED_BOOST' | 'SABOTAGE' | 'RESET_EFFECTS' | 'FLIP'
 
 // ── Wagon Effect ────────────────────────────────────────
 
@@ -47,6 +47,7 @@ export interface WagonState {
 export interface WagonActionConfig {
   code: WagonActionCode
   title: string
+  description: string
   baseCost: number
   durationSec: number
   fuelDelta?: number

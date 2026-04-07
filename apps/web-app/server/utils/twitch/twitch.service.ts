@@ -16,6 +16,14 @@ export class TwitchService {
     this.#streamerId = streamerId
   }
 
+  get streamerId() {
+    return this.#streamerId
+  }
+
+  get seenCount() {
+    return this.#seenThisStream.size
+  }
+
   setStreamStartedAt(date: Date) {
     this.#streamStartedAt = date
     this.#seenThisStream.clear()

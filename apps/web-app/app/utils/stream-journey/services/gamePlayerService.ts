@@ -84,7 +84,7 @@ export class GamePlayerService implements PlayerService {
 
   private removeInactivePlayers() {
     for (const player of this.activePlayers) {
-      const checkTime = getDateMinusMinutes(4)
+      const checkTime = getDateMinusMinutes(20)
       if (player.lastActionAt.getTime() <= checkTime.getTime()) {
         if (player.script) {
           continue

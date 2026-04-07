@@ -1,6 +1,9 @@
 import { getDateMinusMinutes } from '#shared/utils/date'
 import { sendGameMessage } from '~~/server/api/websocket'
+import { getNextAnnouncement } from '~~/server/core/announcements'
+import { chargeRooms } from '~~/server/core/charge'
 import { dictionary } from '~~/server/core/locale'
+import { getViewerQuestService } from '~~/server/core/quest'
 import { getStreamByUserId, sendChatAnnouncement } from './twitch.api'
 import { TwitchChat } from './twitch.chat'
 import { TwitchEventSub } from './twitch.eventsub'
@@ -24,6 +27,7 @@ class TwitchController {
 
   #couponGeneratorId: ReturnType<typeof setInterval> | null = null
   #lastCouponGeneratedAt: Date | null = null
+  #lastCouponCommand: string | null = null
   #manaUpdateId: ReturnType<typeof setInterval> | null = null
   #infoMessageId: ReturnType<typeof setInterval> | null = null
   #streamPollId: ReturnType<typeof setInterval> | null = null
@@ -172,7 +176,19 @@ class TwitchController {
     this.#infoMessageId = setInterval(async () => {
       if (this.#isStreaming) {
         try {
-          const infoMsg = this.#getRandomInfoMessage()
+          const session = chargeRooms.find((r) => r.id === this.#userId) ?? null
+          const questService = getViewerQuestService(this.#service.streamerId)
+          const streamStart = new Date(session?.stats.streamStartedAt ?? Date.now())
+          const streamMinutes = Math.floor((Date.now() - streamStart.getTime()) / 60_000)
+
+          const infoMsg = getNextAnnouncement({
+            session,
+            questService,
+            lastCouponCommand: this.#lastCouponCommand,
+            seenCount: this.#service.seenCount,
+            streamMinutes,
+          })
+
           await sendChatAnnouncement(this.#userId, infoMsg)
           sendGameMessage(this.#userId, {
             event: 'systemMessage',
@@ -200,8 +216,9 @@ class TwitchController {
           return
         }
 
-        const t = dictionary('ru')
         this.#lastCouponGeneratedAt = new Date()
+        this.#lastCouponCommand = coupon.activationCommand
+        const t = dictionary('ru')
         const couponMsg = t.twitch.coupon.newCoupon.replace('{command}', coupon.activationCommand)
         this.#chat.say(couponMsg)
         sendGameMessage(this.#userId, {
@@ -279,12 +296,6 @@ class TwitchController {
     this.#offlineHandlers = []
 
     logger.info('TwitchController destroyed')
-  }
-
-  #getRandomInfoMessage(): string {
-    const t = dictionary('ru')
-    const messages = Object.values(t.twitch.info)
-    return messages[Math.floor(Math.random() * messages.length)] as string
   }
 }
 

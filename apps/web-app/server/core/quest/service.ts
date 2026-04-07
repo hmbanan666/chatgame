@@ -29,6 +29,10 @@ export class ViewerQuestService {
     this.#channelId = channelId
   }
 
+  get activeCount() {
+    return this.#quests.size
+  }
+
   setStreamStartedAt(date: Date) {
     this.#streamStartedAt = date
   }

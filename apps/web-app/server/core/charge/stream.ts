@@ -8,11 +8,12 @@ import { getStreamInfo, sendChatAnnouncement, updateCustomReward } from '~~/serv
 // ── Action Configs ──────────────────────────────────────
 
 export const WAGON_ACTIONS: WagonActionConfig[] = [
-  { code: 'REFUEL', title: 'Заправить вагон', baseCost: 500, durationSec: 0, fuelDelta: 15 },
-  { code: 'STEAL_FUEL', title: 'Украсть топливо', baseCost: 300, durationSec: 0, fuelDelta: -10, escalation: 1.5 },
-  { code: 'SPEED_BOOST', title: 'Ускорение', baseCost: 1000, durationSec: 120, speedMultiplier: 2.0 },
-  { code: 'SABOTAGE', title: 'Саботаж', baseCost: 2000, durationSec: 30, stopWagon: true, escalation: 2.0 },
-  { code: 'RESET_EFFECTS', title: 'Сбросить эффекты', baseCost: 1500, durationSec: 0 },
+  { code: 'FLIP', title: 'Сальто вагона', description: 'Вагон делает сальто! Чисто для веселья 🤸', baseCost: 50, durationSec: 0 },
+  { code: 'REFUEL', title: 'Заправить вагон', description: 'Добавляет 15 топлива. Вагон едет дальше! ⛽', baseCost: 100, durationSec: 0, fuelDelta: 15 },
+  { code: 'STEAL_FUEL', title: 'Украсть топливо', description: 'Крадёт 10 топлива! Цена растёт с каждым разом 🔥', baseCost: 200, durationSec: 0, fuelDelta: -10, escalation: 1.5 },
+  { code: 'SPEED_BOOST', title: 'Ускорение', description: 'Вагон едет в 2 раза быстрее на 2 минуты! ⚡', baseCost: 400, durationSec: 120, speedMultiplier: 2.0 },
+  { code: 'RESET_EFFECTS', title: 'Сбросить эффекты', description: 'Убирает все активные эффекты — ускорение, саботаж 🔄', baseCost: 500, durationSec: 0 },
+  { code: 'SABOTAGE', title: 'Саботаж', description: 'Останавливает вагон на 30 сек! Цена удваивается 💀', baseCost: 800, durationSec: 30, stopWagon: true, escalation: 2.0 },
 ]
 
 // ── Reward mapping (twitchRewardId → actionCode) ────────
@@ -289,6 +290,10 @@ export class WagonSession {
 
   #applyAction(config: WagonActionConfig, userName: string) {
     switch (config.code) {
+      case 'FLIP':
+        sendGameMessage(this.id, { event: 'wagonFlip' })
+        break
+
       case 'REFUEL':
         this.fuel = Math.min(this.maxFuel, this.fuel + (config.fuelDelta ?? 0))
         this.stats.fuelAdded += Math.abs(config.fuelDelta ?? 0)
@@ -332,6 +337,7 @@ export class WagonSession {
 
   async #sendActionAlert(twitchId: string, config: WagonActionConfig, xpEarned: number) {
     const ACTION_DESCRIPTIONS: Record<string, string> = {
+      FLIP: 'Сальто!',
       REFUEL: 'Заправил вагон!',
       STEAL_FUEL: 'Украл топливо!',
       SPEED_BOOST: 'Ускорил вагон!',
