@@ -45,7 +45,7 @@ export class TwitchService {
     const otherStrings = strings.toSpliced(0, 1)
     const firstParam = otherStrings[0] ?? ''
 
-    const profile = await db.profile.findByTwitchId(userId)
+    const profile = await db.profile.findOrCreate({ userId, userName })
     if (!profile) {
       return
     }
@@ -88,16 +88,21 @@ export class TwitchService {
       }
     }
 
-    // XP gain + watch time
-    const leveling = getLevelingService()
-    const levelResult = await leveling.onMessage({
-      profileId: profile.id,
-      activeEditionId: profile.activeEditionId,
-      userName,
-      codename,
-      roomId: this.#roomId,
-      lastActionAt: player.lastActionAt,
-    })
+    // XP gain + watch time (non-critical — don't crash message on failure)
+    let levelResult: { leveledUp: boolean, newLevel?: number } = { leveledUp: false }
+    try {
+      const leveling = getLevelingService()
+      levelResult = await leveling.onMessage({
+        profileId: profile.id,
+        activeEditionId: profile.activeEditionId,
+        userName,
+        codename,
+        roomId: this.#roomId,
+        lastActionAt: player.lastActionAt,
+      })
+    } catch {
+      // Lock timeout or DB error — skip XP, don't block chat
+    }
 
     if (levelResult.leveledUp && levelResult.newLevel) {
       chatAnnouncements.push(`${userName} достиг уровня ${levelResult.newLevel}!`)
