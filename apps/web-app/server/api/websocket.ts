@@ -8,6 +8,7 @@ const logger = useLogger('ws')
 const addonRooms = new Map<string, WebSocketPeer>()
 const gameRooms = new Map<string, Set<WebSocketPeer>>()
 const alertRooms = new Map<string, Set<WebSocketPeer>>()
+const dashboardRooms = new Map<string, Set<WebSocketPeer>>()
 
 export function sendAddonMessage(message: WebSocketEvents, roomId: string) {
   const peer = addonRooms.get(roomId)
@@ -33,10 +34,32 @@ export function sendGameMessage(roomId: string, event: Record<string, unknown>) 
       peers.delete(peer)
     }
   }
+
+  // Forward to dashboard
+  sendDashboardMessage(roomId, event)
 }
 
 export function sendAlertMessage(roomId: string, event: Record<string, unknown>) {
   const peers = alertRooms.get(roomId)
+  if (!peers?.size) {
+    return
+  }
+
+  const data = JSON.stringify(event)
+  for (const peer of peers) {
+    try {
+      peer.send(data)
+    } catch {
+      peers.delete(peer)
+    }
+  }
+
+  // Forward to dashboard
+  sendDashboardMessage(roomId, event)
+}
+
+function sendDashboardMessage(roomId: string, event: Record<string, unknown>) {
+  const peers = dashboardRooms.get(roomId)
   if (!peers?.size) {
     return
   }
@@ -97,6 +120,10 @@ export default defineWebSocketHandler({
     for (const [, peers] of alertRooms) {
       peers.delete(peer)
     }
+
+    for (const [, peers] of dashboardRooms) {
+      peers.delete(peer)
+    }
   },
 
   error(peer, error) {
@@ -112,6 +139,8 @@ function handleMessage(message: WebSocketMessage, peer: WebSocketPeer) {
       return handleConnectGame(message, peer)
     case 'CONNECT_ALERTS':
       return handleConnectAlerts(message, peer)
+    case 'CONNECT_DASHBOARD':
+      return handleConnectDashboard(message, peer)
     case 'UPDATE_BIOME':
       return handleUpdateBiome(message)
     case 'TREE_DESTROYED':
@@ -155,6 +184,21 @@ function handleConnectAlerts(message: WebSocketMessage, peer: WebSocketPeer) {
   }
   peers.add(peer)
   logger.log(`Peer ${peer.id} joined alert room ${data.roomId}`)
+}
+
+function handleConnectDashboard(message: WebSocketMessage, peer: WebSocketPeer) {
+  const data = (message as any).data as { roomId: string } | undefined
+  if (!data?.roomId) {
+    return
+  }
+
+  let peers = dashboardRooms.get(data.roomId)
+  if (!peers) {
+    peers = new Set()
+    dashboardRooms.set(data.roomId, peers)
+  }
+  peers.add(peer)
+  logger.log(`Peer ${peer.id} joined dashboard room ${data.roomId}`)
 }
 
 function handleUpdateBiome(message: WebSocketMessage) {

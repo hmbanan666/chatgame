@@ -11,6 +11,13 @@ export class PlayerRepository {
     })
   }
 
+  static findByProfileId(profileId: string) {
+    const db = useDatabase()
+    return db.query.players.findFirst({
+      where: (t, { eq }) => eq(t.profileId, profileId),
+    })
+  }
+
   static async findRandomNames(limit = 20) {
     const db = useDatabase()
     const rows = await db.query.players.findMany({

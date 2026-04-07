@@ -1,6 +1,6 @@
 import { cuid2 } from 'drizzle-cuid2/postgres'
 import { relations } from 'drizzle-orm'
-import { boolean, integer, jsonb, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import { boolean, integer, jsonb, pgTable, text, timestamp, unique } from 'drizzle-orm/pg-core'
 
 // ── Profile ──────────────────────────────────────────────
 
@@ -338,4 +338,22 @@ export const spriteFrames = pgTable('sprite_frame', {
 
 export const spriteFramesRelations = relations(spriteFrames, ({ one }) => ({
   sprite: one(sprites, { fields: [spriteFrames.spriteId], references: [sprites.id] }),
+}))
+
+// ── Streamer Notes ──────────────────────────────────────
+
+export const streamerNotes = pgTable('streamer_note', {
+  id: cuid2('id').defaultRandom().primaryKey(),
+  createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+  text: text('text').notNull().default(''),
+  streamerId: text('streamer_id').notNull(),
+  profileId: text('profile_id').notNull(),
+}, (t) => [
+  unique('streamer_note_streamer_profile').on(t.streamerId, t.profileId),
+])
+
+export const streamerNotesRelations = relations(streamerNotes, ({ one }) => ({
+  streamer: one(profiles, { fields: [streamerNotes.streamerId], references: [profiles.id], relationName: 'streamerNotes' }),
+  profile: one(profiles, { fields: [streamerNotes.profileId], references: [profiles.id], relationName: 'viewerNotes' }),
 }))

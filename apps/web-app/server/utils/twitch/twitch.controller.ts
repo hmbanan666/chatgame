@@ -1,4 +1,5 @@
 import { getDateMinusMinutes } from '#shared/utils/date'
+import { sendGameMessage } from '~~/server/api/websocket'
 import { dictionary } from '~~/server/core/locale'
 import { getStreamByUserId, sendChatAnnouncement } from './twitch.api'
 import { TwitchChat } from './twitch.chat'
@@ -22,6 +23,7 @@ class TwitchController {
   #isStreaming = false
 
   #couponGeneratorId: ReturnType<typeof setInterval> | null = null
+  #lastCouponGeneratedAt: Date | null = null
   #manaUpdateId: ReturnType<typeof setInterval> | null = null
   #infoMessageId: ReturnType<typeof setInterval> | null = null
   #streamPollId: ReturnType<typeof setInterval> | null = null
@@ -110,6 +112,10 @@ class TwitchController {
         const answer = await this.#service.handleMessage({ userId, userName, text })
         if (answer?.message) {
           this.#chat.say(answer.message)
+          sendGameMessage(this.#userId, {
+            event: 'systemMessage',
+            data: { text: answer.message },
+          })
         }
 
         for (const handler of this.#messageHandlers) {
@@ -166,7 +172,12 @@ class TwitchController {
     this.#infoMessageId = setInterval(async () => {
       if (this.#isStreaming) {
         try {
-          await sendChatAnnouncement(this.#userId, this.#getRandomInfoMessage())
+          const infoMsg = this.#getRandomInfoMessage()
+          await sendChatAnnouncement(this.#userId, infoMsg)
+          sendGameMessage(this.#userId, {
+            event: 'systemMessage',
+            data: { text: infoMsg },
+          })
         } catch (err) {
           logger.error('Info announcement failed', err)
         }
@@ -179,6 +190,7 @@ class TwitchController {
       return
     }
 
+    this.#lastCouponGeneratedAt = new Date()
     this.#couponGeneratorId = setInterval(async () => {
       try {
         const cutoff = getDateMinusMinutes(60 * 24)
@@ -189,9 +201,13 @@ class TwitchController {
         }
 
         const t = dictionary('ru')
-        this.#chat.say(
-          t.twitch.coupon.newCoupon.replace('{command}', coupon.activationCommand),
-        )
+        this.#lastCouponGeneratedAt = new Date()
+        const couponMsg = t.twitch.coupon.newCoupon.replace('{command}', coupon.activationCommand)
+        this.#chat.say(couponMsg)
+        sendGameMessage(this.#userId, {
+          event: 'systemMessage',
+          data: { text: couponMsg },
+        })
       } catch (err) {
         logger.error('Coupon generation failed', err)
       }
@@ -203,6 +219,17 @@ class TwitchController {
       clearInterval(this.#couponGeneratorId)
       this.#couponGeneratorId = null
     }
+  }
+
+  get lastCouponGeneratedAt() {
+    return this.#lastCouponGeneratedAt
+  }
+
+  get nextCouponAt() {
+    if (!this.#couponGeneratorId || !this.#lastCouponGeneratedAt) {
+      return null
+    }
+    return new Date(this.#lastCouponGeneratedAt.getTime() + 45 * 60 * 1000)
   }
 
   get couponGeneratorStatus() {

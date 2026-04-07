@@ -12,6 +12,13 @@ export class CharacterEditionRepository {
     })
   }
 
+  static findByProfileId(profileId: string) {
+    const db = useDatabase()
+    return db.query.characterEditions.findMany({
+      where: (t, { eq }) => eq(t.profileId, profileId),
+    })
+  }
+
   static create(data: InferInsertModel<typeof tables.characterEditions>) {
     const db = useDatabase()
     return db.insert(tables.characterEditions).values(data).returning()

@@ -13,8 +13,8 @@ export function useCreateDatabase(url: string) {
   const pool = new pg.Pool({
     connectionString: url,
     max: 10,
-    min: 2,
-    idleTimeoutMillis: 30_000,
+    min: 0,
+    idleTimeoutMillis: 600_000,
     connectionTimeoutMillis: 10_000,
     allowExitOnIdle: false,
     keepAlive: true,

@@ -9,6 +9,7 @@ export class TwitchService {
   readonly #roomId: string
   readonly #streamerId: string
   #streamStartedAt: Date = new Date()
+  #seenThisStream = new Set<string>()
 
   constructor(roomId: string, streamerId: string) {
     this.#roomId = roomId
@@ -17,6 +18,7 @@ export class TwitchService {
 
   setStreamStartedAt(date: Date) {
     this.#streamStartedAt = date
+    this.#seenThisStream.clear()
   }
 
   async handleMessage({
@@ -100,10 +102,14 @@ export class TwitchService {
     const updatedProfile = await db.profile.find(profile.id)
 
     // Stream Journey
+    const isFirstThisStream = !this.#seenThisStream.has(userId)
+    this.#seenThisStream.add(userId)
+
     sendGameMessage(this.#roomId, {
       event: 'newPlayerMessage',
       data: {
         text,
+        isFirstThisStream,
         player: {
           id: userId,
           name: userName,

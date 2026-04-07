@@ -203,6 +203,19 @@
             </div>
           </template>
 
+          <template v-else-if="currentAlert.type === 'STREAMER_REWARD'">
+            <AlertHeader
+              icon="lucide:gift"
+              title="Награда от стримера"
+              :user-name="currentAlert.data.userName"
+            />
+
+            <AlertRewardBlock label="Награда">
+              <span class="text-5xl font-black text-game-bright">+{{ currentAlert.data.amount }} {{ pluralizationRu(currentAlert.data.amount, ['монета', 'монеты', 'монет']) }}</span>
+              <Image src="/coin.png" class="h-12 w-12 image-rendering-pixelated" />
+            </AlertRewardBlock>
+          </template>
+
           <!-- Bottom shimmer -->
           <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-game-bright to-transparent animate-shimmer-reverse" />
         </div>
@@ -308,6 +321,7 @@ const ALERT_CONFIG = {
   RAID: { bursts: 12, burstDelay: 150, duration: 15000 },
   PURCHASE: { bursts: 16, burstDelay: 120, duration: 20000 },
   WAGON_ACTION: { bursts: 5, burstDelay: 180, duration: 8000 },
+  STREAMER_REWARD: { bursts: 4, burstDelay: 200, duration: 6000 },
 } as const
 
 function spawnParticles(burstCount: number, burstDelay: number) {

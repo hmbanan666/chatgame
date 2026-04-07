@@ -13,6 +13,7 @@ export type Events
     | EventRaid
     | EventPurchase
     | EventWagonAction
+    | EventStreamerReward
 
 type EventNewPlayerMessage = {
   type: 'NEW_PLAYER_MESSAGE'
@@ -112,5 +113,15 @@ type EventWagonAction = {
     actionTitle: string
     actionDescription: string
     xpEarned: number
+  }
+}
+
+type EventStreamerReward = {
+  type: 'STREAMER_REWARD'
+  data: {
+    userName: string
+    codename: string
+    amount: number
+    rewardType: 'coins'
   }
 }

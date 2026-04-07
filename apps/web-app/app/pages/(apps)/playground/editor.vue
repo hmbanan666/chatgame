@@ -268,7 +268,7 @@
                   @click="selectedFrame = name; onFrameChange()"
                 >
                   <canvas
-                    :ref="(el) => { if (el) thumbRefs[name] = el as HTMLCanvasElement }"
+                    :ref="(el: any) => { if (el) thumbRefs[name] = el as HTMLCanvasElement }"
                     :width="GRID"
                     :height="GRID"
                     class="bg-neutral-900"
