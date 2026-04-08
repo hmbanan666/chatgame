@@ -22,14 +22,14 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: 'Profile not found' })
   }
 
-  const [editions, player, donationTotal, note] = await Promise.all([
+  const [editions, streamerViewer, donationTotal, note] = await Promise.all([
     db.characterEdition.findByProfileId(profile.id),
-    db.player.findByProfileId(profile.id),
+    db.streamerViewer.findByStreamerAndProfile(session.user.id, profile.id),
     db.payment.sumByProfile(profile.id),
     db.streamerNote.findByStreamerAndProfile(session.user.id, profile.id),
   ])
 
-  const lastSeenAt = player?.lastActionAt ?? profile.updatedAt
+  const lastSeenAt = streamerViewer?.lastSeenAt ?? profile.updatedAt
   const requiredXp = getXpForLevel(profile.level + 1)
 
   return {

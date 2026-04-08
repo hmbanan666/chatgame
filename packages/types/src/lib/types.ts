@@ -123,7 +123,6 @@ export type CharacterEditionsOnProfileData = (CharacterEdition & {
 export interface ActiveCharacter extends CharacterEditionWithCharacter {
   lastActionAt: Date
   token: string
-  playerId: string
 }
 
 export interface Coupon {
@@ -135,19 +134,10 @@ export interface Coupon {
   profileId: string | null
 }
 
+/** @deprecated Use StreamerViewer for per-streamer viewer data */
 export interface Player {
   id: string
-  createdAt: Date
-  updatedAt: Date
-  lastActionAt: Date
   name: string
-  coins: number
-  reputation: number
-  viewerPoints: number
-  villainPoints: number
-  refuellerPoints: number
-  raiderPoints: number
-  inventoryId: string
   profileId: string
 }
 

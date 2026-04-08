@@ -7,7 +7,6 @@ import { CouponRepository } from './coupon'
 import { InventoryItemRepository } from './inventoryItem'
 import { InventoryItemEditionRepository } from './inventoryItemEdition'
 import { PaymentRepository } from './payment'
-import { PlayerRepository } from './player'
 import { ProductRepository } from './product'
 import { ProductItemRepository } from './productItem'
 import { ProfileRepository } from './profile'
@@ -15,6 +14,7 @@ import { SpriteRepository } from './sprite'
 import { StreamRepository } from './stream'
 import { StreamerRepository } from './streamer'
 import { StreamerNoteRepository } from './streamerNote'
+import { StreamerViewerRepository } from './streamerViewer'
 import { TransactionRepository } from './transaction'
 import { TwitchAccessTokenRepository } from './twitchAccessToken'
 import { TwitchTokenRepository } from './twitchToken'
@@ -27,7 +27,7 @@ class Repository {
   readonly characterEdition = CharacterEditionRepository
   readonly characterLevel = CharacterLevelRepository
   readonly coupon = CouponRepository
-  readonly player = PlayerRepository
+  readonly streamerViewer = StreamerViewerRepository
   readonly stream = StreamRepository
   readonly streamer = StreamerRepository
   readonly streamerNote = StreamerNoteRepository

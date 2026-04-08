@@ -199,6 +199,13 @@ export class ProfileRepository {
     )
   }
 
+  static requestStreamer(id: string) {
+    const db = useDatabase()
+    return db.update(tables.profiles)
+      .set({ streamerRequestedAt: new Date(), updatedAt: new Date() })
+      .where(eq(tables.profiles.id, id))
+  }
+
   static async getTokensCount(type: string) {
     const db = useDatabase()
     const result = await db.select({ count: count() })

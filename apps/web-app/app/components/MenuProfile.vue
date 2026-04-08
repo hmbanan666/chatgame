@@ -26,8 +26,24 @@
             <Icon name="lucide:user" class="size-4" />
             Мой профиль
           </NuxtLink>
+          <NuxtLink
+            v-if="profile?.isStreamer"
+            to="/cabinet"
+            class="px-4 py-2 text-sm text-white hover:bg-[#1e1e24] transition-colors duration-150 flex items-center gap-2"
+          >
+            <Icon name="lucide:layout-dashboard" class="size-4" />
+            Кабинет
+          </NuxtLink>
+          <NuxtLink
+            v-else
+            to="/for-streamers"
+            class="px-4 py-2 text-sm text-white hover:bg-[#1e1e24] transition-colors duration-150 flex items-center gap-2"
+          >
+            <Icon name="lucide:radio" class="size-4" />
+            Для стримеров
+          </NuxtLink>
           <button
-            class="px-4 py-2 text-sm text-red-400 hover:bg-[#1e1e24] transition-colors duration-150 flex items-center gap-2 cursor-pointer w-full text-left"
+            class="px-4 py-2 text-sm text-white hover:bg-[#1e1e24] transition-colors duration-150 flex items-center gap-2 cursor-pointer w-full text-left"
             @click="logout"
           >
             <Icon name="lucide:log-out" class="size-4" />

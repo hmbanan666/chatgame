@@ -50,8 +50,8 @@ export class TwitchService {
       return
     }
 
-    const { player, isNew } = await db.player.findOrCreate({ profileId: profile.id, userName })
-    if (!player) {
+    const { viewer, isNew } = await db.streamerViewer.findOrCreate(this.#streamerId, profile.id)
+    if (!viewer) {
       return
     }
 
@@ -98,7 +98,7 @@ export class TwitchService {
         userName,
         codename,
         roomId: this.#roomId,
-        lastActionAt: player.lastActionAt,
+        lastActionAt: viewer.lastSeenAt,
       })
     } catch {
       // Lock timeout or DB error — skip XP, don't block chat
@@ -108,8 +108,8 @@ export class TwitchService {
       chatAnnouncements.push(`${userName} достиг уровня ${levelResult.newLevel}!`)
     }
 
-    // Update last action timestamp for watch time tracking
-    await db.player.updateLastActionAt(player.id)
+    // Update last seen + increment message count for this streamer
+    await db.streamerViewer.updateLastSeen(viewer.id)
 
     // Refetch profile after XP gain (level may have changed)
     const updatedProfile = await db.profile.find(profile.id)
@@ -136,10 +136,10 @@ export class TwitchService {
       switch (possibleCommand) {
         case 'купон':
         case 'coupon':
-          return this.handleCouponActivation(firstParam, player.profileId, userName, codename)
+          return this.handleCouponActivation(firstParam, profile.id, userName, codename)
         case 'инвентарь':
         case 'inventory':
-          return this.handleInventoryCommand(player.profileId)
+          return this.handleInventoryCommand(profile.id)
         case 'гитхаб':
         case 'github':
         case 'git':

@@ -1,0 +1,1 @@
+ALTER TABLE "profile" ADD COLUMN IF NOT EXISTS "streamer_requested_at" timestamp (3) with time zone;

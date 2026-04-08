@@ -4,7 +4,7 @@
       Войди чтобы увидеть профиль
     </p>
     <UButton
-      to="/api/auth/twitch"
+      :to="authUrl"
       external
       size="xl"
       icon="simple-icons:twitch"
@@ -447,6 +447,7 @@ useHead({
 })
 
 const { loggedIn, user } = useUserSession()
+const { authUrl } = useAuthUrl()
 
 const { data: characters } = await useFetch('/api/character')
 

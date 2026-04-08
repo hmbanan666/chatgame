@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { count, eq } from 'drizzle-orm'
 import { useDatabase } from '../database'
 import * as tables from '../tables'
 
@@ -49,6 +49,24 @@ export class StreamRepository {
         updatedAt: new Date(),
       })
       .where(eq(tables.streams.id, id))
+  }
+
+  static findByStreamerId(streamerId: string, limit = 50, offset = 0) {
+    const db = useDatabase()
+    return db.query.streams.findMany({
+      where: (t, { eq }) => eq(t.streamerId, streamerId),
+      orderBy: (t, { desc }) => desc(t.createdAt),
+      limit,
+      offset,
+    })
+  }
+
+  static async countByStreamerId(streamerId: string) {
+    const db = useDatabase()
+    const result = await db.select({ count: count() })
+      .from(tables.streams)
+      .where(eq(tables.streams.streamerId, streamerId))
+    return result[0]?.count ?? 0
   }
 
   static async updateStats(id: string, data: {

@@ -11,6 +11,7 @@ export const profiles = pgTable('profile', {
   twitchId: text('twitch_id'),
   userName: text('user_name'),
   isStreamer: boolean('is_streamer').notNull().default(false),
+  streamerRequestedAt: timestamp('streamer_requested_at', { precision: 3, withTimezone: true, mode: 'date' }),
   coupons: integer('coupons').notNull().default(0),
   coins: integer('coins').notNull().default(0),
   mana: integer('mana').notNull().default(0),
@@ -180,23 +181,25 @@ export const twitchAccessTokens = pgTable('twitch_access_token', {
   obtainmentTimestamp: text('obtainment_timestamp').notNull(),
 })
 
-// ── Player ──────────────────────────────────────────────
+// ── Streamer Viewer (per-streamer viewer stats) ─────────
 
-export const players = pgTable('player', {
+export const streamerViewers = pgTable('streamer_viewer', {
   id: cuid2('id').defaultRandom().primaryKey(),
   createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-  lastActionAt: timestamp('last_action_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-  name: text('name').notNull(),
-  coins: integer('coins').notNull().default(0),
-  reputation: integer('reputation').notNull().default(0),
-  viewerPoints: integer('viewer_points').notNull().default(0),
-  villainPoints: integer('villain_points').notNull().default(0),
-  refuellerPoints: integer('refueller_points').notNull().default(0),
-  raiderPoints: integer('raider_points').notNull().default(0),
-  inventoryId: text('inventory_id').notNull(),
+  lastSeenAt: timestamp('last_seen_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+  messagesCount: integer('messages_count').notNull().default(0),
+  watchTimeMin: integer('watch_time_min').notNull().default(0),
+  streamerId: text('streamer_id').notNull(),
   profileId: text('profile_id').notNull(),
-})
+}, (t) => [
+  unique('streamer_viewer_streamer_profile').on(t.streamerId, t.profileId),
+])
+
+export const streamerViewersRelations = relations(streamerViewers, ({ one }) => ({
+  streamer: one(profiles, { fields: [streamerViewers.streamerId], references: [profiles.id], relationName: 'streamerViewerAsStreamer' }),
+  profile: one(profiles, { fields: [streamerViewers.profileId], references: [profiles.id], relationName: 'streamerViewerAsViewer' }),
+}))
 
 // ── Inventory ────────────────────────────────────────────
 

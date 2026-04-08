@@ -48,7 +48,7 @@
     </div>
 
     <UButton
-      to="/api/auth/twitch"
+      :to="authUrl"
       external
       size="xl"
       icon="simple-icons:twitch"
@@ -106,7 +106,7 @@
       </div>
       <div class="mt-10 text-center">
         <UButton
-          to="/api/auth/twitch"
+          :to="authUrl"
           external
           size="xl"
           icon="simple-icons:twitch"
@@ -184,7 +184,7 @@
           Войди через Twitch чтобы собирать персонажей
         </p>
         <UButton
-          to="/api/auth/twitch"
+          :to="authUrl"
           external
           size="xl"
           icon="simple-icons:twitch"
@@ -211,7 +211,7 @@
         </div>
       </div>
       <UButton
-        to="/api/auth/twitch"
+        :to="authUrl"
         external
         size="xl"
         icon="simple-icons:twitch"
@@ -297,7 +297,7 @@
     class="fixed bottom-0 left-0 right-0 z-50 md:hidden p-3 bg-[#18181b]/95 backdrop-blur-sm border-t border-[#2a2a30]"
   >
     <UButton
-      to="/api/auth/twitch"
+      :to="authUrl"
       external
       block
       size="lg"
@@ -321,6 +321,7 @@ useHead({
   ],
 })
 
+const { authUrl } = useAuthUrl()
 const { data: twitchStatus } = await useFetch('/api/twitch/status')
 const isStreaming = computed(() => twitchStatus.value?.some((s) => s.service === 'HMBANAN666_TWITCH' && s.status === 'RUNNING') ?? false)
 
