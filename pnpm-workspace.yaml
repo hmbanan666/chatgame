@@ -23,7 +23,7 @@ catalogs:
     drizzle-kit: ^0.31.10
     eslint: ^10.2.0
     husky: ^9.1.7
-    nano-staged: ^0.9.0
+    nano-staged: ^1.0.2
     nuxt: ^4.4.2
     nuxt-auth-utils: ^0.5.29
     tailwindcss: ^4.2.2
