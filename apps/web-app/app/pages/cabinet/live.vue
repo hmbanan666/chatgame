@@ -1,5 +1,5 @@
 <template>
-  <div class="w-dvw h-dvh bg-[#111116] overflow-hidden p-3 relative">
+  <div class="w-full h-full bg-[#111116] overflow-hidden p-3 relative">
     <!-- Viewer Card — overlay top center -->
     <Transition name="card">
       <div
@@ -47,10 +47,94 @@
       </div>
     </Transition>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 h-full">
-      <!-- Чат -->
-      <div class="lg:col-span-5 flex flex-col bg-[#1a1a20] border border-white/10 rounded-none overflow-hidden relative">
-        <div class="px-3 py-2 border-b border-white/10 text-sm font-bold text-site-text/80">
+    <!-- Top bar — stream stats -->
+    <div class="h-10 bg-[#1a1a20] border border-white/10 flex items-center gap-6 px-4 text-sm shrink-0 mb-2">
+      <div class="flex items-center gap-2">
+        <span class="size-2 rounded-full" :class="stats ? 'bg-green-500 animate-pulse' : 'bg-white/20'" />
+        <span class="font-pixel text-xs text-site-text">{{ streamUptime }}</span>
+      </div>
+      <template v-if="stats">
+        <div class="text-white/40 flex items-center gap-1" title="Зрителей">
+          <Icon name="lucide:eye" class="size-3.5" /><span class="text-site-text font-bold">{{ stats.viewerCount }}</span>
+        </div>
+        <div class="text-white/40 flex items-center gap-1" title="Сообщений">
+          <Icon name="lucide:message-square" class="size-3.5" /><span class="text-site-text font-bold">{{ stats.stats.messagesCount }}</span>
+        </div>
+        <div class="text-white/40 flex items-center gap-1" title="Топливо">
+          <Icon name="lucide:fuel" class="size-3.5" /><span class="text-site-text font-bold">{{ Math.round(stats.fuel) }}/{{ stats.maxFuel }}</span>
+        </div>
+        <div class="text-white/40 flex items-center gap-1" title="Деревья">
+          <Icon name="lucide:tree-pine" class="size-3.5" /><span class="text-site-text font-bold">{{ stats.stats.treesChopped }}</span>
+        </div>
+        <div class="text-white/40 flex items-center gap-1" title="Купоны">
+          <Icon name="lucide:ticket" class="size-3.5" /><span class="text-site-text font-bold">{{ stats.stats.couponsTaken }}</span>
+        </div>
+        <div class="text-white/20 text-xs" title="Следующий купон">
+          {{ couponCountdown }}
+        </div>
+      </template>
+      <template v-else>
+        <span class="text-white/30">Оффлайн</span>
+      </template>
+      <span v-if="isDemo" class="bg-amber-500/20 text-amber-400 text-xs font-bold px-1.5 py-0.5 ml-auto">DEMO</span>
+    </div>
+
+    <!-- Main area -->
+    <div class="flex gap-2 h-[calc(100%-3.5rem)]">
+      <!-- Left: player + events -->
+      <div class="flex-1 flex flex-col gap-2 min-w-0">
+        <!-- Twitch player embed -->
+        <div class="bg-black border border-white/10 flex-1 min-h-0 overflow-hidden relative">
+          <ClientOnly>
+            <iframe
+              v-if="!isDemo"
+              :src="`https://player.twitch.tv/?channel=${roomId}&parent=${hostname}&muted=true`"
+              class="w-full h-full"
+              allowfullscreen
+              frameborder="0"
+            />
+          </ClientOnly>
+          <div v-if="isDemo" class="w-full h-full flex items-center justify-center text-white/20">
+            <div class="text-center space-y-2">
+              <Icon name="lucide:monitor-play" class="size-16 mx-auto" />
+              <p class="text-sm">
+                Превью стрима
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Events -->
+        <div class="h-48 shrink-0 flex flex-col bg-[#1a1a20] border border-white/10 overflow-hidden">
+          <div class="px-3 py-1.5 border-b border-white/10 text-xs font-bold text-site-text/80">
+            События
+          </div>
+          <div ref="eventsContainer" class="flex-1 overflow-y-auto space-y-0.5 p-2">
+            <div
+              v-for="ev in events"
+              :key="ev.id"
+              class="px-2 py-1 text-sm border-l-2 rounded-sm"
+              :class="eventColor(ev.type)"
+            >
+              <span class="text-white/40 text-xs mr-1">{{ ev.time }}</span>
+              <span
+                v-if="ev.data.userName"
+                class="text-site-text font-bold text-xs cursor-pointer hover:underline mr-1"
+                :style="{ color: nameColor(ev.data.userName) }"
+                @click="openProfileModal(ev.data.twitchId || '', ev.data.userName)"
+              >{{ ev.data.userName }}</span>
+              <span class="text-site-text/70 text-xs">{{ formatEventText(ev) }}</span>
+            </div>
+            <div v-if="!events.length" class="text-white/30 text-xs text-center py-4">
+              Ожидание событий...
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: chat -->
+      <div class="w-80 shrink-0 flex flex-col bg-[#1a1a20] border border-white/10 overflow-hidden relative">
+        <div class="px-3 py-1.5 border-b border-white/10 text-xs font-bold text-site-text/80">
           Чат
         </div>
         <div
@@ -61,10 +145,10 @@
           <div
             v-for="msg in chatMessages"
             :key="msg.id"
-            class="px-2 py-1.5 hover:bg-white/5 rounded-sm"
+            class="px-2 py-1 hover:bg-white/5 rounded-sm"
           >
             <template v-if="msg.isSystem">
-              <p class="text-amber-400/80 text-sm italic break-words">
+              <p class="text-amber-400/80 text-xs italic break-words">
                 {{ msg.text }}
               </p>
             </template>
@@ -75,19 +159,19 @@
                 :style="{ color: nameColor(msg.name) }"
                 @click="openProfileModal(msg.twitchId, msg.name)"
               >{{ msg.name }}</span>
-              <span class="text-white/40 text-xs ml-1">Ур.{{ msg.level }}</span>
+              <span class="text-white/40 text-xs ml-1">{{ msg.level }}</span>
               <span
                 v-if="getActivity(msg.name)?.questDone"
                 class="text-green-400 text-xs ml-1"
                 title="Квест выполнен"
               >Q</span>
               <span v-if="(getActivity(msg.name)?.messages ?? 0) >= 5" class="text-white/30 text-xs ml-1">x{{ getActivity(msg.name)?.messages }}</span>
-              <p class="text-site-text/90 text-base break-words">
+              <p class="text-site-text/90 text-sm break-words">
                 {{ msg.text }}
               </p>
             </template>
           </div>
-          <div v-if="!chatMessages.length" class="text-white/30 text-sm text-center py-8">
+          <div v-if="!chatMessages.length" class="text-white/30 text-xs text-center py-8">
             Ожидание сообщений...
           </div>
         </div>
@@ -98,74 +182,6 @@
         >
           Новые сообщения ↓
         </button>
-      </div>
-
-      <!-- Stats -->
-      <div class="lg:col-span-3 flex flex-col gap-4">
-        <div class="bg-[#1a1a20] border border-white/10 rounded-none p-4 space-y-3">
-          <div class="flex items-center gap-2 mb-2">
-            <span class="font-pixel text-sm text-site-text">Панель</span>
-            <span v-if="isDemo" class="bg-amber-500/20 text-amber-400 text-xs font-bold px-1.5 py-0.5">DEMO</span>
-          </div>
-          <div v-if="stats" class="grid grid-cols-2 gap-3">
-            <StatBlock label="Зрители" :value="stats.viewerCount" />
-            <StatBlock label="Сообщения" :value="stats.stats.messagesCount" />
-            <StatBlock label="Топливо" :value="`${Math.round(stats.fuel)}/${stats.maxFuel}`" />
-            <StatBlock label="Деревья" :value="stats.stats.treesChopped" />
-            <StatBlock label="Купоны" :value="stats.stats.couponsTaken" />
-            <StatBlock label="Биом" :value="stats.biome" />
-          </div>
-          <div v-else class="text-white/30 text-sm">
-            Нет активного стрима
-          </div>
-        </div>
-
-        <!-- Таймеры -->
-        <div class="bg-[#1a1a20] border border-white/10 rounded-none p-4 grid grid-cols-2 gap-3">
-          <div>
-            <div class="text-white/40 text-xs mb-1">
-              Аптайм
-            </div>
-            <div class="text-site-text font-bold text-lg">
-              {{ streamUptime }}
-            </div>
-          </div>
-          <div>
-            <div class="text-white/40 text-xs mb-1">
-              Следующий купон
-            </div>
-            <div class="text-site-text font-bold text-lg">
-              {{ couponCountdown }}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- События -->
-      <div class="lg:col-span-4 flex flex-col bg-[#1a1a20] border border-white/10 rounded-none overflow-hidden">
-        <div class="px-3 py-2 border-b border-white/10 text-sm font-bold text-site-text/80">
-          События
-        </div>
-        <div ref="eventsContainer" class="flex-1 overflow-y-auto space-y-0.5 p-2">
-          <div
-            v-for="ev in events"
-            :key="ev.id"
-            class="px-2 py-1.5 text-sm border-l-2 rounded-sm"
-            :class="eventColor(ev.type)"
-          >
-            <span class="text-white/40 text-xs mr-1">{{ ev.time }}</span>
-            <span
-              v-if="ev.data.userName"
-              class="text-site-text font-bold text-xs cursor-pointer hover:underline mr-1"
-              :style="{ color: nameColor(ev.data.userName) }"
-              @click="openProfileModal(ev.data.twitchId || '', ev.data.userName)"
-            >{{ ev.data.userName }}</span>
-            <span class="text-site-text/70 text-xs">{{ formatEventText(ev) }}</span>
-          </div>
-          <div v-if="!events.length" class="text-white/30 text-sm text-center py-8">
-            Ожидание событий...
-          </div>
-        </div>
       </div>
     </div>
 
@@ -301,16 +317,20 @@ import type { DashboardChatMessage, DashboardEvent, ViewerCardData } from '~/com
 import { createId } from '@paralleldrive/cuid2'
 
 definePageMeta({
-  layout: 'game',
+  layout: 'cabinet',
+  middleware: ['cabinet'],
 })
 
-const { params } = useRoute('dashboard-id')
-if (!params.id) {
+const { user } = useUserSession()
+
+const roomId = user.value?.twitchId || ''
+const isDemo = false
+
+if (!roomId) {
   throw createError({ statusCode: 404 })
 }
 
-const roomId = params.id as string
-const isDemo = roomId === 'demo'
+const hostname = import.meta.client ? window.location.hostname : 'localhost'
 
 const chatContainer = ref<HTMLElement>()
 const eventsContainer = ref<HTMLElement>()
@@ -796,21 +816,6 @@ onUnmounted(() => {
     ws?.close()
     clearInterval(statsInterval)
   }
-})
-</script>
-
-<script lang="ts">
-const StatBlock = defineComponent({
-  props: {
-    label: { type: String, required: true },
-    value: { type: [String, Number], required: true },
-  },
-  setup(props) {
-    return () => h('div', { class: 'bg-white/5 px-3 py-2 rounded-sm' }, [
-      h('div', { class: 'text-white/40 text-xs' }, props.label),
-      h('div', { class: 'text-site-text font-bold text-lg' }, String(props.value)),
-    ])
-  },
 })
 </script>
 

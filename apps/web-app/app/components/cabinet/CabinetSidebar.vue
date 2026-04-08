@@ -1,12 +1,16 @@
 <template>
   <aside class="shrink-0 h-full border-r border-white/5 bg-[#0f0f14] flex flex-col transition-all duration-200" :class="expanded ? 'w-60' : 'w-16'">
-    <div class="h-18 flex items-center px-4 border-b border-white/5">
-      <button class="text-white/60 hover:text-white transition-colors cursor-pointer" @click="expanded = !expanded">
-        <Icon :name="expanded ? 'lucide:panel-left-close' : 'lucide:panel-left-open'" class="size-5" />
+    <div class="h-18 flex items-center border-b border-white/5 px-2">
+      <button
+        class="flex items-center gap-3 px-3 py-2.5 text-white/60 hover:text-white transition-colors cursor-pointer w-full"
+        :class="!expanded && 'justify-center px-0'"
+        @click="expanded = !expanded"
+      >
+        <Icon :name="expanded ? 'lucide:panel-left-close' : 'lucide:panel-left-open'" class="size-5 shrink-0" />
+        <span v-if="expanded" class="font-pixel text-sm text-site-text tracking-wide">
+          Кабинет
+        </span>
       </button>
-      <span v-if="expanded" class="ml-3 font-pixel text-sm text-site-text tracking-wide">
-        Кабинет
-      </span>
     </div>
 
     <nav class="flex-1 py-4 flex flex-col gap-1 px-2">
@@ -14,8 +18,11 @@
         v-for="item in navItems"
         :key="item.path"
         :to="item.path"
-        class="flex items-center gap-3 px-3 py-2.5 text-sm transition-colors duration-150 group"
-        :class="isActive(item.path) ? 'bg-site-accent/15 text-site-accent-bright' : 'text-white/60 hover:text-white hover:bg-white/5'"
+        class="flex items-center gap-3 py-2.5 text-sm transition-colors duration-150 group"
+        :class="[
+          isActive(item.path) ? 'bg-site-accent/15 text-site-accent-bright' : 'text-white/60 hover:text-white hover:bg-white/5',
+          expanded ? 'px-3' : 'justify-center px-0',
+        ]"
       >
         <Icon :name="item.icon" class="size-5 shrink-0" />
         <span v-if="expanded" class="truncate">{{ item.label }}</span>
@@ -25,7 +32,8 @@
     <div class="px-2 pb-4">
       <NuxtLink
         to="/profile"
-        class="flex items-center gap-3 px-3 py-2.5 text-sm text-white/40 hover:text-white/60 transition-colors duration-150"
+        class="flex items-center gap-3 py-2.5 text-sm text-white/40 hover:text-white/60 transition-colors duration-150"
+        :class="expanded ? 'px-3' : 'justify-center px-0'"
       >
         <Icon name="lucide:arrow-left" class="size-5 shrink-0" />
         <span v-if="expanded" class="truncate">Назад</span>
@@ -38,13 +46,14 @@
 const route = useRoute()
 const expanded = ref(true)
 
-const navItems = [
+const navItems = computed(() => [
   { label: 'Обзор', icon: 'lucide:home', path: '/cabinet' },
+  { label: 'Live-панель', icon: 'lucide:monitor', path: '/cabinet/live' },
   { label: 'Зрители', icon: 'lucide:users', path: '/cabinet/viewers' },
   { label: 'Аналитика', icon: 'lucide:bar-chart-3', path: '/cabinet/analytics' },
   { label: 'Виджеты', icon: 'lucide:layout', path: '/cabinet/widgets' },
   { label: 'Настройки', icon: 'lucide:settings', path: '/cabinet/settings' },
-]
+])
 
 function isActive(path: string) {
   if (path === '/cabinet') {
