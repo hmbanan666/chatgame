@@ -28,7 +28,7 @@ catalogs:
     nuxt-auth-utils: ^0.5.29
     tailwindcss: ^4.2.2
     tailwindcss-motion: ^1.1.1
-    typescript: ^5.9.3
+    typescript: ^6.0.2
     vue-tsc: ^3.2.6
   integrations:
     '@nuxt/ui': ^4.6.0
