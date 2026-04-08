@@ -7,6 +7,7 @@ export class GameEventService implements EventService {
   private reconnectTimer: ReturnType<typeof setTimeout> | undefined
   private biomeInterval: ReturnType<typeof setInterval> | undefined
   private lastBiome = ''
+  private destroyed = false
 
   constructor(readonly game: Game, readonly roomId: string) {
     if (this.roomId) {
@@ -16,6 +17,7 @@ export class GameEventService implements EventService {
   }
 
   destroy() {
+    this.destroyed = true
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer)
       this.reconnectTimer = undefined
@@ -54,7 +56,9 @@ export class GameEventService implements EventService {
 
     this.ws.onclose = () => {
       this.ws = undefined
-      this.reconnectTimer = setTimeout(() => this.connect(), 5000)
+      if (!this.destroyed) {
+        this.reconnectTimer = setTimeout(() => this.connect(), 5000)
+      }
     }
   }
 

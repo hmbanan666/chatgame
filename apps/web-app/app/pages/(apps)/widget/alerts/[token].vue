@@ -1,5 +1,8 @@
 <template>
-  <ClientOnly>
+  <div v-if="error" class="w-full h-dvh flex items-center justify-center text-white/30">
+    Недействительный токен виджета
+  </div>
+  <ClientOnly v-else-if="roomId">
     <div
       :class="`biome-${biome.toLowerCase()}`"
       class="relative w-dvw h-dvh overscroll-none overflow-hidden bg-transparent transition-colors duration-1000"
@@ -17,17 +20,23 @@ definePageMeta({
   layout: 'game',
 })
 
-const { params } = useRoute('alerts-id')
-if (!params.id) {
-  throw createError({ statusCode: 404 })
-}
+const route = useRoute()
+const token = route.params.token as string
+
+const { roomId, error, resolve } = useWidgetToken(token)
+await resolve()
 
 const alerts = reactive<EventMessage[]>([])
 const biome = ref('GREEN')
 
 let ws: WebSocket | null = null
+let pingInterval: ReturnType<typeof setInterval> | null = null
 
 function connectWs() {
+  if (!roomId.value) {
+    return
+  }
+
   const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
   ws = new WebSocket(`${protocol}://${location.host}/api/websocket`)
 
@@ -35,12 +44,23 @@ function connectWs() {
     ws?.send(JSON.stringify({
       id: createId(),
       type: 'CONNECT_ALERTS',
-      data: { roomId: params.id },
+      data: { roomId: roomId.value },
     }))
+    if (pingInterval) {
+      clearInterval(pingInterval)
+    }
+    pingInterval = setInterval(() => {
+      if (ws?.readyState === WebSocket.OPEN) {
+        ws.send('ping')
+      }
+    }, 30000)
   }
 
   ws.onmessage = (event) => {
     try {
+      if (event.data === 'pong') {
+        return
+      }
       const data = JSON.parse(event.data)
       if (data.type === 'BIOME_CHANGED') {
         biome.value = data.data.biome
@@ -54,15 +74,25 @@ function connectWs() {
 
   ws.onclose = () => {
     ws = null
+    if (pingInterval) {
+      clearInterval(pingInterval)
+      pingInterval = null
+    }
     setTimeout(connectWs, 5000)
   }
 }
 
 onMounted(() => {
-  connectWs()
+  if (roomId.value) {
+    connectWs()
+  }
 })
 
 onUnmounted(() => {
+  if (pingInterval) {
+    clearInterval(pingInterval)
+    pingInterval = null
+  }
   ws?.close()
 })
 </script>

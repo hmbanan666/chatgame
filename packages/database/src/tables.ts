@@ -360,3 +360,31 @@ export const streamerNotesRelations = relations(streamerNotes, ({ one }) => ({
   streamer: one(profiles, { fields: [streamerNotes.streamerId], references: [profiles.id], relationName: 'streamerNotes' }),
   profile: one(profiles, { fields: [streamerNotes.profileId], references: [profiles.id], relationName: 'viewerNotes' }),
 }))
+
+// ── Redemptions (channel point reward history) ──────────
+
+export const redemptions = pgTable('redemption', {
+  id: cuid2('id').defaultRandom().primaryKey(),
+  createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+  streamerId: text('streamer_id').notNull(),
+  streamId: text('stream_id'),
+  twitchUserId: text('twitch_user_id').notNull(),
+  userName: text('user_name').notNull(),
+  rewardId: text('reward_id').notNull(),
+  rewardTitle: text('reward_title').notNull(),
+  rewardCost: integer('reward_cost').notNull(),
+})
+
+// ── Widget Tokens ───────────────────────────────────────
+
+export const widgetTokens = pgTable('widget_token', {
+  id: cuid2('id').defaultRandom().primaryKey(),
+  createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+  streamerId: text('streamer_id').notNull(),
+  roomId: text('room_id').notNull(),
+})
+
+export const widgetTokensRelations = relations(widgetTokens, ({ one }) => ({
+  streamer: one(profiles, { fields: [widgetTokens.streamerId], references: [profiles.id] }),
+}))

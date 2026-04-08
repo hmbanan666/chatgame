@@ -209,7 +209,7 @@ export class WagonObject extends BaseObject implements GameObjectWagon {
     const speed = this.state !== 'MOVING' ? 0 : this.speedPerSecond
     this.engineCloudsOffset -= speed / this.game.tick + 15
 
-    const cloudsActive = speed / (this.game.tick - 30) + 1
+    const cloudsActive = Math.min(speed / (Math.max(this.game.tick, 31) - 30) + 1, 15)
     const canCreateCloud
       = this.engineClouds.children.length < cloudsActive && this.engineCloudsOffset <= 0
     if (canCreateCloud) {

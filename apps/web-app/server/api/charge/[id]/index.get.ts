@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
 
   return {
     id: session.id,
+    isLive: session.isLive,
     fuel: session.fuel,
     maxFuel: session.maxFuel,
     speed: session.speedMultiplier,

@@ -97,11 +97,8 @@
       <div v-if="!data.connected" class="bg-[#1e1e24] border border-site-accent/30 p-6 text-center space-y-4">
         <Icon name="lucide:plug-zap" class="size-12 text-site-accent mx-auto" />
         <p class="text-white/60">
-          Подключение не настроено
+          Подключение не настроено. Обратись к администратору.
         </p>
-        <UButton to="/cabinet/setup" class="btn-pixel bg-site-accent! hover:bg-site-accent-bright! text-white! rounded-none!">
-          Настроить подключение
-        </UButton>
       </div>
 
       <!-- Quick links -->

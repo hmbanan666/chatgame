@@ -30,6 +30,12 @@ export class GameChunkService {
   /** All spawned objects per chunk — for cleanup */
   private chunkObjects = new Map<string, { containers: Container[], npcs: NpcObject[], tickers: (() => void)[] }>()
 
+  /** Texture caches — generated once, reused across chunks */
+  private bushTextureCache = new Map<string, import('pixi.js').Texture>()
+  private stalkTextureCache: import('pixi.js').Texture[] | null = null
+  private smokeTextureCache: import('pixi.js').Texture[] | null = null
+  private fireTextureCache: import('pixi.js').Texture[] | null = null
+
   constructor(readonly game: Game) {
     this.forestsUntilVillage = FORESTS_BETWEEN_VILLAGES[getRandInteger(0, 1)]!
     this.nextX = -500 // start before wagon so ground behind is covered
@@ -230,12 +236,16 @@ export class GameChunkService {
         continue
       }
 
-      const bushGraphics = createBush({ biome: chunk.biome })
-      const texture = this.game.app.renderer.generateTexture({
-        target: bushGraphics,
-        textureSourceOptions: { scaleMode: 'nearest' },
-      })
-      bushGraphics.destroy({ children: true })
+      let texture = this.bushTextureCache.get(chunk.biome)
+      if (!texture) {
+        const bushGraphics = createBush({ biome: chunk.biome })
+        texture = this.game.app.renderer.generateTexture({
+          target: bushGraphics,
+          textureSourceOptions: { scaleMode: 'nearest' },
+        })
+        bushGraphics.destroy({ children: true })
+        this.bushTextureCache.set(chunk.biome, texture)
+      }
 
       const bush = new Sprite(texture)
       bush.anchor.set(0.5, 1)
@@ -319,45 +329,35 @@ export class GameChunkService {
     }
 
     // Layer 3: Foreground animated stalks — baked to textures, rotated as Sprites
-    const stalkVariants: Sprite[] = []
+    if (!this.stalkTextureCache) {
+      this.stalkTextureCache = []
+      for (let v = 0; v < 6; v++) {
+        const g = new Graphics()
+        const h = 30 + v * 3
+        const stemColor = [P.gold, P.yellow1, P.orange2][v % 3]!
+        const grainColor = [P.paleYellow, P.yellow1, P.cream][v % 3]!
 
-    // Pre-bake 6 stalk texture variants
-    for (let v = 0; v < 6; v++) {
-      const g = new Graphics()
-      const h = 30 + v * 3
-      const stemColor = [P.gold, P.yellow1, P.orange2][v % 3]!
-      const grainColor = [P.paleYellow, P.yellow1, P.cream][v % 3]!
-
-      // Stem
-      g.rect(0, -h, 2, h).fill(stemColor)
-
-      // Wheat ear — oval head with grain kernels on sides
-      // Center column
-      g.rect(0, -h - 8, 2, 8).fill(grainColor)
-      // Left kernels
-      g.rect(-2, -h - 7, 2, 2).fill(grainColor)
-      g.rect(-2, -h - 4, 2, 2).fill(grainColor)
-      // Right kernels
-      g.rect(2, -h - 6, 2, 2).fill(grainColor)
-      g.rect(2, -h - 3, 2, 2).fill(grainColor)
-      // Tip
-      g.rect(0, -h - 10, 2, 2).fill(P.cream)
-      // Awns (whiskers)
-      g.rect(-1, -h - 11, 1, 2).fill(P.paleYellow)
-      g.rect(2, -h - 10, 1, 2).fill(P.paleYellow)
-      const tex = this.game.app.renderer.generateTexture({ target: g, textureSourceOptions: { scaleMode: 'nearest' } })
-      g.destroy()
-      const template = new Sprite(tex)
-      stalkVariants.push(template)
+        g.rect(0, -h, 2, h).fill(stemColor)
+        g.rect(0, -h - 8, 2, 8).fill(grainColor)
+        g.rect(-2, -h - 7, 2, 2).fill(grainColor)
+        g.rect(-2, -h - 4, 2, 2).fill(grainColor)
+        g.rect(2, -h - 6, 2, 2).fill(grainColor)
+        g.rect(2, -h - 3, 2, 2).fill(grainColor)
+        g.rect(0, -h - 10, 2, 2).fill(P.cream)
+        g.rect(-1, -h - 11, 1, 2).fill(P.paleYellow)
+        g.rect(2, -h - 10, 1, 2).fill(P.paleYellow)
+        const tex = this.game.app.renderer.generateTexture({ target: g, textureSourceOptions: { scaleMode: 'nearest' } })
+        g.destroy()
+        this.stalkTextureCache.push(tex)
+      }
     }
 
-    const animatedCount = getRandInteger(180, 250)
+    const animatedCount = getRandInteger(80, 120)
     const stalks: { sprite: Sprite, phase: number, speed: number, amp: number }[] = []
 
     for (let i = 0; i < animatedCount; i++) {
       const x = chunk.startX + getRandInteger(20, chunkWidth - 20)
-      const variant = stalkVariants[i % stalkVariants.length]!
-      const sprite = new Sprite(variant.texture)
+      const sprite = new Sprite(this.stalkTextureCache[i % this.stalkTextureCache.length]!)
       sprite.anchor.set(0.5, 1)
       sprite.scale.set(1.5)
       sprite.roundPixels = true
@@ -544,16 +544,19 @@ export class GameChunkService {
       [[-2, -6, P.darkRed], [-1, -6, P.darkRed], [0, -6, P.darkRed], [1, -6, P.darkRed], [2, -6, P.darkRed], [3, -6, P.darkRed], [-2, -7, P.brightRed], [-1, -7, P.brightRed], [0, -7, P.orange1], [1, -7, P.brightRed], [2, -7, P.brightRed], [-1, -8, P.brightRed], [0, -8, P.orange2], [1, -8, P.gold], [2, -8, P.orange1], [-1, -9, P.orange1], [0, -9, P.gold], [1, -9, P.orange2], [0, -10, P.gold], [1, -10, P.yellow1], [0, -11, P.yellow1], [1, -11, P.paleYellow], [1, -12, P.cream]],
     ]
 
-    // Bake frames into textures
-    const fireTextures = frames.map((pixels) => {
-      const fg = new Graphics()
-      for (const [x, y, color] of pixels) {
-        fg.rect(x, y, 1, 1).fill(color)
-      }
-      const tex = this.game.app.renderer.generateTexture({ target: fg, textureSourceOptions: { scaleMode: 'nearest' } })
-      fg.destroy()
-      return tex
-    })
+    // Bake frames into textures (cached)
+    if (!this.fireTextureCache) {
+      this.fireTextureCache = frames.map((pixels) => {
+        const fg = new Graphics()
+        for (const [x, y, color] of pixels) {
+          fg.rect(x, y, 1, 1).fill(color)
+        }
+        const tex = this.game.app.renderer.generateTexture({ target: fg, textureSourceOptions: { scaleMode: 'nearest' } })
+        fg.destroy()
+        return tex
+      })
+    }
+    const fireTextures = this.fireTextureCache
 
     // Replace Graphics flame with animated Sprite
     flame.destroy()
@@ -569,6 +572,9 @@ export class GameChunkService {
     let fireFrame = 0
     let fireTick = 0
     const fireTickerFn = () => {
+      if (fireSprite.destroyed) {
+        return
+      }
       fireTick++
       if (fireTick % 10 === 0) {
         fireFrame = (fireFrame + 1) % fireTextures.length
@@ -578,21 +584,26 @@ export class GameChunkService {
     this.game.app.ticker.add(fireTickerFn)
     this.trackTicker(chunk.id, fireTickerFn)
 
-    // Pre-bake smoke textures (3 variants)
-    const smokeTex = [0, 1, 2].map((v) => {
-      const sg = new Graphics()
-      const offsets = [
-        [[0, 0, 2, 2], [2, -1, 2, 2], [-1, -1, 2, 1], [1, -2, 1, 1]],
-        [[0, 0, 3, 2], [-1, -1, 2, 2], [2, -2, 1, 1], [0, -2, 2, 1]],
-        [[0, 0, 2, 3], [2, 0, 1, 2], [-1, -1, 2, 1], [1, -2, 2, 1], [-1, 1, 1, 1]],
-      ][v]!
-      for (const [x, y, w, h] of offsets) {
-        sg.rect(x!, y!, w!, h!).fill({ color: P.silver, alpha: 0.3 })
-      }
-      const tex = this.game.app.renderer.generateTexture({ target: sg, textureSourceOptions: { scaleMode: 'nearest' } })
-      sg.destroy()
-      return tex
-    })
+    // Pre-bake smoke textures (3 variants, cached)
+    if (!this.smokeTextureCache) {
+      this.smokeTextureCache = [0, 1, 2].map((v) => {
+        const sg = new Graphics()
+        const offsets = [
+          [[0, 0, 2, 2], [2, -1, 2, 2], [-1, -1, 2, 1], [1, -2, 1, 1]],
+          [[0, 0, 3, 2], [-1, -1, 2, 2], [2, -2, 1, 1], [0, -2, 2, 1]],
+          [[0, 0, 2, 3], [2, 0, 1, 2], [-1, -1, 2, 1], [1, -2, 2, 1], [-1, 1, 1, 1]],
+        ][v]!
+        for (const [x, y, w, h] of offsets) {
+          sg.rect(x!, y!, w!, h!).fill({ color: P.silver, alpha: 0.3 })
+        }
+        const tex = this.game.app.renderer.generateTexture({ target: sg, textureSourceOptions: { scaleMode: 'nearest' } })
+        sg.destroy()
+        return tex
+      })
+    }
+    const smokeTex = this.smokeTextureCache
+
+    const activePuffTickers: Array<() => void> = []
 
     const smokeTickerFn = () => {
       if (Math.random() > 0.88) {
@@ -612,14 +623,28 @@ export class GameChunkService {
           puff.alpha -= 0.003
           if (puff.alpha <= 0 || life > 200) {
             this.game.app.ticker.remove(puffTick)
+            const idx = activePuffTickers.indexOf(puffTick)
+            if (idx !== -1) {
+              activePuffTickers.splice(idx, 1)
+            }
             puff.destroy()
           }
         }
+        activePuffTickers.push(puffTick)
         this.game.app.ticker.add(puffTick)
       }
     }
     this.game.app.ticker.add(smokeTickerFn)
     this.trackTicker(chunk.id, smokeTickerFn)
+
+    // Cleanup helper: remove all active puff tickers when chunk is destroyed
+    const puffCleanup = () => {
+      for (const tick of activePuffTickers) {
+        this.game.app.ticker.remove(tick)
+      }
+      activePuffTickers.length = 0
+    }
+    this.trackTicker(chunk.id, puffCleanup)
 
     // ── Houses — far from center ─────────────────────
     const housePositions = [-500, -380, 380, 500]

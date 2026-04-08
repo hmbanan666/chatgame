@@ -98,7 +98,13 @@ export class DialogueInterface extends Container {
 
       if (this.frameCount >= this.SHOW_FRAMES) {
         this.removeChild(container)
+        container.destroy({ children: true })
       }
+    }
+
+    // Prune shown messages to prevent unbounded growth
+    if (this.messages.length > 20) {
+      this.messages = this.messages.filter((m) => !m.isShowed)
     }
   }
 }

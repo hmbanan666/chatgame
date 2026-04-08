@@ -4,10 +4,14 @@
       Виджеты
     </h1>
     <p class="text-white/40 text-sm">
-      Скопируй ссылку и добавь как Источник Браузера в OBS
+      Скопируй ссылку и добавь как Источник Браузера в OBS или другую программу
     </p>
 
-    <ClientOnly>
+    <div v-if="!widgetToken" class="text-white/40">
+      Загрузка...
+    </div>
+
+    <ClientOnly v-else>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <CabinetWidgetCard
           v-for="widget in widgets"
@@ -29,7 +33,8 @@ definePageMeta({
   middleware: ['cabinet'],
 })
 
-const { user } = useUserSession()
+const { data: tokenData } = await useFetch('/api/cabinet/widget-token')
+const widgetToken = computed(() => tokenData.value?.token ?? '')
 
 const baseUrl = computed(() => {
   if (import.meta.client) {
@@ -38,36 +43,34 @@ const baseUrl = computed(() => {
   return ''
 })
 
-const roomId = computed(() => user.value?.twitchId ?? '')
+const widgets = computed(() => {
+  const t = widgetToken.value
+  if (!t) {
+    return []
+  }
 
-const widgets = computed(() => [
-  {
-    name: 'Игра (караван)',
-    description: 'Основной игровой оверлей с караваном, деревьями и персонажами',
-    icon: 'lucide:gamepad-2',
-    url: `${baseUrl.value}/charge/${roomId.value}`,
-    size: '1920 x 1080',
-  },
-  {
-    name: 'Алерты',
-    description: 'Уведомления о новых зрителях, донатах, уровнях и квестах',
-    icon: 'lucide:bell',
-    url: `${baseUrl.value}/alerts/${roomId.value}`,
-    size: '800 x 600',
-  },
-  {
-    name: 'Бэклог',
-    description: 'Список задач и фич, предложенных зрителями через донаты',
-    icon: 'lucide:list-todo',
-    url: `${baseUrl.value}/backlog/${roomId.value}`,
-    size: '400 x 800',
-  },
-  {
-    name: 'Stream Journey',
-    description: 'Карта путешествия стрима с прогрессом каравана',
-    icon: 'lucide:map',
-    url: `${baseUrl.value}/stream-journey/${roomId.value}`,
-    size: '1920 x 1080',
-  },
-])
+  return [
+    {
+      name: 'Игра',
+      description: 'Основной игровой оверлей с караваном, деревьями и персонажами',
+      icon: 'lucide:gamepad-2',
+      url: `${baseUrl.value}/widget/game/${t}`,
+      size: '1920 x 1080',
+    },
+    {
+      name: 'Алерты',
+      description: 'Уведомления о новых зрителях, донатах, уровнях и квестах',
+      icon: 'lucide:bell',
+      url: `${baseUrl.value}/widget/alerts/${t}`,
+      size: '800 x 600',
+    },
+    {
+      name: 'Квесты + караван',
+      description: 'Задачи зрителей и прогресс каравана',
+      icon: 'lucide:list-todo',
+      url: `${baseUrl.value}/widget/quests/${t}`,
+      size: '400 x 800',
+    },
+  ]
+})
 </script>

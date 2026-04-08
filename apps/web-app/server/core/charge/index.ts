@@ -54,8 +54,19 @@ export async function initCharges() {
       session.handleMessage(userId)
     })
 
-    controller.onRedemption((userId, rewardId) => {
-      session.handleRedemption(userId, rewardId)
+    controller.onRedemption((event) => {
+      session.handleRedemption(event.userId, event.rewardId)
+
+      // Save redemption history
+      db.redemption.create({
+        streamerId: streamer.id,
+        streamId: session.streamId ?? undefined,
+        twitchUserId: event.userId,
+        userName: event.userName,
+        rewardId: event.rewardId,
+        rewardTitle: event.rewardTitle,
+        rewardCost: event.rewardCost,
+      }).catch(() => {})
     })
 
     controller.onFollow((userName) => {

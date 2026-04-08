@@ -10,6 +10,22 @@ const gameRooms = new Map<string, Set<WebSocketPeer>>()
 const alertRooms = new Map<string, Set<WebSocketPeer>>()
 const dashboardRooms = new Map<string, Set<WebSocketPeer>>()
 
+/** Ring buffer of recent dashboard messages per room — for replay on reconnect */
+const DASHBOARD_BUFFER_SIZE = 200
+const dashboardBuffers = new Map<string, { id: string, data: string }[]>()
+
+function bufferDashboardMessage(roomId: string, id: string, data: string) {
+  let buffer = dashboardBuffers.get(roomId)
+  if (!buffer) {
+    buffer = []
+    dashboardBuffers.set(roomId, buffer)
+  }
+  buffer.push({ id, data })
+  if (buffer.length > DASHBOARD_BUFFER_SIZE) {
+    buffer.splice(0, buffer.length - DASHBOARD_BUFFER_SIZE)
+  }
+}
+
 export function sendAddonMessage(message: WebSocketEvents, roomId: string) {
   const peer = addonRooms.get(roomId)
   if (!peer) {
@@ -21,50 +37,53 @@ export function sendAddonMessage(message: WebSocketEvents, roomId: string) {
 }
 
 export function sendGameMessage(roomId: string, event: Record<string, unknown>) {
-  const peers = gameRooms.get(roomId)
-  if (!peers?.size) {
-    return
-  }
+  const msgId = createId()
+  const envelope = { ...event, _msgId: msgId }
+  const data = JSON.stringify(envelope)
 
-  const data = JSON.stringify(event)
-  for (const peer of peers) {
-    try {
-      peer.send(data)
-    } catch {
-      peers.delete(peer)
+  const peers = gameRooms.get(roomId)
+  if (peers?.size) {
+    for (const peer of peers) {
+      try {
+        peer.send(data)
+      } catch {
+        peers.delete(peer)
+      }
     }
   }
 
-  // Forward to dashboard
-  sendDashboardMessage(roomId, event)
+  // Buffer + forward to dashboard
+  bufferDashboardMessage(roomId, msgId, data)
+  sendDashboardMessageRaw(roomId, data)
 }
 
 export function sendAlertMessage(roomId: string, event: Record<string, unknown>) {
-  const peers = alertRooms.get(roomId)
-  if (!peers?.size) {
-    return
-  }
+  const msgId = createId()
+  const envelope = { ...event, _msgId: msgId }
+  const data = JSON.stringify(envelope)
 
-  const data = JSON.stringify(event)
-  for (const peer of peers) {
-    try {
-      peer.send(data)
-    } catch {
-      peers.delete(peer)
+  const peers = alertRooms.get(roomId)
+  if (peers?.size) {
+    for (const peer of peers) {
+      try {
+        peer.send(data)
+      } catch {
+        peers.delete(peer)
+      }
     }
   }
 
-  // Forward to dashboard
-  sendDashboardMessage(roomId, event)
+  // Buffer + forward to dashboard
+  bufferDashboardMessage(roomId, msgId, data)
+  sendDashboardMessageRaw(roomId, data)
 }
 
-function sendDashboardMessage(roomId: string, event: Record<string, unknown>) {
+function sendDashboardMessageRaw(roomId: string, data: string) {
   const peers = dashboardRooms.get(roomId)
   if (!peers?.size) {
     return
   }
 
-  const data = JSON.stringify(event)
   for (const peer of peers) {
     try {
       peer.send(data)
@@ -187,7 +206,7 @@ function handleConnectAlerts(message: WebSocketMessage, peer: WebSocketPeer) {
 }
 
 function handleConnectDashboard(message: WebSocketMessage, peer: WebSocketPeer) {
-  const data = (message as any).data as { roomId: string } | undefined
+  const data = (message as any).data as { roomId: string, lastMessageId?: string } | undefined
   if (!data?.roomId) {
     return
   }
@@ -199,6 +218,23 @@ function handleConnectDashboard(message: WebSocketMessage, peer: WebSocketPeer) 
   }
   peers.add(peer)
   logger.log(`Peer ${peer.id} joined dashboard room ${data.roomId}`)
+
+  // Replay missed messages
+  const buffer = dashboardBuffers.get(data.roomId)
+  if (buffer?.length && data.lastMessageId) {
+    const lastIdx = buffer.findIndex((m) => m.id === data.lastMessageId)
+    const missed = lastIdx === -1 ? buffer : buffer.slice(lastIdx + 1)
+    for (const msg of missed) {
+      try {
+        peer.send(msg.data)
+      } catch {
+        break
+      }
+    }
+    if (missed.length > 0) {
+      logger.log(`Replayed ${missed.length} missed messages to ${peer.id}`)
+    }
+  }
 }
 
 function handleUpdateBiome(message: WebSocketMessage) {

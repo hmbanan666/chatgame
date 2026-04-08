@@ -114,11 +114,27 @@
               :value="stream.couponsTaken"
               icon="lucide:ticket"
             />
-            <CabinetStatCard
-              label="Реди"
-              :value="stream.totalRedemptions"
-              icon="lucide:gift"
-            />
+          </div>
+
+          <!-- Redemptions detail (loaded on expand) -->
+          <div v-if="streamRedemptions[stream.id]" class="mt-3 pt-3 border-t border-white/5">
+            <div class="flex items-center gap-2 mb-2">
+              <Icon name="lucide:gift" class="size-4 text-white/40" />
+              <span class="text-sm font-bold">Баллы канала:</span>
+              <span class="text-sm text-site-highlight font-bold">{{ streamRedemptions[stream.id]?.totalCost?.toLocaleString() }}</span>
+              <span class="text-xs text-white/30">на {{ streamRedemptions[stream.id]?.count }} акт.</span>
+            </div>
+            <div v-if="streamRedemptions[stream.id]?.redemptions?.length" class="space-y-1">
+              <div
+                v-for="r in streamRedemptions[stream.id]?.redemptions"
+                :key="r.id"
+                class="flex items-center gap-2 text-xs text-white/50"
+              >
+                <span class="font-bold text-white/70">{{ r.userName }}</span>
+                <span>{{ r.rewardTitle }}</span>
+                <span class="text-site-highlight ml-auto">{{ r.rewardCost.toLocaleString() }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -187,11 +203,22 @@ const totalMessages = computed(() => {
   return data.value.streams.reduce((s: number, st: any) => s + (st.messagesCount ?? 0), 0)
 })
 
-function toggleExpand(id: string) {
+const streamRedemptions = reactive<Record<string, { redemptions: any[], totalCost: number, count: number }>>({})
+
+async function toggleExpand(id: string) {
   if (expanded.has(id)) {
     expanded.delete(id)
   } else {
     expanded.add(id)
+    // Load redemptions for this stream
+    if (!streamRedemptions[id]) {
+      try {
+        const res = await $fetch<any>('/api/cabinet/redemptions', { query: { streamId: id } })
+        streamRedemptions[id] = res
+      } catch {
+        streamRedemptions[id] = { redemptions: [], totalCost: 0, count: 0 }
+      }
+    }
   }
 }
 

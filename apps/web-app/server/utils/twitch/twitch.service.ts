@@ -99,6 +99,7 @@ export class TwitchService {
         codename,
         roomId: this.#roomId,
         lastActionAt: viewer.lastSeenAt,
+        streamerViewerId: viewer.id,
       })
     } catch {
       // Lock timeout or DB error — skip XP, don't block chat

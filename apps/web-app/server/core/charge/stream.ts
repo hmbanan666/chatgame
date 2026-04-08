@@ -56,6 +56,7 @@ export class WagonSession {
   maxFuel: number = 100
   speed: number = 1.0
   isStopped: boolean = false
+  isLive: boolean = false
   biome: string = 'GREEN'
   lastActivityAt: number = 0
   wagonSpeed: number = 0
@@ -610,6 +611,7 @@ export class WagonSession {
   }
 
   async startStream() {
+    this.isLive = true
     const RESUME_WINDOW_MS = 25 * 60_000 // 25 minutes
 
     try {
@@ -684,6 +686,8 @@ export class WagonSession {
   }
 
   async endStream() {
+    this.isLive = false
+
     if (!this.streamId) {
       return
     }

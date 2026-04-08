@@ -50,10 +50,10 @@
     <!-- Top bar — stream stats -->
     <div class="h-10 bg-[#1a1a20] border border-white/10 flex items-center gap-6 px-4 text-sm shrink-0 mb-2">
       <div class="flex items-center gap-2">
-        <span class="size-2 rounded-full" :class="stats ? 'bg-green-500 animate-pulse' : 'bg-white/20'" />
-        <span class="font-pixel text-xs text-site-text">{{ streamUptime }}</span>
+        <span class="size-2 rounded-full" :class="isLive ? 'bg-green-500 animate-pulse' : 'bg-white/20'" />
+        <span class="font-pixel text-xs text-site-text">{{ isLive ? streamUptime : '—' }}</span>
       </div>
-      <template v-if="stats">
+      <template v-if="isLive && stats">
         <div class="text-white/40 flex items-center gap-1" title="Зрителей">
           <Icon name="lucide:eye" class="size-3.5" /><span class="text-site-text font-bold">{{ stats.viewerCount }}</span>
         </div>
@@ -88,7 +88,7 @@
           <ClientOnly>
             <iframe
               v-if="!isDemo"
-              :src="`https://player.twitch.tv/?channel=${roomId}&parent=${hostname}&muted=true`"
+              :src="`https://player.twitch.tv/?channel=${channelName}&parent=${hostname}&muted=true`"
               class="w-full h-full"
               allowfullscreen
               frameborder="0"
@@ -324,6 +324,7 @@ definePageMeta({
 const { user } = useUserSession()
 
 const roomId = user.value?.twitchId || ''
+const channelName = user.value?.userName || ''
 const isDemo = false
 
 if (!roomId) {
@@ -339,6 +340,10 @@ const eventsContainer = ref<HTMLElement>()
 const chatMessages = reactive<DashboardChatMessage[]>([])
 const events = reactive<DashboardEvent[]>([])
 const stats = ref<any>(null)
+
+const isLive = computed(() => {
+  return stats.value?.isLive === true
+})
 
 // Auto-scroll with pause on manual scroll-up
 const chatAutoScroll = ref(true)
@@ -613,6 +618,9 @@ function initDemo() {
 // --- LIVE MODE ---
 let ws: WebSocket | null = null
 let statsInterval: ReturnType<typeof setInterval>
+let pingInterval: ReturnType<typeof setInterval> | null = null
+let lastMessageId: string | null = null
+const seenMessageIds = new Set<string>()
 
 function connectWs() {
   const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
@@ -622,13 +630,40 @@ function connectWs() {
     ws?.send(JSON.stringify({
       id: createId(),
       type: 'CONNECT_DASHBOARD',
-      data: { roomId },
+      data: { roomId, lastMessageId },
     }))
+    if (pingInterval) {
+      clearInterval(pingInterval)
+    }
+    pingInterval = setInterval(() => {
+      if (ws?.readyState === WebSocket.OPEN) {
+        ws.send('ping')
+      }
+    }, 30000)
   }
 
   ws.onmessage = (msgEvent) => {
     try {
+      if (msgEvent.data === 'pong') {
+        return
+      }
       const data = JSON.parse(msgEvent.data)
+
+      // Track last message id for reconnect replay + dedup
+      if (data._msgId) {
+        if (seenMessageIds.has(data._msgId)) {
+          return
+        }
+        seenMessageIds.add(data._msgId)
+        lastMessageId = data._msgId
+        // Keep set bounded
+        if (seenMessageIds.size > 500) {
+          const arr = [...seenMessageIds]
+          for (let i = 0; i < 200; i++) {
+            seenMessageIds.delete(arr[i]!)
+          }
+        }
+      }
 
       if (data.event === 'newPlayerMessage') {
         const player = data.data.player
@@ -697,6 +732,10 @@ function connectWs() {
 
   ws.onclose = () => {
     ws = null
+    if (pingInterval) {
+      clearInterval(pingInterval)
+      pingInterval = null
+    }
     setTimeout(connectWs, 5000)
   }
 }
@@ -810,12 +849,12 @@ onMounted(() => {
 
 onUnmounted(() => {
   clearInterval(couponTickId)
-  if (isDemo) {
-    simulator?.stop()
-  } else {
-    ws?.close()
-    clearInterval(statsInterval)
+  if (pingInterval) {
+    clearInterval(pingInterval)
+    pingInterval = null
   }
+  ws?.close()
+  clearInterval(statsInterval)
 })
 </script>
 

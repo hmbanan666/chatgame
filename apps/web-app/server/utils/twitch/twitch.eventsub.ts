@@ -7,7 +7,15 @@ import { twitchFetch } from './twitch.api'
 
 const logger = useLogger('twitch:eventsub')
 
-type RedemptionHandler = (userId: string, rewardId: string) => void
+export interface RedemptionEvent {
+  userId: string
+  userName: string
+  rewardId: string
+  rewardTitle: string
+  rewardCost: number
+}
+
+type RedemptionHandler = (event: RedemptionEvent) => void
 type FollowHandler = (userName: string) => void
 type RaidHandler = (userName: string, viewers: number) => void
 
@@ -164,8 +172,15 @@ export class TwitchEventSub {
 
     if (subType === 'channel.channel_points_custom_reward_redemption.add') {
       const event = msg.payload.event
+      const redemption: RedemptionEvent = {
+        userId: event.user_id,
+        userName: event.user_login ?? event.user_name,
+        rewardId: event.reward.id,
+        rewardTitle: event.reward.title,
+        rewardCost: event.reward.cost,
+      }
       for (const handler of this.#redemptionHandlers) {
-        handler(event.user_id, event.reward.id)
+        handler(redemption)
       }
     }
 

@@ -8,7 +8,7 @@
       <span class="text-[#30E1B9] text-lg font-semibold">{{ profile?.coins ?? 0 }}</span>
     </NuxtLink>
 
-    <UPopover :ui="{ content: 'bg-[#18181b]! ring-white/10!' }">
+    <UPopover>
       <button class="size-11 overflow-hidden cursor-pointer duration-200 hover:opacity-85 hover:scale-105">
         <img
           :src="user?.imageUrl ?? '/icons/twitch/112.png'"

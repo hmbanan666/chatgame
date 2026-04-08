@@ -127,6 +127,20 @@
       "when": 1775654335641,
       "tag": "0017_daily_ben_parker",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1775672781915,
+      "tag": "0018_white_maggott",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1775674751008,
+      "tag": "0019_adorable_scarecrow",
+      "breakpoints": true
     }
   ]
 }

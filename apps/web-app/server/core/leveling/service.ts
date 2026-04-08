@@ -10,6 +10,7 @@ interface MessageContext {
   codename: string
   roomId: string
   lastActionAt: Date | null
+  streamerViewerId?: string
 }
 
 export interface LevelingResult {
@@ -25,6 +26,7 @@ export class LevelingService {
     const [profileResult] = await Promise.all([
       this.addProfileXp(ctx),
       deltaMin > 0 ? db.profile.addWatchTime(ctx.profileId, deltaMin) : Promise.resolve(),
+      deltaMin > 0 && ctx.streamerViewerId ? db.streamerViewer.addWatchTime(ctx.streamerViewerId, deltaMin) : Promise.resolve(),
     ])
 
     // Character edition updates run sequentially to avoid lock contention on the same row

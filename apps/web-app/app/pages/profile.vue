@@ -364,8 +364,6 @@
     <!-- CHARACTER MODAL -->
     <UModal
       v-model:open="isCharacterOpened"
-      :close="{ color: 'neutral', variant: 'ghost', class: 'text-site-text! hover:bg-[#1e1e24]!' }"
-      :ui="{ content: 'bg-[#18181b]! text-site-text ring-zinc-700! divide-zinc-700! rounded-none!', overlay: 'bg-[#18181b]/80! backdrop-blur-sm' }"
     >
       <template #header>
         <div class="flex items-center gap-4 flex-1">

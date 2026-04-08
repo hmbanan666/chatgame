@@ -1,3 +1,4 @@
+import type { RedemptionEvent } from './twitch.eventsub'
 import { getDateMinusMinutes } from '#shared/utils/date'
 import { sendGameMessage } from '~~/server/api/websocket'
 import { getNextAnnouncement } from '~~/server/core/announcements'
@@ -7,12 +8,13 @@ import { getViewerQuestService } from '~~/server/core/quest'
 import { getStreamByUserId, sendChatAnnouncement } from './twitch.api'
 import { TwitchChat } from './twitch.chat'
 import { TwitchEventSub } from './twitch.eventsub'
+
 import { TwitchService } from './twitch.service'
 
 const logger = useLogger('twitch:controller')
 
 type MessageHandler = (channel: string, userName: string, userId: string, text: string) => void
-type RedemptionHandler = (userId: string, rewardId: string) => void
+type RedemptionHandler = (event: RedemptionEvent) => void
 type FollowHandler = (userName: string) => void
 type RaidHandler = (userName: string, viewers: number) => void
 
@@ -133,9 +135,9 @@ class TwitchController {
 
     // EventSub (channel point redemptions)
     this.#eventSub = new TwitchEventSub(this.#userId)
-    this.#eventSub.onRedemption((userId, rewardId) => {
+    this.#eventSub.onRedemption((event) => {
       for (const handler of this.#redemptionHandlers) {
-        handler(userId, rewardId)
+        handler(event)
       }
     })
 

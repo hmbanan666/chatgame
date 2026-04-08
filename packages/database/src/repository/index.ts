@@ -10,6 +10,7 @@ import { PaymentRepository } from './payment'
 import { ProductRepository } from './product'
 import { ProductItemRepository } from './productItem'
 import { ProfileRepository } from './profile'
+import { RedemptionRepository } from './redemption'
 import { SpriteRepository } from './sprite'
 import { StreamRepository } from './stream'
 import { StreamerRepository } from './streamer'
@@ -18,6 +19,7 @@ import { StreamerViewerRepository } from './streamerViewer'
 import { TransactionRepository } from './transaction'
 import { TwitchAccessTokenRepository } from './twitchAccessToken'
 import { TwitchTokenRepository } from './twitchToken'
+import { WidgetTokenRepository } from './widgetToken'
 
 class Repository {
   readonly backlogItem = BacklogItemRepository
@@ -27,6 +29,7 @@ class Repository {
   readonly characterEdition = CharacterEditionRepository
   readonly characterLevel = CharacterLevelRepository
   readonly coupon = CouponRepository
+  readonly redemption = RedemptionRepository
   readonly streamerViewer = StreamerViewerRepository
   readonly stream = StreamRepository
   readonly streamer = StreamerRepository
@@ -39,6 +42,7 @@ class Repository {
   readonly inventoryItemEdition = InventoryItemEditionRepository
   readonly twitchToken = TwitchTokenRepository
   readonly twitchAccessToken = TwitchAccessTokenRepository
+  readonly widgetToken = WidgetTokenRepository
 
   async checkHealth(): Promise<boolean> {
     await useDatabase().query.profiles.findFirst()

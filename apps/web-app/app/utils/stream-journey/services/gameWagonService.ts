@@ -92,16 +92,19 @@ export class GameWagonService implements WagonService {
     return trees.sort((a, b) => a.x - b.x)[0]
   }
 
-  /** Returns an obstacle tree with the fewest choppers (max 3 per tree) */
+  /** Returns an obstacle tree with the fewest choppers (max 3 per tree), within visible range */
   getAvailableObstacle(): GameObject | undefined {
     if (!this.wagon || this.wagon.destroyed) {
       return
     }
 
     const x = this.wagon.x
+    const screenW = this.game.app.screen.width
+    const maxDistance = screenW * 0.5
     const maxChoppersPerTree = 3
 
-    const filterObstaclesToRight = (obj: GameObject) => obj.type === 'TREE' && !obj.destroyed && obj.x >= x && obj.isObstacleForWagon
+    const filterObstaclesToRight = (obj: GameObject) =>
+      obj.type === 'TREE' && !obj.destroyed && obj.x >= x && obj.x <= x + maxDistance && obj.isObstacleForWagon
     const trees = this.game.children.filter(filterObstaclesToRight) as TreeObject[]
 
     const sorted = trees.sort((a, b) => a.x - b.x)
@@ -238,6 +241,10 @@ export class GameWagonService implements WagonService {
       if (target) {
         target.target = obstacle
       }
+    } else {
+      // No obstacle ahead — keep moving forward (e.g. through village)
+      const screenW = this.game.app.screen.width
+      this.createTargetAndMove(this.wagon.x + screenW * 0.6)
     }
   }
 }

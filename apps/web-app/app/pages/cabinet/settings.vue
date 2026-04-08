@@ -35,10 +35,7 @@
           </div>
         </div>
         <div v-else class="text-white/40">
-          Не настроен.
-          <NuxtLink to="/cabinet/setup" class="text-site-accent hover:underline">
-            Настроить
-          </NuxtLink>
+          Не настроен
         </div>
       </section>
 

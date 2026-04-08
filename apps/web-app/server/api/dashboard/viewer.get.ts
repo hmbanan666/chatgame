@@ -22,9 +22,11 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: 'Profile not found' })
   }
 
+  const streamer = await db.streamer.findByTwitchChannelId(streamerProfile.twitchId!)
+
   const [editions, streamerViewer, donationTotal, note] = await Promise.all([
     db.characterEdition.findByProfileId(profile.id),
-    db.streamerViewer.findByStreamerAndProfile(session.user.id, profile.id),
+    streamer ? db.streamerViewer.findByStreamerAndProfile(streamer.id, profile.id) : Promise.resolve(null),
     db.payment.sumByProfile(profile.id),
     db.streamerNote.findByStreamerAndProfile(session.user.id, profile.id),
   ])

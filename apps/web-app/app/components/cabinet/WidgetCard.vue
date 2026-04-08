@@ -12,7 +12,7 @@
       </div>
     </div>
 
-    <div class="bg-[#0f0f14] p-3 flex items-center gap-2">
+    <div v-if="revealed" class="bg-[#0f0f14] p-3 flex items-center gap-2">
       <code class="flex-1 text-xs text-white/60 truncate">{{ url }}</code>
       <button
         class="shrink-0 text-white/40 hover:text-site-accent transition-colors cursor-pointer"
@@ -22,16 +22,24 @@
         <Icon :name="copied ? 'lucide:check' : 'lucide:copy'" class="size-4" />
       </button>
     </div>
+    <button
+      v-else
+      class="w-full bg-[#0f0f14] p-3 flex items-center justify-center gap-2 text-white/30 hover:text-white/50 transition-colors cursor-pointer"
+      @click="revealed = true"
+    >
+      <Icon name="lucide:eye-off" class="size-4" />
+      <span class="text-xs">Показать ссылку</span>
+    </button>
 
     <div class="flex items-center justify-between text-xs text-white/30">
-      <span>Рекомендуемый размер: {{ recommendedSize }}</span>
-      <a
-        :href="url"
-        target="_blank"
-        class="text-site-accent hover:text-site-accent-bright transition-colors"
+      <span>Размер: {{ recommendedSize }}</span>
+      <button
+        v-if="revealed"
+        class="text-site-accent hover:text-site-accent-bright transition-colors cursor-pointer"
+        @click="open()"
       >
         Открыть <Icon name="lucide:external-link" class="size-3 inline" />
-      </a>
+      </button>
     </div>
   </div>
 </template>
@@ -45,5 +53,10 @@ const props = defineProps<{
   recommendedSize: string
 }>()
 
+const revealed = ref(false)
 const { copy, copied } = useClipboard({ source: computed(() => props.url) })
+
+function open() {
+  window.open(props.url, '_blank')
+}
 </script>

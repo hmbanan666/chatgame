@@ -123,12 +123,12 @@
     <USlideover
       v-if="selectedViewer"
       v-model:open="slideoverOpen"
-      class="bg-[#1e1e24]!"
+      :title="selectedViewer.userName"
     >
-      <template #content>
-        <div class="p-6 space-y-6">
+      <template #body>
+        <div class="space-y-6">
           <div class="flex items-center gap-4">
-            <div class="size-16 bg-[#141418] flex items-center justify-center">
+            <div class="size-16 bg-[#141418] flex items-center justify-center shrink-0">
               <Icon name="lucide:user" class="size-8 text-white/30" />
             </div>
             <div>
@@ -195,13 +195,21 @@
             </div>
           </div>
 
-          <UButton
-            variant="ghost"
-            class="w-full text-white/40!"
-            @click="slideoverOpen = false"
-          >
-            Закрыть
-          </UButton>
+          <!-- Note -->
+          <div class="space-y-2">
+            <div class="text-white/40 text-xs">
+              Заметка
+            </div>
+            <textarea
+              v-model="viewerNote"
+              placeholder="Заметка о зрителе..."
+              class="w-full bg-[#141418] border border-white/10 text-sm text-white placeholder-white/20 px-3 py-2 resize-none focus:border-site-accent/50 focus:outline-none"
+              rows="3"
+            />
+            <div v-if="noteSaving" class="text-xs text-white/20">
+              Сохранение...
+            </div>
+          </div>
         </div>
       </template>
     </USlideover>
@@ -231,11 +239,46 @@ const { data, pending } = useFetch('/api/cabinet/viewers', {
 
 const selectedViewer = ref<any>(null)
 const slideoverOpen = ref(false)
+const viewerNote = ref('')
+const noteSaving = ref(false)
+let noteDebounce: ReturnType<typeof setTimeout> | null = null
 
-watch(selectedViewer, (v) => {
+watch(selectedViewer, async (v) => {
   if (v) {
     slideoverOpen.value = true
+    // Load note for this viewer
+    viewerNote.value = ''
+    try {
+      const data = await $fetch<any>('/api/dashboard/viewer', {
+        query: { twitchId: v.twitchId },
+      })
+      viewerNote.value = data?.note ?? ''
+    } catch {
+      // skip
+    }
   }
+})
+
+watch(viewerNote, (text) => {
+  if (!selectedViewer.value) {
+    return
+  }
+  if (noteDebounce) {
+    clearTimeout(noteDebounce)
+  }
+  noteSaving.value = true
+  noteDebounce = setTimeout(async () => {
+    try {
+      await $fetch('/api/dashboard/note', {
+        method: 'POST',
+        body: { profileId: selectedViewer.value.profileId, text },
+      })
+    } catch {
+      // skip
+    } finally {
+      noteSaving.value = false
+    }
+  }, 1000)
 })
 
 watch(slideoverOpen, (open) => {

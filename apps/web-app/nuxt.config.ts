@@ -28,18 +28,7 @@ export default defineNuxtConfig({
     '/static/**': {
       cors: true,
     },
-    '/backlog': {
-      ssr: false,
-    },
-    '/charge': {
-      ssr: false,
-      cors: true,
-    },
-    '/play': {
-      ssr: false,
-      cors: true,
-    },
-    '/stream-journey': {
+    '/widget/**': {
       ssr: false,
       cors: true,
     },
@@ -74,8 +63,11 @@ export default defineNuxtConfig({
     },
   },
   ui: {
-    colorMode: false,
     fonts: true,
+  },
+  colorMode: {
+    preference: 'dark',
+    fallback: 'dark',
   },
   css: ['~/assets/css/styles.css'],
   runtimeConfig: {

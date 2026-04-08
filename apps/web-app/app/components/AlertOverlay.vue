@@ -11,7 +11,7 @@
     <div
       v-if="currentAlert"
       :key="currentAlert.id"
-      class="absolute inset-x-0 top-0 flex justify-center pt-8 z-30 pointer-events-none"
+      class="absolute inset-x-0 top-0 flex justify-center pt-2 z-30 pointer-events-none"
     >
       <div class="relative flex flex-col items-center overflow-visible">
         <!-- Particles (full overlay, behind nothing) -->
@@ -27,17 +27,17 @@
         </div>
 
         <!-- Glow behind character -->
-        <div class="absolute -top-8 left-1/2 w-72 h-72 rounded-full blur-[80px] alert-glow" />
+        <div class="absolute -top-4 left-1/2 w-48 h-48 rounded-full blur-[60px] alert-glow" />
 
         <!-- Character sprite (floating above card) -->
         <div
-          class="relative z-10 h-48 w-48 image-rendering-pixelated"
+          class="relative z-10 h-32 w-32 image-rendering-pixelated"
           :class="spriteAnim.class"
           :style="spriteAnim.style"
         />
 
         <!-- Card body -->
-        <div class="relative -mt-6 flex flex-col items-center gap-3 px-16 py-8 pb-10 bg-game-bg-alt min-w-[36rem]">
+        <div class="relative -mt-4 flex flex-col items-center gap-2 px-10 py-5 pb-6 bg-game-bg-alt min-w-[24rem]">
           <!-- Shimmer line -->
           <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-game-bright to-transparent animate-shimmer" />
 
@@ -52,12 +52,12 @@
             </p>
 
             <AlertRewardBlock label="Награда">
-              <span class="text-5xl font-black text-game-bright">+{{ currentAlert.data.reward }} {{ pluralizationRu(currentAlert.data.reward, ['монета', 'монеты', 'монет']) }}</span>
-              <Image src="/coin.png" class="h-12 w-12 image-rendering-pixelated" />
+              <span class="text-3xl font-black text-game-bright">+{{ currentAlert.data.reward }} {{ pluralizationRu(currentAlert.data.reward, ['монета', 'монеты', 'монет']) }}</span>
+              <Image src="/coin.png" class="h-8 w-8 image-rendering-pixelated" />
             </AlertRewardBlock>
 
             <div class="flex items-center justify-center gap-3 mt-3">
-              <span v-if="currentAlert.data.xpReward" class="text-2xl font-black text-game-bright">+{{ currentAlert.data.xpReward }} XP</span>
+              <span v-if="currentAlert.data.xpReward" class="text-xl font-black text-game-bright">+{{ currentAlert.data.xpReward }} XP</span>
               <span v-if="currentAlert.data.xpReward" class="text-game-muted">·</span>
               <span class="text-base text-game-text">
                 У тебя <span class="font-black text-game-bright">{{ currentAlert.data.totalCoins }}</span> монет
@@ -76,7 +76,7 @@
             />
 
             <AlertRewardBlock>
-              <span class="text-5xl font-black text-game-bright">
+              <span class="text-3xl font-black text-game-bright">
                 {{ currentAlert.data.amount }} {{ currencySymbol(currentAlert.data.currency) }}
               </span>
             </AlertRewardBlock>
@@ -86,7 +86,7 @@
             </p>
 
             <div class="flex items-center justify-center gap-3 mt-2">
-              <span v-if="currentAlert.data.xpEarned" class="text-2xl font-black text-game-bright">+{{ currentAlert.data.xpEarned }} XP</span>
+              <span v-if="currentAlert.data.xpEarned" class="text-xl font-black text-game-bright">+{{ currentAlert.data.xpEarned }} XP</span>
               <span v-if="currentAlert.data.xpEarned" class="text-game-muted">·</span>
               <span class="text-base text-game-secondary-5">Спасибо за поддержку!</span>
             </div>
@@ -100,8 +100,8 @@
             />
 
             <AlertRewardBlock label="Награда">
-              <span class="text-5xl font-black text-game-bright">+{{ currentAlert.data.reward }} {{ pluralizationRu(currentAlert.data.reward, ['монета', 'монеты', 'монет']) }}</span>
-              <Image src="/coin.png" class="h-12 w-12 image-rendering-pixelated" />
+              <span class="text-3xl font-black text-game-bright">+{{ currentAlert.data.reward }} {{ pluralizationRu(currentAlert.data.reward, ['монета', 'монеты', 'монет']) }}</span>
+              <Image src="/coin.png" class="h-8 w-8 image-rendering-pixelated" />
             </AlertRewardBlock>
 
             <div class="flex items-center gap-2 mt-3">
@@ -120,8 +120,8 @@
             />
 
             <AlertRewardBlock label="Награда">
-              <span class="text-5xl font-black text-game-bright">+1 купон</span>
-              <Image src="/coupon-small.png" class="h-12 w-12 image-rendering-pixelated" />
+              <span class="text-3xl font-black text-game-bright">+1 купон</span>
+              <Image src="/coupon-small.png" class="h-8 w-8 image-rendering-pixelated" />
             </AlertRewardBlock>
 
             <div class="flex items-center justify-center gap-3 mt-3">
@@ -165,12 +165,12 @@
             />
 
             <AlertRewardBlock>
-              <span class="text-5xl font-black text-game-bright">{{ currentAlert.data.viewers }}</span>
+              <span class="text-3xl font-black text-game-bright">{{ currentAlert.data.viewers }}</span>
               <span class="text-xl text-game-text ml-2">{{ pluralizationRu(currentAlert.data.viewers, ['зритель', 'зрителя', 'зрителей']) }}</span>
             </AlertRewardBlock>
 
             <div class="flex items-center justify-center gap-3 mt-2">
-              <span v-if="currentAlert.data.xpEarned" class="text-2xl font-black text-game-bright">+{{ currentAlert.data.xpEarned }} XP</span>
+              <span v-if="currentAlert.data.xpEarned" class="text-xl font-black text-game-bright">+{{ currentAlert.data.xpEarned }} XP</span>
               <span v-if="currentAlert.data.xpEarned" class="text-game-muted">·</span>
               <span class="text-base text-game-secondary-5">Спасибо за рейд!</span>
             </div>
@@ -184,12 +184,12 @@
             />
 
             <AlertRewardBlock>
-              <span class="text-5xl font-black text-game-bright">+{{ currentAlert.data.coins }}</span>
-              <Image src="/coin.png" class="h-12 w-12 image-rendering-pixelated" />
+              <span class="text-3xl font-black text-game-bright">+{{ currentAlert.data.coins }}</span>
+              <Image src="/coin.png" class="h-8 w-8 image-rendering-pixelated" />
             </AlertRewardBlock>
 
             <div class="flex items-center justify-center gap-3 mt-2">
-              <span v-if="currentAlert.data.xpEarned" class="text-2xl font-black text-game-bright">+{{ currentAlert.data.xpEarned }} XP</span>
+              <span v-if="currentAlert.data.xpEarned" class="text-xl font-black text-game-bright">+{{ currentAlert.data.xpEarned }} XP</span>
               <span v-if="currentAlert.data.xpEarned" class="text-game-muted">·</span>
               <span class="text-base text-game-secondary-5">Спасибо за поддержку!</span>
             </div>
@@ -207,7 +207,7 @@
             </p>
 
             <div v-if="currentAlert.data.xpEarned > 0" class="flex items-center gap-2 mt-3">
-              <span class="text-2xl font-black text-game-bright">+{{ currentAlert.data.xpEarned }} XP</span>
+              <span class="text-xl font-black text-game-bright">+{{ currentAlert.data.xpEarned }} XP</span>
             </div>
           </template>
 
@@ -223,13 +223,13 @@
             </p>
 
             <AlertRewardBlock label="Награда участникам">
-              <span class="text-5xl font-black text-game-bright">+{{ currentAlert.data.xpReward }} XP</span>
+              <span class="text-3xl font-black text-game-bright">+{{ currentAlert.data.xpReward }} XP</span>
             </AlertRewardBlock>
 
             <!-- Viewer sprites -->
             <div
               v-if="currentAlert.data.viewers?.length"
-              class="mt-3 flex flex-wrap items-center justify-center gap-5"
+              class="mt-2 flex flex-wrap items-center justify-center gap-3"
             >
               <div
                 v-for="v in currentAlert.data.viewers.slice(0, 8)"
@@ -239,7 +239,7 @@
                 <SpriteAnimation
                   :codename="v.codename"
                   animation="idle"
-                  class="h-16 w-16"
+                  class="h-10 w-10"
                 />
                 <span class="text-sm font-bold text-game-bright">{{ v.name }}</span>
               </div>
@@ -258,8 +258,8 @@
             />
 
             <AlertRewardBlock label="Награда">
-              <span class="text-5xl font-black text-game-bright">+{{ currentAlert.data.amount }} {{ pluralizationRu(currentAlert.data.amount, ['монета', 'монеты', 'монет']) }}</span>
-              <Image src="/coin.png" class="h-12 w-12 image-rendering-pixelated" />
+              <span class="text-3xl font-black text-game-bright">+{{ currentAlert.data.amount }} {{ pluralizationRu(currentAlert.data.amount, ['монета', 'монеты', 'монет']) }}</span>
+              <Image src="/coin.png" class="h-8 w-8 image-rendering-pixelated" />
             </AlertRewardBlock>
           </template>
 
@@ -290,7 +290,7 @@ const spriteAnim = computed(() => {
   return {
     style: {
       'background-image': `url(/static/units/${codename}/moving.png)`,
-      'background-size': `${8 * 192}px 192px`,
+      'background-size': `${8 * 128}px 128px`,
     },
     class: 'sprite-frames-8',
   }
@@ -490,7 +490,7 @@ watch(() => props.alerts.length, () => {
 
 /* 8 frames, 192px per frame */
 .sprite-frames-8 { animation: sprite-8 1.2s steps(8) infinite, char-bounce 1s ease-out; }
-@keyframes sprite-8 { from { background-position: 0 0; } to { background-position: -1536px 0; } }
+@keyframes sprite-8 { from { background-position: 0 0; } to { background-position: -1024px 0; } }
 
 @keyframes char-bounce {
   0% { transform: translateY(-40px) scale(0.5); opacity: 0; }
