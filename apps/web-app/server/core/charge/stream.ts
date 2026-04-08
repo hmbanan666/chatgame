@@ -477,6 +477,39 @@ export class WagonSession {
     }
   }
 
+  /** Receive caravan state from client */
+  updateCaravanFromClient(data: {
+    fromVillage: string
+    toVillage: string
+    cargo: string
+    xpReward: number
+    progress: number
+    isPaused: boolean
+  }) {
+    const wasTraveling = !this.caravan.isPaused
+    const nowPaused = data.isPaused
+
+    // Update caravan display state
+    this.caravan.fromVillage = data.fromVillage
+    this.caravan.toVillage = data.toVillage
+    this.caravan.cargo = data.cargo
+    this.caravan.xpReward = data.xpReward
+    this.caravan.isPaused = data.isPaused
+
+    if (data.isPaused) {
+      this.caravan.distanceTraveled = 0
+      this.caravan.distanceTotal = 0
+    } else {
+      this.caravan.distanceTraveled = data.progress * 100
+      this.caravan.distanceTotal = 100
+    }
+
+    // Detect arrival: was traveling, now paused
+    if (wasTraveling && nowPaused && data.fromVillage) {
+      this.#onCaravanArrived()
+    }
+  }
+
   // ── Handle donation ─────────────────────────────────
 
   handleDonation(event: { username: string, amount: number, currency: string, message: string }) {

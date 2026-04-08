@@ -70,6 +70,8 @@
           :stats="stats"
           :viewer-count="viewerCount"
           :caravan="caravan"
+          :progress="caravanProgress"
+          :current-chunk="currentChunkName"
         />
 
         <!-- Webcam -->
@@ -193,6 +195,8 @@ function triggerAlert(type: string) {
 
 const game = shallowRef<InstanceType<typeof import('~/utils/stream-journey/game').StreamJourneyGame>>()
 const currentBiome = ref('GREEN')
+const caravanProgress = ref(0)
+const currentChunkName = ref('')
 let biomeInterval: ReturnType<typeof setInterval>
 
 watch(stage, async () => {
@@ -208,6 +212,8 @@ watch(stage, async () => {
   biomeInterval = setInterval(() => {
     if (game.value) {
       currentBiome.value = game.value.currentBiome
+      caravanProgress.value = game.value.caravanProgress
+      currentChunkName.value = game.value.currentChunkName
     }
   }, 1000)
 

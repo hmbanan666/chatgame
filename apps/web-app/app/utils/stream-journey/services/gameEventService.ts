@@ -73,10 +73,20 @@ export class GameEventService implements EventService {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       return
     }
+
+    const caravanData = this.game.caravanService?.getServerSyncData()
+    const currentChunk = this.game.chunkService?.getCurrentChunk()
+
     this.ws.send(JSON.stringify({
       id: createId(),
       type: 'UPDATE_BIOME',
-      data: { roomId: this.roomId, biome, wagonSpeed: speed },
+      data: {
+        roomId: this.roomId,
+        biome,
+        wagonSpeed: speed,
+        ...(currentChunk ? { currentChunk: { name: currentChunk.name, type: currentChunk.type, biome: currentChunk.biome } } : {}),
+        ...(caravanData ? { caravan: caravanData } : {}),
+      },
     }))
   }
 
@@ -116,7 +126,7 @@ export class GameEventService implements EventService {
       wagon.speedPerSecond = 0
     } else {
       // Restore speed based on multiplier
-      wagon.speedPerSecond = 60 * data.speedMultiplier
+      wagon.speedPerSecond = 20 * data.speedMultiplier
     }
   }
 

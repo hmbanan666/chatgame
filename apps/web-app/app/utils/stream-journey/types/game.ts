@@ -11,6 +11,8 @@ export interface Game extends Container {
   wagonService: WagonService
   playerService: PlayerService
   treeService: TreeService
+  chunkService: ChunkService
+  caravanService: CaravanService
   init: (window: { width: number }) => Promise<void>
   addDecoration: (child: Container) => void
   removeObject: (id: string) => void
@@ -128,6 +130,25 @@ export interface GameObjectPlayer extends GameObjectUnit {
 
 export interface EventService {
   sendTreeDestroyed?: () => void
+}
+
+export interface ChunkService {
+  chunks: import('#shared/types/chunk').WorldChunk[]
+  update: () => void
+  getCurrentChunk: () => import('#shared/types/chunk').WorldChunk | null
+  getNextVillageChunk: () => import('#shared/types/chunk').WorldChunk | null
+}
+
+export interface CaravanService {
+  state: {
+    fromVillage: string
+    toVillage: string
+    cargo: string
+    isPaused: boolean
+  }
+  progress: number
+  update: () => void
+  getServerSyncData: () => any
 }
 
 export interface WagonService {

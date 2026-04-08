@@ -1,3 +1,5 @@
+export { GameCaravanService } from './gameCaravanService'
+export { GameChunkService } from './gameChunkService'
 export { GameEventService } from './gameEventService'
 export { GamePlayerService } from './gamePlayerService'
 export { GameTreeService } from './gameTreeService'

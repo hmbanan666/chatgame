@@ -12,13 +12,15 @@
         :effects="effects"
         :stats="stats"
         :viewer-count="viewerCount"
+        :caravan="caravan"
+        :progress="caravanProgress"
       />
     </div>
   </ClientOnly>
 </template>
 
 <script setup lang="ts">
-import type { WagonEffect, WagonSessionStats } from '#shared/types/charge'
+import type { CaravanState, WagonEffect, WagonSessionStats } from '#shared/types/charge'
 
 definePageMeta({
   layout: 'game',
@@ -48,6 +50,8 @@ const stats = ref<WagonSessionStats>({
 })
 const viewerCount = ref(0)
 const biome = ref('GREEN')
+const caravan = ref<CaravanState | null>(null)
+const caravanProgress = ref(0)
 
 async function update(id: string) {
   try {
@@ -64,6 +68,12 @@ async function update(id: string) {
     stats.value = data.stats
     viewerCount.value = data.viewerCount
     biome.value = data.biome
+    caravan.value = data.caravan ?? null
+    if (data.caravan && data.caravan.distanceTotal > 0) {
+      caravanProgress.value = data.caravan.distanceTraveled / data.caravan.distanceTotal
+    } else {
+      caravanProgress.value = 0
+    }
   } catch {
     // Session not found or server error
   }

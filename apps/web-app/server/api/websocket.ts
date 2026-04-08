@@ -216,6 +216,12 @@ function handleUpdateBiome(message: WebSocketMessage) {
   if (chargeRoom) {
     chargeRoom.lastActivityAt = Date.now()
     chargeRoom.wagonSpeed = (data as any).wagonSpeed ?? 0
+
+    // Sync caravan state from client
+    const caravan = (data as any).caravan
+    if (caravan) {
+      chargeRoom.updateCaravanFromClient(caravan)
+    }
   }
   if (chargeRoom && chargeRoom.biome !== data.biome) {
     logger.info(`Biome changed: ${chargeRoom.biome} → ${data.biome}`)

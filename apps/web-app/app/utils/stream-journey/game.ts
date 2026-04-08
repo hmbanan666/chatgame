@@ -3,7 +3,7 @@ import { PALETTE } from '@chatgame/sprites'
 import { createId } from '@paralleldrive/cuid2'
 import { Application, Container, Graphics, Sprite } from 'pixi.js'
 import { NpcObject } from './objects/unit/npcObject'
-import { GameEventService, GamePlayerService, GameTreeService, GameWagonService } from './services'
+import { GameCaravanService, GameChunkService, GameEventService, GamePlayerService, GameTreeService, GameWagonService } from './services'
 
 interface StreamJourneyGameOptions {
   roomId?: string
@@ -43,12 +43,22 @@ export class StreamJourneyGame extends Container implements Game {
   wagonService: GameWagonService
   playerService: GamePlayerService
   treeService: GameTreeService
+  chunkService: GameChunkService
+  caravanService: GameCaravanService
 
   /** Container that holds everything in the world — camera moves this */
   worldContainer: Container
 
   get currentBiome(): string {
     return this.treeService.getBiomeAt(this.wagonService.wagon?.x ?? 0)
+  }
+
+  get caravanProgress(): number {
+    return this.caravanService.progress
+  }
+
+  get currentChunkName(): string {
+    return this.chunkService.getCurrentChunk()?.name ?? ''
   }
 
   private demoMode: boolean
@@ -71,6 +81,8 @@ export class StreamJourneyGame extends Container implements Game {
     this.treeService = new GameTreeService(this)
     this.wagonService = new GameWagonService(this)
     this.playerService = new GamePlayerService(this)
+    this.chunkService = new GameChunkService(this)
+    this.caravanService = new GameCaravanService(this)
   }
 
   async init({ width }: { width: number }) {
@@ -85,6 +97,8 @@ export class StreamJourneyGame extends Container implements Game {
 
     this.app.ticker.maxFPS = 60
 
+    // Init chunks BEFORE drawing ground so biomes are consistent
+    this.chunkService.update()
     this.drawGround()
     this.wagonService.init()
 
@@ -93,8 +107,6 @@ export class StreamJourneyGame extends Container implements Game {
     this.worldContainer.addChild(this)
     this.app.stage.addChild(this.worldContainer)
     this.app.ticker.add(this.baseTicker, 'baseTicker')
-
-    this.spawnNpc()
 
     if (this.demoMode) {
       this.startDemo()
@@ -106,7 +118,9 @@ export class StreamJourneyGame extends Container implements Game {
 
     this.wagonService.update()
     this.playerService.update()
+    this.chunkService.update()
     this.treeService.update()
+    this.caravanService.update()
     this.updateObjects()
   }
 
@@ -222,7 +236,7 @@ export class StreamJourneyGame extends Container implements Game {
     const ground = new Container()
     const chunkSize = 48
     const totalChunks = 800
-    const startX = -200 * chunkSize / 2
+    const startX = -500
 
     const P = PALETTE
     // Ground palettes per biome: [grass1, grass2, dirt1, dirt2]

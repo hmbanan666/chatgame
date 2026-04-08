@@ -71,7 +71,7 @@ const ANCHORS = [
  */
 export class StumpObject extends Container {
   private frameCount = 0
-  private readonly LIFETIME = 600 // ~10 sec at 60fps
+  private readonly LIFETIME = 1800 // ~30 sec at 60fps
 
   constructor(variant: number, scale: number, renderer: Renderer) {
     super()
