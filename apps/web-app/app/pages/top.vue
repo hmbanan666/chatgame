@@ -14,7 +14,7 @@
       <button
         v-for="tab in tabs"
         :key="tab.value"
-        class="px-4 py-2 text-sm font-semibold transition-colors duration-200 cursor-pointer"
+        class="px-4 py-2 text-sm font-semibold transition-colors duration-200 cursor-pointer rounded-lg"
         :class="sortBy === tab.value
           ? 'bg-[#6441a5] text-white'
           : 'bg-[#1e1e24] text-white/60 hover:text-white'"
@@ -35,8 +35,8 @@
         <div
           class="relative flex items-center justify-center overflow-hidden"
           :class="idx === 0
-            ? 'size-20 ring-4 ring-amber-400 bg-[#1e1e24]'
-            : 'size-16 ring-2 ring-white/20 bg-[#1e1e24]'"
+            ? 'size-20 ring-4 ring-amber-400 bg-[#1e1e24] rounded-lg'
+            : 'size-16 ring-2 ring-white/20 bg-[#1e1e24] rounded-lg'"
         >
           <SpriteIdle
             v-if="getActiveCodename(viewers[idx]!)"
@@ -51,7 +51,7 @@
           />
         </div>
         <div
-          class="size-6 -mt-3 flex items-center justify-center text-xs font-bold z-10"
+          class="size-6 -mt-3 flex items-center justify-center text-xs font-bold z-10 rounded-md"
           :class="idx === 0 ? 'bg-amber-400 text-black' : idx === 1 ? 'bg-gray-300 text-black' : 'bg-amber-700 text-white'"
         >
           {{ idx + 1 }}
@@ -72,12 +72,12 @@
       <div
         v-for="(viewer, index) in viewers.slice(3)"
         :key="viewer.id"
-        class="flex items-center gap-3 px-4 py-3 bg-[#1e1e24]/60 hover:bg-[#1e1e24] transition-colors duration-150"
+        class="flex items-center gap-3 px-4 py-3 bg-[#1e1e24]/60 hover:bg-[#1e1e24] transition-colors duration-150 rounded-lg"
       >
         <span class="w-8 text-center text-sm font-bold text-white/40">
           {{ index + 4 }}
         </span>
-        <div class="size-10 shrink-0 bg-[#141418] flex items-center justify-center overflow-hidden">
+        <div class="size-10 shrink-0 bg-[#141418] rounded-md flex items-center justify-center overflow-hidden">
           <SpriteIdle
             v-if="getActiveCodename(viewer)"
             :codename="getActiveCodename(viewer)!"

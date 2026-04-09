@@ -8,7 +8,7 @@
       external
       size="xl"
       icon="simple-icons:twitch"
-      class="btn-pixel bg-[#6441a5]! hover:bg-[#7B5BBF]! text-white! shadow-[0_0_30px_rgba(139,92,246,0.4)]! px-10! py-4! rounded-none!"
+      class="btn-pixel bg-[#6441a5]! hover:bg-[#7B5BBF]! text-white! shadow-[0_0_30px_rgba(139,92,246,0.4)]! px-10! py-4! rounded-lg!"
     >
       Войти через Twitch
     </UButton>
@@ -23,7 +23,7 @@
       <div class="max-w-3xl mx-auto px-4 space-y-6">
         <!-- Avatar + name + level -->
         <div class="flex flex-col items-center gap-3 text-center">
-          <div class="size-20 rounded-none ring-4 ring-site-highlight bg-[#1e1e24] flex items-center justify-center overflow-hidden">
+          <div class="size-20 rounded-lg ring-4 ring-site-highlight bg-[#1e1e24] flex items-center justify-center overflow-hidden">
             <SpriteAnimation
               v-if="profile?.activeCharacter?.character.codename"
               :codename="profile.activeCharacter.character.codename"
@@ -40,7 +40,7 @@
               {{ profile?.userName }}
             </h2>
             <div class="flex flex-row gap-2 items-center justify-center mt-1">
-              <span class="bg-site-highlight text-black px-3 py-0.5 rounded-none font-bold text-sm">
+              <span class="bg-site-highlight text-black px-3 py-0.5 rounded-lg font-bold text-sm">
                 Ур. {{ profile?.level }}
               </span>
               <span class="text-sm text-site-text/60">{{ formatWatchTime(profile?.watchTimeMin ?? 0) }} на стримах</span>
@@ -48,7 +48,7 @@
           </div>
           <!-- XP bar -->
           <div v-if="xpProgress" class="w-full max-w-xs">
-            <div class="w-full h-2.5 bg-[#1e1e24] rounded-none overflow-hidden">
+            <div class="w-full h-2.5 bg-[#1e1e24] rounded-lg overflow-hidden">
               <div
                 class="h-full bg-teal-500 transition-all duration-500"
                 :style="{ width: `${xpProgress.percent}%` }"
@@ -99,20 +99,19 @@
         </div>
 
         <!-- Coupon exchange -->
-        <button
-          v-if="(profile?.coupons ?? 0) > 0"
-          :disabled="isExchanging"
-          class="mx-auto px-5 py-2 bg-white/5 border border-white/10 hover:bg-white/10 text-white/80 text-sm rounded-none cursor-pointer duration-200 flex items-center justify-center gap-2"
-          @click="exchangeCoupon"
-        >
-          <span class="relative flex size-2">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-none bg-white opacity-75" />
-            <span class="relative inline-flex rounded-none size-2 bg-white" />
-          </span>
-          <Image src="/coupon-small.png" class="size-5" />
-          <span>Обменять купон на 2 монеты</span>
-          <Image src="/coin.png" class="size-5" />
-        </button>
+        <div v-if="(profile?.coupons ?? 0) > 0" class="flex justify-center">
+          <PixelButton
+            :disabled="isExchanging"
+            :loading="isExchanging"
+            color="neutral"
+            class="text-sm!"
+            @click="exchangeCoupon"
+          >
+            <Image src="/coupon-small.png" class="size-5" />
+            Обменять купон на 2 монеты
+            <Image src="/coin.png" class="size-5" />
+          </PixelButton>
+        </div>
       </div>
     </div>
 
@@ -121,7 +120,7 @@
       v-if="nextCharacterNudge"
       class="py-6 px-4"
     >
-      <div class="max-w-2xl mx-auto flex items-center gap-4 p-4 border-2 border-violet-500/30 bg-violet-500/10">
+      <div class="max-w-2xl mx-auto flex items-center gap-4 p-4 border-2 border-violet-500/30 bg-violet-500/10 rounded-lg">
         <SpriteAnimation
           :codename="nextCharacterNudge.character.codename"
           class="size-14 shrink-0"
@@ -137,20 +136,22 @@
             {{ nextCharacterNudge.character.price }} монет за персонажа
           </p>
         </div>
-        <a
+        <PixelButton
           v-if="nextCharacterNudge.canAfford"
-          href="#characters"
-          class="btn-pixel shrink-0 px-4 py-2 bg-teal-500 text-white font-bold text-sm"
+          to="#characters"
+          color="accent"
+          class="shrink-0! text-sm! px-4! py-2!"
         >
           Открыть
-        </a>
-        <a
+        </PixelButton>
+        <PixelButton
           v-else
-          href="#shop"
-          class="btn-pixel shrink-0 px-4 py-2 bg-[#6441a5] text-white font-bold text-sm"
+          to="#shop"
+          color="twitch"
+          class="shrink-0! text-sm! px-4! py-2!"
         >
           Купить монеты
-        </a>
+        </PixelButton>
       </div>
     </div>
 
@@ -190,7 +191,7 @@
             <!-- Active star badge -->
             <div
               v-if="isActiveCharacter(char.id)"
-              class="absolute -top-1.5 -right-1.5 z-10 size-7 bg-amber-400 rounded-none flex items-center justify-center border-2 border-[#2a2a30]"
+              class="absolute -top-1.5 -right-1.5 z-10 size-7 bg-amber-400 rounded-lg flex items-center justify-center border-2 border-[#2a2a30]"
             >
               <Icon name="lucide:star" class="size-4 text-white" />
             </div>
@@ -200,7 +201,7 @@
               v-if="!isCharacterOwned(char.id)"
               class="absolute inset-0 z-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
             >
-              <div class="size-10 rounded-none bg-[#18181b]/60 flex items-center justify-center">
+              <div class="size-10 rounded-lg bg-[#18181b]/60 flex items-center justify-center">
                 <Icon name="lucide:lock" class="size-5 text-white/80" />
               </div>
             </div>
@@ -223,7 +224,7 @@
                 <span>Ур. {{ getCharacterEdition(char.id)?.level ?? 1 }}</span>
                 <span>{{ formatWatchTime(getCharacterEdition(char.id)?.playTimeMin ?? 0) }}</span>
               </div>
-              <div class="w-full h-1 bg-[#18181b]/15 rounded-none overflow-hidden">
+              <div class="w-full h-1 bg-[#18181b]/15 rounded-lg overflow-hidden">
                 <div
                   class="h-full bg-teal-500"
                   :style="{ width: `${getCharXpPercent(char.id)}%` }"
@@ -276,26 +277,26 @@
           <!-- Tier badge -->
           <div
             v-if="recommendedProduct && product.id === recommendedProduct.id"
-            class="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 bg-[#6441a5] text-white text-xs font-bold whitespace-nowrap animate-pulse"
+            class="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 bg-[#6441a5] text-white text-xs font-bold whitespace-nowrap rounded-md animate-pulse"
           >
             Подходит!
           </div>
           <div
             v-else-if="index === 2"
-            class="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 bg-[#2a2a2e] text-white text-xs font-bold whitespace-nowrap"
+            class="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 bg-[#2a2a2e] text-white text-xs font-bold whitespace-nowrap rounded-md"
           >
             Популярное
           </div>
           <div
             v-else-if="index >= 3"
-            class="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 bg-[#2a2a2e] text-white text-xs font-bold whitespace-nowrap"
+            class="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 bg-[#2a2a2e] text-white text-xs font-bold whitespace-nowrap rounded-md"
           >
             Выгодно
           </div>
 
           <!-- Card with tier-colored border -->
           <div
-            class="border-2 border-b-4 overflow-hidden"
+            class="border-2 border-b-4 overflow-hidden rounded-lg"
             :style="{ borderColor: shopTierColors[index], backgroundColor: shopTierBg[index] }"
           >
             <!-- Image area with tier bg -->
@@ -332,7 +333,7 @@
               <div>
                 <button
                   :disabled="isLoading"
-                  class="btn-pixel px-4 py-3 w-full text-white font-bold rounded-none cursor-pointer flex flex-row justify-center items-center gap-2"
+                  class="btn-pixel px-4 py-3 w-full text-white font-bold rounded-lg cursor-pointer flex flex-row justify-center items-center gap-2"
                   :style="{ backgroundColor: shopTierColors[index] }"
                   @click="buyProduct(product.id)"
                 >
@@ -397,7 +398,7 @@
           <template v-if="isCharacterOwned(selectedCharacter.id)">
             <button
               v-if="!isActiveCharacter(selectedCharacter.id)"
-              class="px-6 py-3 w-full bg-[#1e1e24] text-white text-base font-semibold rounded-none cursor-pointer hover:opacity-85 active:scale-95 duration-200 flex items-center justify-center gap-2"
+              class="px-6 py-3 w-full bg-[#1e1e24] text-white text-base font-semibold rounded-lg cursor-pointer hover:opacity-85 active:scale-95 duration-200 flex items-center justify-center gap-2"
               @click="activateCharacter(selectedCharacter.id)"
             >
               <Icon name="lucide:star" class="size-5" />
@@ -411,7 +412,7 @@
             <button
               v-if="(profile?.coins ?? 0) >= selectedCharacter.price"
               :disabled="isBuyingCharacter"
-              class="btn-pixel px-6 py-3 w-full bg-teal-500 text-white text-base font-semibold rounded-none cursor-pointer flex items-center justify-center gap-2"
+              class="btn-pixel px-6 py-3 w-full bg-teal-500 text-white text-base font-semibold rounded-lg cursor-pointer flex items-center justify-center gap-2"
               @click="buyCharacter(selectedCharacter.id)"
             >
               <Image src="/coin.png" class="size-5" />
@@ -423,7 +424,7 @@
               </p>
               <a
                 href="#shop"
-                class="btn-pixel px-6 py-3 w-full bg-[#6441a5] text-white text-base font-semibold rounded-none flex items-center justify-center gap-2"
+                class="btn-pixel px-6 py-3 w-full bg-[#6441a5] text-white text-base font-semibold rounded-lg flex items-center justify-center gap-2"
                 @click="isCharacterOpened = false"
               >
                 <Image src="/coin.png" class="size-5" />

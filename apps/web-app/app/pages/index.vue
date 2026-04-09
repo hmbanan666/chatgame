@@ -47,15 +47,15 @@
       </NuxtLink>
     </div>
 
-    <UButton
+    <PixelButton
       :to="authUrl"
       external
-      size="xl"
+      color="twitch"
       icon="simple-icons:twitch"
-      class="btn-pixel bg-[#6441a5]! hover:bg-[#7B5BBF]! text-white! shadow-[0_0_30px_rgba(139,92,246,0.4)]! px-12! py-5! rounded-none! font-pixel text-lg!"
+      class="px-12! py-5! font-pixel text-lg! shadow-[inset_-4px_-4px_0_0_rgba(0,0,0,0.25),inset_4px_4px_0_0_rgba(255,255,255,0.15),0_0_30px_rgba(139,92,246,0.4)]!"
     >
       Войти через Twitch
-    </UButton>
+    </PixelButton>
     <p class="mt-3 text-xs text-white/30">
       Безопасный вход через Twitch. Мы не получаем пароль.
     </p>
@@ -71,7 +71,7 @@
       </h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
         <div class="space-y-3">
-          <div class="size-18 mx-auto bg-[#1e1e24] border-2 border-white/10 flex items-center justify-center">
+          <div class="size-18 mx-auto bg-[#1e1e24] border-2 border-white/10 rounded-xl flex items-center justify-center">
             <Icon name="simple-icons:twitch" class="size-10 text-[#a78bfa]" />
           </div>
           <h3 class="text-lg font-bold text-white">
@@ -82,7 +82,7 @@
           </p>
         </div>
         <div class="space-y-3">
-          <div class="size-18 mx-auto bg-[#1e1e24] border-2 border-white/10 flex items-center justify-center">
+          <div class="size-18 mx-auto bg-[#1e1e24] border-2 border-white/10 rounded-xl flex items-center justify-center">
             <Image src="/units/twitchy/head.png" class="size-12" />
           </div>
           <h3 class="text-lg font-bold text-white">
@@ -93,7 +93,7 @@
           </p>
         </div>
         <div class="space-y-3">
-          <div class="size-18 mx-auto bg-[#1e1e24] border-2 border-white/10 flex items-center justify-center">
+          <div class="size-18 mx-auto bg-[#1e1e24] border-2 border-white/10 rounded-xl flex items-center justify-center">
             <Image src="/coin.png" class="size-12" />
           </div>
           <h3 class="text-lg font-bold text-white">
@@ -105,15 +105,15 @@
         </div>
       </div>
       <div class="mt-10 text-center">
-        <UButton
+        <PixelButton
           :to="authUrl"
           external
-          size="xl"
+          color="twitch"
           icon="simple-icons:twitch"
-          class="btn-pixel bg-[#6441a5]! hover:bg-[#7B5BBF]! text-white! shadow-[0_0_30px_rgba(139,92,246,0.4)]! px-10! py-4! rounded-none!"
+          class="px-10! py-4!"
         >
           Начать играть
-        </UButton>
+        </PixelButton>
       </div>
     </div>
   </div>
@@ -144,17 +144,9 @@
           <!-- Starter badge for Twitchy -->
           <div
             v-if="char.codename === 'twitchy'"
-            class="absolute -top-1.5 -left-1.5 z-10 px-1.5 py-0.5 bg-emerald-500 text-white text-[10px] font-bold"
+            class="absolute -top-2 -left-2 z-10 px-2 py-0.5 bg-site-accent text-white text-xs font-bold rounded-md"
           >
             Стартовый
-          </div>
-
-          <!-- Lock overlay -->
-          <div
-            v-if="char.price > 0"
-            class="absolute inset-0 z-10 flex items-center justify-center bg-[#18181b]/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-          >
-            <span class="text-xs text-white font-bold px-2 py-1 bg-[#6441a5]">Войди</span>
           </div>
 
           <div class="flex-1 flex flex-col items-center justify-center">
@@ -183,15 +175,15 @@
         <p class="text-white/50 mb-4">
           Войди через Twitch чтобы собирать персонажей
         </p>
-        <UButton
+        <PixelButton
           :to="authUrl"
           external
-          size="xl"
+          color="twitch"
           icon="simple-icons:twitch"
-          class="btn-pixel bg-[#6441a5]! hover:bg-[#7B5BBF]! text-white! shadow-[0_0_30px_rgba(139,92,246,0.4)]! px-10! py-4! rounded-none!"
+          class="px-10! py-4!"
         >
           Войти и начать
-        </UButton>
+        </PixelButton>
       </div>
     </div>
   </div>
@@ -210,15 +202,15 @@
           </p>
         </div>
       </div>
-      <UButton
+      <PixelButton
         :to="authUrl"
         external
-        size="xl"
+        color="twitch"
         icon="simple-icons:twitch"
-        class="btn-pixel bg-[#6441a5]! hover:bg-[#7B5BBF]! text-white! shadow-[0_0_30px_rgba(139,92,246,0.4)]! px-10! py-4! rounded-none!"
+        class="px-10! py-4!"
       >
         Войти чтобы увидеть магазин
-      </UButton>
+      </PixelButton>
     </div>
   </div>
 
@@ -234,15 +226,15 @@
       <div
         v-for="(viewer, index) in topViewers"
         :key="viewer.id"
-        class="flex items-center gap-3 px-4 py-3 bg-[#1e1e24]/60"
+        class="flex items-center gap-3 px-4 py-3 bg-[#1e1e24]/60 rounded-lg"
       >
         <span
-          class="w-7 h-7 shrink-0 flex items-center justify-center text-xs font-bold"
+          class="w-7 h-7 shrink-0 flex items-center justify-center text-xs font-bold rounded-md"
           :class="index === 0 ? 'bg-amber-400 text-black' : index === 1 ? 'bg-gray-300 text-black' : index === 2 ? 'bg-amber-700 text-white' : 'bg-transparent text-white/40'"
         >
           {{ index + 1 }}
         </span>
-        <div class="size-9 shrink-0 bg-[#141418] flex items-center justify-center overflow-hidden">
+        <div class="size-9 shrink-0 bg-[#141418] rounded-md flex items-center justify-center overflow-hidden">
           <SpriteIdle
             v-if="getTopViewerCodename(viewer)"
             :codename="getTopViewerCodename(viewer)!"
@@ -260,12 +252,9 @@
         <span class="text-xs text-white/50 shrink-0">Ур. {{ viewer.level }}</span>
       </div>
     </div>
-    <NuxtLink
-      to="/top"
-      class="btn-pixel inline-block px-6 py-3 bg-[#1e1e24] text-white text-sm font-semibold hover:bg-[#2a2a30] transition-colors duration-200"
-    >
+    <PixelButton to="/top" color="neutral">
       Весь топ
-    </NuxtLink>
+    </PixelButton>
   </div>
 
   <div class="pixel-divider" />
@@ -282,7 +271,7 @@
       <span
         v-for="name in thanksNames"
         :key="name"
-        class="px-3 py-1.5 bg-[#2D2640] text-[#a78bfa] font-pixel text-sm border border-[#8b5cf6]/20 hover:bg-[#8b5cf6] hover:text-white transition-colors duration-200"
+        class="px-3 py-1.5 bg-site-accent/10 text-site-accent text-sm font-medium border border-site-accent/20 rounded-md hover:bg-site-accent hover:text-white transition-colors duration-200"
       >
         {{ name }}
       </span>
@@ -296,16 +285,15 @@
   <div
     class="fixed bottom-0 left-0 right-0 z-50 md:hidden p-3 bg-[#18181b]/95 backdrop-blur-sm border-t border-[#2a2a30]"
   >
-    <UButton
+    <PixelButton
       :to="authUrl"
       external
-      block
-      size="lg"
+      color="twitch"
       icon="simple-icons:twitch"
-      class="btn-pixel bg-[#6441a5]! hover:bg-[#7B5BBF]! text-white! shadow-[0_0_30px_rgba(139,92,246,0.4)]! py-3! rounded-none! font-bold!"
+      class="w-full! py-3! font-bold!"
     >
       Войти через Twitch
-    </UButton>
+    </PixelButton>
   </div>
 </template>
 

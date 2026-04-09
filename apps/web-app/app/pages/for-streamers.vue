@@ -12,27 +12,27 @@
 
     <!-- Features -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div class="bg-[#1e1e24] border border-white/5 p-6 space-y-3">
+      <div class="bg-[#1e1e24] border border-white/5 rounded-lg p-6 space-y-3">
         <Icon name="lucide:gamepad-2" class="size-8 text-site-accent" />
         <h3 class="font-bold text-lg">
           Игра на стриме
         </h3>
         <p class="text-sm text-white/40">
-          Зрители пишут в чат — их персонажи рубят деревья, путешествуют с караваном, выполняют квесты. Всё в реальном времени.
+          Зрители пишут в чат, их персонажи рубят деревья, путешествуют с караваном, выполняют квесты. Всё в реальном времени.
         </p>
       </div>
 
-      <div class="bg-[#1e1e24] border border-white/5 p-6 space-y-3">
+      <div class="bg-[#1e1e24] border border-white/5 rounded-lg p-6 space-y-3">
         <Icon name="lucide:bell" class="size-8 text-site-accent" />
         <h3 class="font-bold text-lg">
           Алерты и виджеты
         </h3>
         <p class="text-sm text-white/40">
-          Красивые уведомления о новых зрителях, донатах, левел-апах. Готовые ссылки для OBS — вставил и забыл.
+          Красивые уведомления о новых зрителях, донатах, левел-апах. Готовые ссылки для OBS, вставил и забыл.
         </p>
       </div>
 
-      <div class="bg-[#1e1e24] border border-white/5 p-6 space-y-3">
+      <div class="bg-[#1e1e24] border border-white/5 rounded-lg p-6 space-y-3">
         <Icon name="lucide:users" class="size-8 text-site-accent" />
         <h3 class="font-bold text-lg">
           CRM зрителей
@@ -42,7 +42,7 @@
         </p>
       </div>
 
-      <div class="bg-[#1e1e24] border border-white/5 p-6 space-y-3">
+      <div class="bg-[#1e1e24] border border-white/5 rounded-lg p-6 space-y-3">
         <Icon name="lucide:bar-chart-3" class="size-8 text-site-accent" />
         <h3 class="font-bold text-lg">
           Аналитика стримов
@@ -54,18 +54,18 @@
     </div>
 
     <!-- Trial info -->
-    <div class="bg-site-accent/5 border border-site-accent/20 p-6 space-y-3 text-center">
+    <div class="bg-site-accent/5 border border-site-accent/20 rounded-lg p-6 space-y-3 text-center">
       <Icon name="lucide:gift" class="size-8 text-site-accent mx-auto" />
       <h3 class="font-bold text-lg">
         5 стримов бесплатно
       </h3>
       <p class="text-sm text-white/40">
-        Подключи канал, попробуй все инструменты на 5 стримах. Потом — анлок за 100 монет (заработаешь их за это время).
+        Подключи канал, попробуй все инструменты на 5 стримах. Потом анлок за монеты.
       </p>
     </div>
 
     <!-- CTA -->
-    <div class="bg-[#1e1e24] border border-site-accent/20 p-8 text-center space-y-6">
+    <div class="bg-[#1e1e24] border border-white/10 rounded-lg p-8 text-center space-y-6">
       <template v-if="!loggedIn">
         <h2 class="font-pixel text-xl font-bold">
           Начни с авторизации
@@ -73,15 +73,14 @@
         <p class="text-white/40">
           Войди через Twitch, а потом подключи канал
         </p>
-        <UButton
+        <PixelButton
           :to="authUrl"
           external
-          size="xl"
+          color="twitch"
           icon="simple-icons:twitch"
-          class="btn-pixel bg-[#6441a5]! hover:bg-[#7B5BBF]! text-white! rounded-none! px-8!"
         >
           Войти через Twitch
-        </UButton>
+        </PixelButton>
       </template>
 
       <template v-else-if="isStreamer">
@@ -89,12 +88,9 @@
         <h2 class="font-pixel text-xl font-bold">
           Кабинет активен
         </h2>
-        <UButton
-          to="/cabinet"
-          class="btn-pixel bg-site-accent! hover:bg-site-accent-bright! text-white! rounded-none! px-8!"
-        >
+        <PixelButton to="/cabinet" color="accent">
           Перейти в кабинет
-        </UButton>
+        </PixelButton>
       </template>
 
       <template v-else>
@@ -102,17 +98,16 @@
           Подключи свой канал
         </h2>
         <p class="text-white/40">
-          Разреши доступ к каналу через Twitch — и кабинет стримера откроется автоматически
+          Разреши доступ к каналу через Twitch и кабинет стримера откроется автоматически
         </p>
-        <UButton
+        <PixelButton
           :to="streamerAuthUrl"
           external
-          size="xl"
+          color="twitch"
           icon="simple-icons:twitch"
-          class="btn-pixel bg-[#6441a5]! hover:bg-[#7B5BBF]! text-white! rounded-none! px-8!"
         >
           Подключить канал
-        </UButton>
+        </PixelButton>
       </template>
     </div>
   </div>

@@ -9,7 +9,7 @@
     </NuxtLink>
 
     <UPopover>
-      <button class="size-11 overflow-hidden cursor-pointer duration-200 hover:opacity-85 hover:scale-105">
+      <button class="size-11 rounded-lg overflow-hidden cursor-pointer duration-200 hover:opacity-85 hover:scale-105">
         <img
           :src="user?.imageUrl ?? '/icons/twitch/112.png'"
           class="size-full object-cover"
