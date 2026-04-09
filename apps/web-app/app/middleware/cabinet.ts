@@ -1,4 +1,4 @@
-export default defineNuxtRouteMiddleware(async () => {
+export default defineNuxtRouteMiddleware(async (to) => {
   const { loggedIn, user } = useUserSession()
 
   if (!loggedIn.value) {
@@ -9,5 +9,21 @@ export default defineNuxtRouteMiddleware(async () => {
 
   if (!profile.value?.isStreamer) {
     return navigateTo('/for-streamers')
+  }
+
+  // Premium already paid — full access
+  if (profile.value.streamerPremiumPaidAt) {
+    return
+  }
+
+  // Allow upgrade page always
+  if (to.path === '/cabinet/upgrade') {
+    return
+  }
+
+  // Check trial status
+  const { data: access } = await useFetch('/api/cabinet/access-status')
+  if (access.value?.status === 'locked') {
+    return navigateTo('/cabinet/upgrade')
   }
 })

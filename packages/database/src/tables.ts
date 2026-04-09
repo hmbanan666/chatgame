@@ -22,6 +22,7 @@ export const profiles = pgTable('profile', {
   watchTimeMin: integer('watch_time_min').notNull().default(0),
   activeEditionId: text('active_edition_id'),
   donationAlertsUserId: text('donation_alerts_user_id'),
+  streamerPremiumPaidAt: timestamp('streamer_premium_paid_at', { precision: 3, withTimezone: true, mode: 'date' }),
 })
 
 export const profilesRelations = relations(profiles, ({ many }) => ({

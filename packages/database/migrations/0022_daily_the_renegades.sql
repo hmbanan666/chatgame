@@ -1,0 +1,1 @@
+ALTER TABLE "profile" ADD COLUMN "streamer_premium_paid_at" timestamp (3) with time zone;

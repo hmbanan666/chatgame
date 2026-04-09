@@ -120,6 +120,9 @@ export class ViewerQuestService {
       await db.backlogItem.completeQuest(quest.backlogItemId, quest.goal)
       await db.profile.addCoins(quest.profileId, quest.reward)
 
+      // Streamer earns 1 coin for viewer quest completion
+      await db.profile.addCoins(this.#streamerId, 1)
+
       if (quest.xpReward > 0) {
         await getLevelingService().addXpForAction(quest.profileId, quest.xpReward, this.#channelId)
       }

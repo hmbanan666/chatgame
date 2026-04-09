@@ -12,6 +12,7 @@ export interface Profile {
   mana: number
   activeEditionId: string
   donationAlertsUserId: string | null
+  streamerPremiumPaidAt: Date | null
 }
 
 export interface ProfileWithTokens extends Profile {

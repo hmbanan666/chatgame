@@ -199,6 +199,17 @@ export class ProfileRepository {
     )
   }
 
+  static requestStreamer(id: string) {
+    const db = useDatabase()
+    return db.update(tables.profiles)
+      .set({
+        streamerRequestedAt: new Date(),
+        streamerRequestStatus: 'PENDING',
+        updatedAt: new Date(),
+      })
+      .where(eq(tables.profiles.id, id))
+  }
+
   static async requestStreamerWithPayment(id: string, fee: number) {
     const db = useDatabase()
     const [result] = await db.update(tables.profiles)
@@ -247,6 +258,13 @@ export class ProfileRepository {
       .where(eq(tables.profiles.id, id))
 
     return refundAmount
+  }
+
+  static unlockPremium(id: string) {
+    const db = useDatabase()
+    return db.update(tables.profiles)
+      .set({ streamerPremiumPaidAt: new Date(), updatedAt: new Date() })
+      .where(eq(tables.profiles.id, id))
   }
 
   static findActiveStreamers() {

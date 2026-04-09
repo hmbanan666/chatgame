@@ -53,6 +53,17 @@
       </div>
     </div>
 
+    <!-- Trial info -->
+    <div class="bg-site-accent/5 border border-site-accent/20 p-6 space-y-3 text-center">
+      <Icon name="lucide:gift" class="size-8 text-site-accent mx-auto" />
+      <h3 class="font-bold text-lg">
+        5 стримов бесплатно
+      </h3>
+      <p class="text-sm text-white/40">
+        Подай заявку, попробуй все инструменты на 5 стримах. Потом — анлок за 100 монет (заработаешь их за это время).
+      </p>
+    </div>
+
     <!-- CTA -->
     <div class="bg-[#1e1e24] border border-site-accent/20 p-8 text-center space-y-6">
       <template v-if="!loggedIn">
@@ -102,32 +113,15 @@
           Заявка отклонена
         </h2>
         <p class="text-white/40">
-          Монеты возвращены. Можешь подать заявку повторно.
+          Можешь подать заявку повторно.
         </p>
-        <div class="flex items-center justify-center gap-2 text-sm text-white/50">
-          <Icon name="lucide:coins" class="size-4 text-site-highlight" />
-          <span>Твой баланс: <b class="text-white">{{ userCoins }}</b> монет</span>
-          <span class="text-white/30">/ нужно {{ STREAMER_APPLICATION_FEE }}</span>
-        </div>
         <UButton
-          v-if="userCoins >= STREAMER_APPLICATION_FEE"
           :loading="requesting"
           class="btn-pixel bg-site-accent! hover:bg-site-accent-bright! text-white! rounded-none! px-8!"
           @click="requestAccess"
         >
-          Подать заявку повторно ({{ STREAMER_APPLICATION_FEE }} монет)
+          Подать заявку повторно
         </UButton>
-        <div v-else class="space-y-2">
-          <p class="text-sm text-site-highlight">
-            Не хватает {{ STREAMER_APPLICATION_FEE - userCoins }} монет
-          </p>
-          <UButton
-            to="/shop"
-            class="btn-pixel bg-white/10! hover:bg-white/20! text-white! rounded-none! px-6!"
-          >
-            Перейти в магазин
-          </UButton>
-        </div>
       </template>
 
       <template v-else>
@@ -137,30 +131,13 @@
         <p class="text-white/40">
           Подай заявку — мы проверим твой канал и подключим инструменты
         </p>
-        <div class="flex items-center justify-center gap-2 text-sm text-white/50">
-          <Icon name="lucide:coins" class="size-4 text-site-highlight" />
-          <span>Твой баланс: <b class="text-white">{{ userCoins }}</b> монет</span>
-          <span class="text-white/30">/ нужно {{ STREAMER_APPLICATION_FEE }}</span>
-        </div>
         <UButton
-          v-if="userCoins >= STREAMER_APPLICATION_FEE"
           :loading="requesting"
           class="btn-pixel bg-site-accent! hover:bg-site-accent-bright! text-white! rounded-none! px-8!"
           @click="requestAccess"
         >
-          Подать заявку ({{ STREAMER_APPLICATION_FEE }} монет)
+          Подать заявку (бесплатно)
         </UButton>
-        <div v-else class="space-y-2">
-          <p class="text-sm text-site-highlight">
-            Не хватает {{ STREAMER_APPLICATION_FEE - userCoins }} монет
-          </p>
-          <UButton
-            to="/shop"
-            class="btn-pixel bg-white/10! hover:bg-white/20! text-white! rounded-none! px-6!"
-          >
-            Перейти в магазин
-          </UButton>
-        </div>
       </template>
 
       <p v-if="requestError" class="text-sm text-red-400">
@@ -171,8 +148,6 @@
 </template>
 
 <script setup lang="ts">
-import { STREAMER_APPLICATION_FEE } from '@chatgame/types'
-
 useHead({ title: 'Для стримеров' })
 
 const { loggedIn, user } = useUserSession()
@@ -181,12 +156,10 @@ const { authUrl } = useAuthUrl()
 const streamerStatus = ref<'none' | 'pending' | 'approved' | 'rejected'>('none')
 const requesting = ref(false)
 const requestError = ref('')
-const userCoins = ref(0)
 
 if (loggedIn.value && user.value?.id) {
   const { data: profile } = await useFetch(() => `/api/profile/${user.value!.id}`)
   if (profile.value) {
-    userCoins.value = profile.value.coins ?? 0
     if (profile.value.isStreamer) {
       streamerStatus.value = 'approved'
     } else if (profile.value.streamerRequestStatus === 'PENDING') {
@@ -203,13 +176,8 @@ async function requestAccess() {
   try {
     const res = await $fetch('/api/cabinet/request', { method: 'POST' })
     streamerStatus.value = res.status as 'pending' | 'approved'
-    userCoins.value -= STREAMER_APPLICATION_FEE
-  } catch (err: any) {
-    if (err?.data?.message === 'NOT_ENOUGH_COINS') {
-      requestError.value = `Недостаточно монет. Нужно ${STREAMER_APPLICATION_FEE}, у тебя ${err.data.data?.current ?? 0}`
-    } else {
-      requestError.value = 'Ошибка при отправке заявки'
-    }
+  } catch {
+    requestError.value = 'Ошибка при отправке заявки'
   } finally {
     requesting.value = false
   }
