@@ -67,7 +67,7 @@ useHead({ title: 'Разблокировать кабинет' })
 const unlocking = ref(false)
 const error = ref('')
 
-const { data: access, refresh } = await useFetch('/api/cabinet/access-status')
+const { data: access } = await useFetch('/api/cabinet/access-status')
 
 // If already premium, redirect to cabinet
 if (access.value?.status === 'premium') {
@@ -79,7 +79,7 @@ async function unlockPremium() {
   error.value = ''
   try {
     await $fetch('/api/cabinet/unlock-premium', { method: 'POST' })
-    await refresh()
+    clearNuxtData()
     navigateTo('/cabinet')
   } catch (err: any) {
     if (err?.data?.message === 'NOT_ENOUGH_COINS') {

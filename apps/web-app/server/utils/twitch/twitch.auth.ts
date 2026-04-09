@@ -34,6 +34,17 @@ export async function reloadTwitchToken(): Promise<TwitchToken> {
     refreshToken: stored.refreshToken as string,
   }
 
+  // Auto-refresh if token is expired or about to expire (5 min buffer)
+  if (stored.expiresIn && stored.obtainmentTimestamp) {
+    const obtainedAt = Number(stored.obtainmentTimestamp)
+    const expiresAt = obtainedAt + (stored.expiresIn * 1000)
+    const bufferMs = 5 * 60_000
+    if (Date.now() >= expiresAt - bufferMs) {
+      logger.info('Token expired or about to expire, refreshing...')
+      return refreshTwitchToken()
+    }
+  }
+
   return _token
 }
 
