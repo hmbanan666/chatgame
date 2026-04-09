@@ -13,7 +13,7 @@ import { TwitchService } from './twitch.service'
 
 const logger = useLogger('twitch:controller')
 
-type MessageHandler = (channel: string, userName: string, userId: string, text: string) => void
+type MessageHandler = (channel: string, userName: string, userId: string, text: string, replyTo?: string) => void
 type RedemptionHandler = (event: RedemptionEvent) => void
 type FollowHandler = (userName: string) => void
 type RaidHandler = (userName: string, viewers: number) => void
@@ -77,6 +77,10 @@ class TwitchController {
     }
   }
 
+  say(message: string) {
+    this.#chat?.say(message)
+  }
+
   onMessage(handler: MessageHandler) {
     this.#messageHandlers.push(handler)
   }
@@ -113,9 +117,9 @@ class TwitchController {
 
     // Chat
     this.#chat = new TwitchChat(this.#channel)
-    this.#chat.onMessage(async (userName, userId, text) => {
+    this.#chat.onMessage(async (userName, userId, text, replyTo) => {
       try {
-        const answer = await this.#service.handleMessage({ userId, userName, text })
+        const answer = await this.#service.handleMessage({ userId, userName, text, replyTo })
         if (answer?.message) {
           this.#chat.say(answer.message)
           sendGameMessage(this.#userId, {
@@ -125,7 +129,7 @@ class TwitchController {
         }
 
         for (const handler of this.#messageHandlers) {
-          handler(this.#channel, userName, userId, text)
+          handler(this.#channel, userName, userId, text, replyTo)
         }
       } catch (err) {
         logger.error('Failed to handle chat message', err)

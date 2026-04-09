@@ -11,29 +11,18 @@
 
     <!-- Search & sort -->
     <div class="flex flex-col sm:flex-row gap-3">
-      <div class="flex-1 relative">
-        <Icon name="lucide:search" class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-white/30" />
-        <input
-          v-model="search"
-          type="text"
-          placeholder="Поиск по нику..."
-          class="w-full bg-[#1e1e24] border border-white/10 pl-10 pr-4 py-2.5 text-sm text-white placeholder-white/30 focus:border-site-accent/50 focus:outline-none transition-colors"
-        >
-      </div>
-      <select
+      <UInput
+        v-model="search"
+        placeholder="Поиск по нику..."
+        icon="lucide:search"
+        class="flex-1"
+        :ui="{ root: 'rounded-lg', base: 'rounded-lg' }"
+      />
+      <USelect
         v-model="sortBy"
-        class="bg-[#1e1e24] border border-white/10 px-3 py-2.5 text-sm text-white focus:border-site-accent/50 focus:outline-none"
-      >
-        <option value="lastSeenAt">
-          Последний визит
-        </option>
-        <option value="messagesCount">
-          Сообщения
-        </option>
-        <option value="watchTimeMin">
-          Время просмотра
-        </option>
-      </select>
+        :items="sortOptions"
+        :ui="{ base: 'rounded-lg' }"
+      />
     </div>
 
     <!-- Table -->
@@ -41,7 +30,7 @@
       Загрузка...
     </div>
 
-    <div v-else-if="data?.viewers?.length" class="border border-white/5 overflow-hidden">
+    <div v-else-if="data?.viewers?.length" class="border border-white/5 rounded-lg overflow-hidden">
       <table class="w-full text-sm">
         <thead class="bg-[#141418] text-white/40 text-xs uppercase">
           <tr>
@@ -203,7 +192,7 @@
             <textarea
               v-model="viewerNote"
               placeholder="Заметка о зрителе..."
-              class="w-full bg-[#141418] border border-white/10 text-sm text-white placeholder-white/20 px-3 py-2 resize-none focus:border-site-accent/50 focus:outline-none"
+              class="w-full bg-[#141418] border border-white/10 text-sm text-white placeholder-white/20 px-3 py-2 resize-none focus:border-teal-500/50 focus:outline-none"
               rows="3"
             />
             <div v-if="noteSaving" class="text-xs text-white/20">
@@ -224,6 +213,11 @@ definePageMeta({
 
 const search = ref('')
 const sortBy = ref('lastSeenAt')
+const sortOptions = [
+  { label: 'Последний визит', value: 'lastSeenAt' },
+  { label: 'Сообщения', value: 'messagesCount' },
+  { label: 'Время просмотра', value: 'watchTimeMin' },
+]
 const page = ref(1)
 
 const debouncedSearch = refDebounced(search, 400)

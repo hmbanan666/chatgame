@@ -7,8 +7,8 @@
         @click="expanded = !expanded"
       >
         <Icon :name="expanded ? 'lucide:panel-left-close' : 'lucide:panel-left-open'" class="size-5 shrink-0" />
-        <span v-if="expanded" class="font-pixel text-sm text-site-text tracking-wide">
-          Кабинет
+        <span v-if="expanded" class="text-base font-semibold text-site-text truncate">
+          {{ userName }}
         </span>
       </button>
     </div>
@@ -18,9 +18,9 @@
         v-for="item in navItems"
         :key="item.path"
         :to="item.path"
-        class="flex items-center gap-3 py-2.5 text-sm transition-colors duration-150 group"
+        class="flex items-center gap-3 py-2.5 text-sm transition-colors duration-150 group rounded-lg"
         :class="[
-          isActive(item.path) ? 'bg-site-accent/15 text-site-accent-bright' : 'text-white/60 hover:text-white hover:bg-white/5',
+          isActive(item.path) ? 'bg-teal-500/15 text-teal-400' : 'text-white/60 hover:text-white hover:bg-white/5',
           expanded ? 'px-3' : 'justify-center px-0',
         ]"
       >
@@ -44,10 +44,16 @@
 
 <script setup lang="ts">
 const route = useRoute()
-const expanded = ref(true)
+const { user } = useUserSession()
+const userName = computed(() => user.value?.userName ?? 'Кабинет')
+const expanded = ref(!route.path.startsWith('/cabinet/live'))
+
+watch(() => route.path, (path) => {
+  expanded.value = !path.startsWith('/cabinet/live')
+})
 
 const navItems = computed(() => [
-  { label: 'Обзор', icon: 'lucide:home', path: '/cabinet' },
+  { label: 'Кабинет', icon: 'lucide:home', path: '/cabinet' },
   { label: 'Live-панель', icon: 'lucide:monitor', path: '/cabinet/live' },
   { label: 'Зрители', icon: 'lucide:users', path: '/cabinet/viewers' },
   { label: 'Аналитика', icon: 'lucide:bar-chart-3', path: '/cabinet/analytics' },

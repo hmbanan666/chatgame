@@ -8,8 +8,8 @@
   --color-site-bg-card: #1e1e24;    /* slightly elevated — cards */
   --color-site-text: #FFFFFF;       /* pure white — max contrast */
   --color-site-text-muted: #9ca3af; /* gray-400 — secondary */
-  --color-site-accent: #8b5cf6;     /* violet-500 — Twitch purple vibe */
-  --color-site-accent-bright: #a78bfa; /* violet-400 — hover states */
+  --color-site-accent: #14b8a6;     /* teal-500 — primary accent */
+  --color-site-accent-bright: #2dd4bf; /* teal-400 — hover states */
   --color-site-highlight: #fbbf24;  /* amber-400 — highlights, coins */
 
   /*

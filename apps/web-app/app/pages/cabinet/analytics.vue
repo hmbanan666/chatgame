@@ -11,7 +11,7 @@
     <template v-else-if="data?.streams?.length">
       <!-- Summary -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="bg-[#1e1e24] border border-white/5 p-4 space-y-1">
+        <div class="bg-[#1e1e24] border border-white/5 rounded-lg p-4 space-y-1">
           <div class="text-xs text-white/40">
             Всего стримов
           </div>
@@ -19,7 +19,7 @@
             {{ data.total }}
           </div>
         </div>
-        <div class="bg-[#1e1e24] border border-white/5 p-4 space-y-1">
+        <div class="bg-[#1e1e24] border border-white/5 rounded-lg p-4 space-y-1">
           <div class="text-xs text-white/40">
             Ср. зрители (пик)
           </div>
@@ -27,7 +27,7 @@
             {{ avgPeakViewers }}
           </div>
         </div>
-        <div class="bg-[#1e1e24] border border-white/5 p-4 space-y-1">
+        <div class="bg-[#1e1e24] border border-white/5 rounded-lg p-4 space-y-1">
           <div class="text-xs text-white/40">
             Всего донатов
           </div>
@@ -35,7 +35,7 @@
             {{ totalDonations }} ₽
           </div>
         </div>
-        <div class="bg-[#1e1e24] border border-white/5 p-4 space-y-1">
+        <div class="bg-[#1e1e24] border border-white/5 rounded-lg p-4 space-y-1">
           <div class="text-xs text-white/40">
             Всего сообщений
           </div>
@@ -50,7 +50,7 @@
         <div
           v-for="stream in data.streams"
           :key="stream.id"
-          class="bg-[#1e1e24] border border-white/5 p-4 cursor-pointer hover:border-white/10 transition-colors"
+          class="bg-[#1e1e24] border border-white/5 rounded-lg p-4 cursor-pointer hover:border-white/10 transition-colors"
           @click="toggleExpand(stream.id)"
         >
           <div class="flex items-center justify-between">

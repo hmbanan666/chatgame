@@ -40,7 +40,7 @@
               {{ profile?.userName }}
             </h2>
             <div class="flex flex-row gap-2 items-center justify-center mt-1">
-              <span class="bg-site-highlight text-white px-3 py-0.5 rounded-none font-bold text-sm">
+              <span class="bg-site-highlight text-black px-3 py-0.5 rounded-none font-bold text-sm">
                 Ур. {{ profile?.level }}
               </span>
               <span class="text-sm text-site-text/60">{{ formatWatchTime(profile?.watchTimeMin ?? 0) }} на стримах</span>
@@ -50,7 +50,7 @@
           <div v-if="xpProgress" class="w-full max-w-xs">
             <div class="w-full h-2.5 bg-[#1e1e24] rounded-none overflow-hidden">
               <div
-                class="h-full bg-emerald-500 transition-all duration-500"
+                class="h-full bg-teal-500 transition-all duration-500"
                 :style="{ width: `${xpProgress.percent}%` }"
               />
             </div>
@@ -72,7 +72,7 @@
             <p class="text-sm font-semibold">
               {{ profile?.activeCharacter?.character.nickname }}
             </p>
-            <a href="#characters" class="text-xs text-emerald-500 hover:underline">Сменить</a>
+            <a href="#characters" class="text-xs text-teal-400 hover:underline">Сменить</a>
           </ActiveCard>
 
           <!-- Coins -->
@@ -102,7 +102,7 @@
         <button
           v-if="(profile?.coupons ?? 0) > 0"
           :disabled="isExchanging"
-          class="btn-pixel w-full px-4 py-3 bg-emerald-500 text-white text-sm rounded-none cursor-pointer duration-200 flex items-center justify-center gap-2"
+          class="mx-auto px-5 py-2 bg-white/5 border border-white/10 hover:bg-white/10 text-white/80 text-sm rounded-none cursor-pointer duration-200 flex items-center justify-center gap-2"
           @click="exchangeCoupon"
         >
           <span class="relative flex size-2">
@@ -121,7 +121,7 @@
       v-if="nextCharacterNudge"
       class="py-6 px-4"
     >
-      <div class="max-w-2xl mx-auto flex items-center gap-4 p-4 border-2 border-[#8b5cf6]/30 bg-[#8b5cf6]/10">
+      <div class="max-w-2xl mx-auto flex items-center gap-4 p-4 border-2 border-violet-500/30 bg-violet-500/10">
         <SpriteAnimation
           :codename="nextCharacterNudge.character.codename"
           class="size-14 shrink-0"
@@ -140,7 +140,7 @@
         <a
           v-if="nextCharacterNudge.canAfford"
           href="#characters"
-          class="btn-pixel shrink-0 px-4 py-2 bg-emerald-500 text-white font-bold text-sm"
+          class="btn-pixel shrink-0 px-4 py-2 bg-teal-500 text-white font-bold text-sm"
         >
           Открыть
         </a>
@@ -177,7 +177,7 @@
             :key="char.id"
             class="relative px-2 py-3 flex flex-col items-center justify-between cursor-pointer"
             :class="[
-              isCharacterOwned(char.id) ? 'border-emerald-500!' : '',
+              isCharacterOwned(char.id) ? 'border-white/30!' : '',
               !isCharacterOwned(char.id) ? 'grayscale-50 hover:grayscale-0' : '',
             ]"
             @click="
@@ -225,7 +225,7 @@
               </div>
               <div class="w-full h-1 bg-[#18181b]/15 rounded-none overflow-hidden">
                 <div
-                  class="h-full bg-emerald-500"
+                  class="h-full bg-teal-500"
                   :style="{ width: `${getCharXpPercent(char.id)}%` }"
                 />
               </div>
@@ -270,7 +270,7 @@
           :key="product.id"
           class="relative transition-all duration-200 hover:-translate-y-1"
           :class="[
-            recommendedProduct && product.id === recommendedProduct.id ? 'ring-2 ring-[#8b5cf6]' : '',
+            recommendedProduct && product.id === recommendedProduct.id ? 'ring-2 ring-[#14b8a6]' : '',
           ]"
         >
           <!-- Tier badge -->
@@ -353,7 +353,7 @@
         Можешь
         <NuxtLink
           to="/donate"
-          class="text-site-accent-bright hover:opacity-85 duration-200"
+          class="text-teal-400 hover:opacity-85 duration-200"
         >
           поддержать стримера
         </NuxtLink>
@@ -411,7 +411,7 @@
             <button
               v-if="(profile?.coins ?? 0) >= selectedCharacter.price"
               :disabled="isBuyingCharacter"
-              class="btn-pixel px-6 py-3 w-full bg-emerald-500 text-white text-base font-semibold rounded-none cursor-pointer flex items-center justify-center gap-2"
+              class="btn-pixel px-6 py-3 w-full bg-teal-500 text-white text-base font-semibold rounded-none cursor-pointer flex items-center justify-center gap-2"
               @click="buyCharacter(selectedCharacter.id)"
             >
               <Image src="/coin.png" class="size-5" />

@@ -1,7 +1,7 @@
 <template>
-  <div class="bg-[#1e1e24] border border-white/5 p-5 space-y-4">
+  <div class="bg-[#1e1e24] border border-white/5 rounded-lg p-5 space-y-4">
     <div class="flex items-center gap-3">
-      <Icon :name="icon" class="size-6 text-site-accent" />
+      <Icon :name="icon" class="size-6 text-teal-400 shrink-0" />
       <div>
         <div class="font-semibold">
           {{ name }}
@@ -12,10 +12,10 @@
       </div>
     </div>
 
-    <div v-if="revealed" class="bg-[#0f0f14] p-3 flex items-center gap-2">
+    <div v-if="revealed" class="bg-[#0f0f14] rounded-md p-3 flex items-center gap-2">
       <code class="flex-1 text-xs text-white/60 truncate">{{ url }}</code>
       <button
-        class="shrink-0 text-white/40 hover:text-site-accent transition-colors cursor-pointer"
+        class="shrink-0 text-white/40 hover:text-teal-400 transition-colors cursor-pointer"
         :title="copied ? 'Скопировано!' : 'Копировать'"
         @click="copy()"
       >
@@ -24,7 +24,7 @@
     </div>
     <button
       v-else
-      class="w-full bg-[#0f0f14] p-3 flex items-center justify-center gap-2 text-white/30 hover:text-white/50 transition-colors cursor-pointer"
+      class="w-full bg-[#0f0f14] rounded-md p-3 flex items-center justify-center gap-2 text-white/30 hover:text-white/50 transition-colors cursor-pointer"
       @click="revealed = true"
     >
       <Icon name="lucide:eye-off" class="size-4" />
@@ -32,10 +32,10 @@
     </button>
 
     <div class="flex items-center justify-between text-xs text-white/30">
-      <span>Размер: {{ recommendedSize }}</span>
+      <span>Рекомендуемый: {{ recommendedSize }}</span>
       <button
         v-if="revealed"
-        class="text-site-accent hover:text-site-accent-bright transition-colors cursor-pointer"
+        class="text-teal-400 hover:text-teal-400-bright transition-colors cursor-pointer"
         @click="open()"
       >
         Открыть <Icon name="lucide:external-link" class="size-3 inline" />

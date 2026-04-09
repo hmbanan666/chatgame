@@ -10,7 +10,7 @@
 
     <template v-else-if="overview">
       <!-- Streamer info -->
-      <section class="bg-[#1e1e24] border border-white/5 p-6 space-y-4">
+      <section class="bg-[#1e1e24] border border-white/5 rounded-lg p-6 space-y-4">
         <h2 class="font-pixel text-lg font-bold">
           Twitch аккаунт
         </h2>
@@ -40,20 +40,20 @@
       </section>
 
       <!-- Widget settings hint -->
-      <section class="bg-[#1e1e24] border border-white/5 p-6 space-y-4">
+      <section class="bg-[#1e1e24] border border-white/5 rounded-lg p-6 space-y-4">
         <h2 class="font-pixel text-lg font-bold">
           Виджеты
         </h2>
         <p class="text-white/40 text-sm">
           Настройки виджетов (цвета, звуки, позиции) будут доступны в следующем обновлении.
         </p>
-        <NuxtLink to="/cabinet/widgets" class="text-sm text-site-accent hover:underline">
+        <NuxtLink to="/cabinet/widgets" class="text-sm text-teal-400 hover:underline">
           Посмотреть ссылки на виджеты
         </NuxtLink>
       </section>
 
       <!-- Danger zone -->
-      <section class="bg-[#1e1e24] border border-red-500/20 p-6 space-y-4">
+      <section class="bg-[#1e1e24] border border-red-500/20 rounded-lg p-6 space-y-4">
         <h2 class="font-pixel text-lg font-bold text-red-400">
           Опасная зона
         </h2>

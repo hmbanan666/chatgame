@@ -22,6 +22,7 @@ export interface DashboardChatMessage {
   isFirstThisStream: boolean
   loadingXp: boolean
   loadingCoins: boolean
+  replyTo?: string
 }
 
 export interface ViewerCardData {
@@ -61,14 +62,17 @@ export function useDashboardSimulator() {
   const chatMessages = reactive<DashboardChatMessage[]>([])
   const events = reactive<DashboardEvent[]>([])
   const stats = ref({
+    isLive: true,
     fuel: 65,
     maxFuel: 100,
     viewerCount: getRandInteger(30, 150),
     biome: 'GREEN',
+    nextCouponAt: new Date(Date.now() + 20 * 60_000).toISOString(),
     stats: {
       messagesCount: 0,
       treesChopped: getRandInteger(50, 200),
       couponsTaken: getRandInteger(0, 5),
+      streamStartedAt: new Date(Date.now() - getRandInteger(30, 120) * 60_000).toISOString(),
     },
   })
 

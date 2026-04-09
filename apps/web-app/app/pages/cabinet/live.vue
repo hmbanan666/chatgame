@@ -4,7 +4,7 @@
     <Transition name="card">
       <div
         v-if="activeViewerCard"
-        class="absolute top-3 left-1/2 -translate-x-1/2 z-50 w-full max-w-lg bg-[#1e1e26] border border-white/15 shadow-2xl cursor-pointer"
+        class="absolute top-3 left-1/2 -translate-x-1/2 z-50 w-full max-w-lg bg-[#1e1e26] border border-white/15 rounded-lg overflow-hidden shadow-2xl cursor-pointer"
         @click="dismissViewerCard"
       >
         <div class="h-0.5 bg-site-highlight/30">
@@ -39,7 +39,7 @@
               :value="activeViewerCard.note"
               type="text"
               placeholder="Заметка о зрителе..."
-              class="w-full bg-white/5 border border-white/10 text-site-text text-sm px-3 py-1.5 placeholder-white/20 focus:outline-none focus:border-site-highlight/50"
+              class="w-full bg-white/5 border border-white/10 rounded-md text-site-text text-sm px-3 py-1.5 placeholder-white/20 focus:outline-none focus:border-site-highlight/50"
               @input="updateNote(activeViewerCard!.profileId, ($event.target as HTMLInputElement).value)"
             >
           </div>
@@ -48,7 +48,7 @@
     </Transition>
 
     <!-- Top bar — stream stats -->
-    <div class="h-10 bg-[#1a1a20] border border-white/10 flex items-center gap-6 px-4 text-sm shrink-0 mb-2">
+    <div class="h-10 bg-[#1a1a20] border border-white/10 rounded-lg flex items-center gap-6 px-4 text-sm shrink-0 mb-2">
       <div class="flex items-center gap-2">
         <span class="size-2 rounded-full" :class="isLive ? 'bg-green-500 animate-pulse' : 'bg-white/20'" />
         <span class="font-pixel text-xs text-site-text">{{ isLive ? streamUptime : '—' }}</span>
@@ -72,6 +72,14 @@
         <div class="text-white/20 text-xs" title="Следующий купон">
           {{ couponCountdown }}
         </div>
+        <div
+          v-if="redemptionStats.totalCost > 0"
+          class="text-white/40 flex items-center gap-1 ml-2"
+          title="Баллы канала сожжено"
+        >
+          <Icon name="lucide:gift" class="size-3.5" /><span class="text-site-highlight font-bold">{{ redemptionStats.totalCost.toLocaleString() }}</span>
+          <span class="text-white/20 text-xs">на {{ redemptionStats.count }}</span>
+        </div>
       </template>
       <template v-else>
         <span class="text-white/30">Оффлайн</span>
@@ -79,12 +87,12 @@
       <span v-if="isDemo" class="bg-amber-500/20 text-amber-400 text-xs font-bold px-1.5 py-0.5 ml-auto">DEMO</span>
     </div>
 
-    <!-- Main area -->
+    <!-- Main area: 3 columns -->
     <div class="flex gap-2 h-[calc(100%-3.5rem)]">
-      <!-- Left: player + events -->
+      <!-- Left: player + stream info -->
       <div class="flex-1 flex flex-col gap-2 min-w-0">
         <!-- Twitch player embed -->
-        <div class="bg-black border border-white/10 flex-1 min-h-0 overflow-hidden relative">
+        <div class="bg-black border border-white/10 rounded-lg flex-1 min-h-0 overflow-hidden relative">
           <ClientOnly>
             <iframe
               v-if="!isDemo"
@@ -104,36 +112,69 @@
           </div>
         </div>
 
-        <!-- Events -->
-        <div class="h-48 shrink-0 flex flex-col bg-[#1a1a20] border border-white/10 overflow-hidden">
-          <div class="px-3 py-1.5 border-b border-white/10 text-xs font-bold text-site-text/80">
-            События
+        <!-- Stream info: clickable card → opens slideover -->
+        <div
+          class="shrink-0 bg-[#1a1a20] border border-white/10 rounded-lg px-3 py-2 cursor-pointer hover:bg-white/5 transition-colors"
+          @click="streamInfoOpen = true"
+        >
+          <div class="flex items-center gap-2">
+            <div class="flex-1 min-w-0">
+              <div class="text-sm text-site-text truncate">
+                {{ streamInfo?.title || 'Название не задано' }}
+              </div>
+              <div class="flex items-center gap-2 mt-0.5">
+                <Icon name="lucide:gamepad-2" class="size-3.5 text-white/30 shrink-0" />
+                <span class="text-xs text-white/50 truncate">{{ streamInfo?.gameName || 'Без категории' }}</span>
+                <div v-if="streamInfo?.tags?.length" class="flex gap-1 ml-1">
+                  <span
+                    v-for="tag in streamInfo.tags.slice(0, 3)"
+                    :key="tag"
+                    class="text-[10px] bg-white/10 text-white/40 px-1.5 py-0.5 rounded-full"
+                  >{{ tag }}</span>
+                  <span v-if="streamInfo.tags.length > 3" class="text-[10px] text-white/30">+{{ streamInfo.tags.length - 3 }}</span>
+                </div>
+              </div>
+            </div>
+            <Icon name="lucide:pencil" class="size-4 text-white/30 shrink-0" />
           </div>
-          <div ref="eventsContainer" class="flex-1 overflow-y-auto space-y-0.5 p-2">
-            <div
-              v-for="ev in events"
-              :key="ev.id"
-              class="px-2 py-1 text-sm border-l-2 rounded-sm"
-              :class="eventColor(ev.type)"
-            >
-              <span class="text-white/40 text-xs mr-1">{{ ev.time }}</span>
-              <span
-                v-if="ev.data.userName"
-                class="text-site-text font-bold text-xs cursor-pointer hover:underline mr-1"
-                :style="{ color: nameColor(ev.data.userName) }"
-                @click="openProfileModal(ev.data.twitchId || '', ev.data.userName)"
-              >{{ ev.data.userName }}</span>
-              <span class="text-site-text/70 text-xs">{{ formatEventText(ev) }}</span>
-            </div>
-            <div v-if="!events.length" class="text-white/30 text-xs text-center py-4">
-              Ожидание событий...
-            </div>
+        </div>
+
+        <CabinetStreamInfoSlideover
+          v-model:open="streamInfoOpen"
+          :initial="streamInfo"
+          @saved="onStreamInfoSaved"
+        />
+      </div>
+
+      <!-- Middle: events -->
+      <div class="w-64 shrink-0 flex flex-col bg-[#1a1a20] border border-white/10 rounded-lg overflow-hidden">
+        <div class="px-3 py-1.5 border-b border-white/10 text-xs font-bold text-site-text/80">
+          События
+        </div>
+        <div ref="eventsContainer" class="flex-1 overflow-y-auto space-y-0.5 p-2">
+          <div
+            v-for="ev in events"
+            :key="ev.id"
+            class="px-2 py-1 text-sm border-l-2 rounded-sm"
+            :class="eventColor(ev.type)"
+          >
+            <span class="text-white/40 text-xs mr-1">{{ ev.time }}</span>
+            <span
+              v-if="ev.data.userName"
+              class="text-site-text font-bold text-xs cursor-pointer hover:underline mr-1"
+              :style="{ color: nameColor(ev.data.userName) }"
+              @click="openProfileModal(ev.data.twitchId || '', ev.data.userName)"
+            >{{ ev.data.userName }}</span>
+            <span class="text-site-text/70 text-xs">{{ formatEventText(ev) }}</span>
+          </div>
+          <div v-if="!events.length" class="text-white/30 text-xs text-center py-4">
+            Ожидание событий...
           </div>
         </div>
       </div>
 
-      <!-- Right: chat -->
-      <div class="w-80 shrink-0 flex flex-col bg-[#1a1a20] border border-white/10 overflow-hidden relative">
+      <!-- Right: chat + input -->
+      <div class="w-80 shrink-0 flex flex-col bg-[#1a1a20] border border-white/10 rounded-lg overflow-hidden relative">
         <div class="px-3 py-1.5 border-b border-white/10 text-xs font-bold text-site-text/80">
           Чат
         </div>
@@ -153,6 +194,11 @@
               </p>
             </template>
             <template v-else>
+              <!-- Reply context -->
+              <div v-if="msg.replyTo" class="text-xs text-white/25 mb-0.5 flex items-center gap-1">
+                <Icon name="lucide:corner-down-right" class="size-3" />
+                <span :style="{ color: nameColor(msg.replyTo) }">{{ msg.replyTo }}</span>
+              </div>
               <span class="text-white/20 text-xs mr-1">{{ msg.time }}</span>
               <span
                 class="font-bold text-xs cursor-pointer hover:underline"
@@ -160,12 +206,6 @@
                 @click="openProfileModal(msg.twitchId, msg.name)"
               >{{ msg.name }}</span>
               <span class="text-white/40 text-xs ml-1">{{ msg.level }}</span>
-              <span
-                v-if="getActivity(msg.name)?.questDone"
-                class="text-green-400 text-xs ml-1"
-                title="Квест выполнен"
-              >Q</span>
-              <span v-if="(getActivity(msg.name)?.messages ?? 0) >= 5" class="text-white/30 text-xs ml-1">x{{ getActivity(msg.name)?.messages }}</span>
               <p class="text-site-text/90 text-sm break-words">
                 {{ msg.text }}
               </p>
@@ -177,11 +217,84 @@
         </div>
         <button
           v-if="!chatAutoScroll"
-          class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-site-highlight text-white text-xs font-bold px-3 py-1 shadow-lg cursor-pointer hover:bg-site-highlight/80 z-10"
+          class="absolute bottom-12 left-1/2 -translate-x-1/2 bg-site-highlight text-white text-xs font-bold px-3 py-1 shadow-lg cursor-pointer hover:bg-site-highlight/80 z-10"
           @click="resumeChatAutoScroll"
         >
           Новые сообщения ↓
         </button>
+
+        <!-- Chat input + actions -->
+        <div class="border-t border-white/10 px-2 py-2 flex items-center gap-1.5">
+          <UPopover :ui="{ content: 'p-0' }" @update:open="(v: boolean) => v && fetchRewards()">
+            <button
+              class="shrink-0 size-7 flex items-center justify-center text-white/30 hover:text-teal-400 transition-colors cursor-pointer rounded-md hover:bg-white/5"
+              title="Награды канала"
+            >
+              <Icon name="lucide:gem" class="size-4" />
+            </button>
+            <template #content>
+              <div class="w-72 max-h-80 overflow-y-auto p-2 space-y-0.5">
+                <div class="text-xs font-bold text-white/50 px-2 py-1">
+                  Награды канала
+                </div>
+                <button
+                  v-for="reward in channelRewards"
+                  :key="reward.id"
+                  class="w-full flex items-center gap-2.5 px-2 py-2 rounded-md transition-colors text-left"
+                  :class="reward.isWagonAction ? 'hover:bg-white/10 cursor-pointer' : 'opacity-50 cursor-default'"
+                  :disabled="!reward.isWagonAction || actionLoading === reward.id"
+                  @click="triggerWagonAction(reward.id)"
+                >
+                  <div
+                    class="size-8 rounded shrink-0 flex items-center justify-center"
+                    :style="{ backgroundColor: reward.backgroundColor || '#333' }"
+                  >
+                    <img
+                      v-if="reward.imageUrl"
+                      :src="reward.imageUrl"
+                      class="size-6 object-contain"
+                    >
+                    <Icon
+                      v-else
+                      name="lucide:gem"
+                      class="size-4 text-white/60"
+                    />
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="text-sm text-site-text truncate">
+                      {{ reward.title }}
+                    </div>
+                    <div v-if="reward.prompt" class="text-xs text-white/30 truncate">
+                      {{ reward.prompt }}
+                    </div>
+                  </div>
+                  <span class="text-xs text-teal-400 font-bold shrink-0">{{ reward.cost.toLocaleString() }}</span>
+                </button>
+                <div v-if="!channelRewards.length" class="text-xs text-white/30 text-center py-4">
+                  Нет наград
+                </div>
+              </div>
+            </template>
+          </UPopover>
+          <div class="flex-1 relative">
+            <input
+              v-model="chatInput"
+              type="text"
+              :placeholder="chatAvailable ? 'Написать в чат...' : 'Бот не подключён'"
+              class="w-full bg-[#0f0f14] border border-white/10 rounded-md text-sm text-white placeholder-white/20 px-3 py-1.5 focus:outline-none focus:border-teal-500/50 disabled:opacity-40"
+              :disabled="chatSending || !chatAvailable"
+              @keydown.enter="sendChatMessage"
+            >
+            <button
+              v-if="chatInput.trim()"
+              class="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center justify-center text-teal-400 hover:text-teal-300 transition-colors cursor-pointer"
+              :disabled="chatSending"
+              @click="sendChatMessage"
+            >
+              <Icon name="lucide:send" class="size-4" />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -194,7 +307,7 @@
       >
         <div class="absolute inset-0 bg-black/60" />
         <div
-          class="relative w-full max-w-sm bg-[#1e1e26] border border-white/15 shadow-2xl"
+          class="relative w-full max-w-sm bg-[#1e1e26] border border-white/15 rounded-lg shadow-2xl"
           @click.stop
         >
           <div class="px-5 py-4 space-y-4">
@@ -325,7 +438,7 @@ const { user } = useUserSession()
 
 const roomId = user.value?.twitchId || ''
 const channelName = user.value?.userName || ''
-const isDemo = false
+const isDemo = useRoute().query.demo === '1'
 
 if (!roomId) {
   throw createError({ statusCode: 404 })
@@ -344,6 +457,138 @@ const stats = ref<any>(null)
 const isLive = computed(() => {
   return stats.value?.isLive === true
 })
+
+// Channel rewards
+interface ChannelReward {
+  id: string
+  title: string
+  cost: number
+  prompt: string
+  isEnabled: boolean
+  backgroundColor: string
+  imageUrl: string
+  isWagonAction: boolean
+}
+const channelRewards = ref<ChannelReward[]>([])
+const actionLoading = ref<string | null>(null)
+
+async function fetchRewards() {
+  if (isDemo) {
+    channelRewards.value = [
+      { id: 'demo-t1', title: 'Эффекты для сообщения', cost: 20, prompt: '', isEnabled: true, backgroundColor: '#9146ff', imageUrl: '', isWagonAction: false },
+      { id: 'demo-t2', title: 'Гигантизировать смайлик', cost: 30, prompt: '', isEnabled: true, backgroundColor: '#9146ff', imageUrl: '', isWagonAction: false },
+      { id: 'demo-t3', title: 'Торжество на экране', cost: 40, prompt: '', isEnabled: true, backgroundColor: '#e64ac8', imageUrl: '', isWagonAction: false },
+      { id: 'demo-1', title: 'Сальто вагона', cost: 50, prompt: 'Вагон делает сальто', isEnabled: true, backgroundColor: '#1db8ab', imageUrl: '', isWagonAction: true },
+      { id: 'demo-2', title: 'Заправить вагон', cost: 100, prompt: '+15 топлива', isEnabled: true, backgroundColor: '#1db8ab', imageUrl: '', isWagonAction: true },
+      { id: 'demo-3', title: 'Украсть топливо', cost: 200, prompt: '-10 топлива', isEnabled: true, backgroundColor: '#e64a4a', imageUrl: '', isWagonAction: true },
+      { id: 'demo-t4', title: 'Подсветить сообщение', cost: 300, prompt: '', isEnabled: true, backgroundColor: '#00c7ac', imageUrl: '', isWagonAction: false },
+      { id: 'demo-4', title: 'Ускорение', cost: 400, prompt: 'x2 скорость на 2 мин', isEnabled: true, backgroundColor: '#e6c84a', imageUrl: '', isWagonAction: true },
+      { id: 'demo-5', title: 'Сбросить эффекты', cost: 500, prompt: 'Убирает все эффекты', isEnabled: true, backgroundColor: '#1db8ab', imageUrl: '', isWagonAction: true },
+      { id: 'demo-6', title: 'Саботаж', cost: 800, prompt: 'Стоп на 30 сек', isEnabled: true, backgroundColor: '#e64a4a', imageUrl: '', isWagonAction: true },
+    ]
+    return
+  }
+  try {
+    channelRewards.value = await $fetch<ChannelReward[]>('/api/cabinet/rewards')
+  } catch {
+    // skip
+  }
+}
+
+async function triggerWagonAction(rewardId: string) {
+  if (actionLoading.value) {
+    return
+  }
+  const reward = channelRewards.value.find((r) => r.id === rewardId)
+  if (!reward?.isWagonAction) {
+    return
+  }
+  actionLoading.value = rewardId
+  try {
+    await $fetch('/api/cabinet/wagon-action', {
+      method: 'POST',
+      body: { rewardId },
+    })
+  } catch {
+    // skip
+  } finally {
+    actionLoading.value = null
+  }
+}
+
+// Chat input
+const chatInput = ref('')
+const chatSending = ref(false)
+const chatAvailable = computed(() => isDemo || isLive.value)
+
+async function sendChatMessage() {
+  const text = chatInput.value.trim()
+  if (!text || chatSending.value) {
+    return
+  }
+  if (isDemo && simulator) {
+    simulator.chatMessages.push({
+      id: createId(),
+      twitchId: roomId,
+      name: channelName,
+      level: 0,
+      text,
+      time: nowTime(),
+      isSystem: false,
+      isFirstThisStream: false,
+      loadingXp: false,
+      loadingCoins: false,
+    })
+    chatInput.value = ''
+    return
+  }
+  chatSending.value = true
+  try {
+    await $fetch('/api/cabinet/chat', {
+      method: 'POST',
+      body: { message: text },
+    })
+    chatInput.value = ''
+  } catch {
+    // skip
+  } finally {
+    chatSending.value = false
+  }
+}
+
+// Stream info
+const streamInfo = ref<{ title: string, gameName: string, gameId: string, tags: string[], language: string } | null>(null)
+const streamInfoOpen = ref(false)
+
+async function fetchStreamInfo() {
+  try {
+    const data = await $fetch<any>('/api/cabinet/stream-info')
+    if (data) {
+      streamInfo.value = data
+    }
+  } catch {
+    // skip
+  }
+}
+
+function onStreamInfoSaved() {
+  fetchStreamInfo()
+}
+
+// Channel points / redemptions
+const redemptionStats = reactive({ totalCost: 0, count: 0 })
+
+async function fetchRedemptionStats() {
+  try {
+    const data = await $fetch<any>('/api/cabinet/redemptions')
+    if (data) {
+      redemptionStats.totalCost = data.totalCost ?? 0
+      redemptionStats.count = data.count ?? 0
+    }
+  } catch {
+    // skip
+  }
+}
 
 // Auto-scroll with pause on manual scroll-up
 const chatAutoScroll = ref(true)
@@ -445,10 +690,6 @@ function markQuestDone(name: string) {
   } else {
     chatActivity.set(name, { messages: 0, questDone: true })
   }
-}
-
-function getActivity(name: string) {
-  return chatActivity.get(name)
 }
 
 // Viewer card
@@ -612,6 +853,15 @@ function initDemo() {
     stats.value = v
   }, { immediate: true, deep: true })
 
+  // Fake stream info for demo
+  streamInfo.value = {
+    title: 'GeoGuessr с чатом — угадываем страны!',
+    gameName: 'GeoGuessr',
+    gameId: '518203',
+    tags: ['Русский', 'opensource', 'chatgame'],
+    language: 'ru',
+  }
+
   simulator.start()
 }
 
@@ -683,6 +933,7 @@ function connectWs() {
           isFirstThisStream: isFirst,
           loadingXp: false,
           loadingCoins: false,
+          replyTo: data.data.replyTo,
         })
         if (chatMessages.length > 200) {
           chatMessages.splice(0, chatMessages.length - 200)
@@ -751,6 +1002,9 @@ async function fetchStats() {
 function initLive() {
   connectWs()
   fetchStats()
+  fetchStreamInfo()
+  fetchRedemptionStats()
+  fetchRewards()
   statsInterval = setInterval(fetchStats, 3000)
 }
 
@@ -821,15 +1075,10 @@ function formatEventText(ev: DashboardEvent): string {
 
 function eventColor(type: string): string {
   switch (type) {
-    case 'NEW_VIEWER': return 'border-green-500 bg-green-500/5'
-    case 'LEVEL_UP': return 'border-yellow-500 bg-yellow-500/5'
-    case 'QUEST_COMPLETE': return 'border-purple-500 bg-purple-500/5'
-    case 'DONATION': return 'border-red-500 bg-red-500/5'
-    case 'STREAMER_REWARD': return 'border-amber-500 bg-amber-500/5'
-    case 'NEW_FOLLOWER': return 'border-pink-500 bg-pink-500/5'
-    case 'RAID': return 'border-blue-500 bg-blue-500/5'
-    case 'CARAVAN_ARRIVED': return 'border-emerald-500 bg-emerald-500/5'
-    default: return 'border-white/20 bg-white/5'
+    case 'DONATION': return 'border-amber-500/60 bg-amber-500/5'
+    case 'RAID': return 'border-teal-500/60 bg-teal-500/5'
+    case 'CARAVAN_ARRIVED': return 'border-teal-500/60 bg-teal-500/5'
+    default: return 'border-white/15 bg-white/[0.02]'
   }
 }
 

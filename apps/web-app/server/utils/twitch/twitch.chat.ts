@@ -9,7 +9,7 @@ const logger = useLogger('twitch:chat')
 
 const PRIVMSG_REGEX = /PRIVMSG #\S+ :(.+)/
 
-type ChatMessageHandler = (userName: string, userId: string, text: string) => void
+type ChatMessageHandler = (userName: string, userId: string, text: string, replyTo?: string) => void
 
 export class TwitchChat {
   #ws: WebSocket | null = null
@@ -133,6 +133,7 @@ export class TwitchChat {
 
     const userName = tags['display-name'] ?? ''
     const userId = tags['user-id'] ?? ''
+    const replyTo = tags['reply-parent-display-name'] || undefined
 
     if (!userName || !text) {
       return
@@ -142,7 +143,7 @@ export class TwitchChat {
 
     for (const handler of this.#messageHandlers) {
       try {
-        handler(userName, userId, text)
+        handler(userName, userId, text, replyTo)
       } catch (err) {
         logger.error('Message handler error', err)
       }

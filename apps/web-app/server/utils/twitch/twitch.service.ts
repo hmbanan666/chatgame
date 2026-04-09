@@ -33,10 +33,12 @@ export class TwitchService {
     userName,
     userId,
     text,
+    replyTo,
   }: {
     userName: string
     userId: string
     text: string
+    replyTo?: string
   }) {
     const strings = text.split(' ')
     const firstWord = strings[0] ?? ''
@@ -54,6 +56,9 @@ export class TwitchService {
     if (!viewer) {
       return
     }
+
+    // Update last seen + message count
+    await db.streamerViewer.updateLastSeen(viewer.id)
 
     // Resolve character
     let codename = 'twitchy'
@@ -124,6 +129,7 @@ export class TwitchService {
       data: {
         text,
         isFirstThisStream,
+        replyTo,
         player: {
           id: userId,
           name: userName,

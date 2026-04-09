@@ -11,7 +11,7 @@
     <template v-else-if="data">
       <!-- Connection status -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="bg-[#1e1e24] border border-white/5 p-4 space-y-2">
+        <div class="bg-[#1e1e24] border border-white/5 rounded-lg p-4 space-y-2">
           <div class="flex items-center gap-2 text-sm text-white/50">
             <Icon name="simple-icons:twitch" class="size-4" />
             Twitch бот
@@ -25,7 +25,7 @@
           </div>
         </div>
 
-        <div class="bg-[#1e1e24] border border-white/5 p-4 space-y-2">
+        <div class="bg-[#1e1e24] border border-white/5 rounded-lg p-4 space-y-2">
           <div class="flex items-center gap-2 text-sm text-white/50">
             <Icon name="lucide:radio" class="size-4" />
             Стрим
@@ -39,7 +39,7 @@
           </div>
         </div>
 
-        <div class="bg-[#1e1e24] border border-white/5 p-4 space-y-2">
+        <div class="bg-[#1e1e24] border border-white/5 rounded-lg p-4 space-y-2">
           <div class="flex items-center gap-2 text-sm text-white/50">
             <Icon name="lucide:ticket" class="size-4" />
             Генератор купонов
@@ -94,34 +94,45 @@
       </div>
 
       <!-- Not connected -->
-      <div v-if="!data.connected" class="bg-[#1e1e24] border border-site-accent/30 p-6 text-center space-y-4">
-        <Icon name="lucide:plug-zap" class="size-12 text-site-accent mx-auto" />
+      <div v-if="!data.connected" class="bg-[#1e1e24] border border-teal-500/30 rounded-lg p-6 text-center space-y-4">
+        <Icon name="lucide:plug-zap" class="size-12 text-teal-400 mx-auto" />
         <p class="text-white/60">
           Подключение не настроено. Обратись к администратору.
         </p>
       </div>
 
       <!-- Quick links -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <NuxtLink to="/cabinet/viewers" class="bg-[#1e1e24] border border-white/5 hover:border-site-accent/30 p-4 flex items-center gap-4 transition-colors group">
-          <Icon name="lucide:users" class="size-8 text-white/30 group-hover:text-site-accent transition-colors" />
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <NuxtLink to="/cabinet/viewers" class="bg-[#1e1e24] border border-white/5 hover:border-teal-500/30 rounded-lg p-4 flex items-center gap-4 transition-colors group">
+          <Icon name="lucide:users" class="size-8 text-white/30 group-hover:text-teal-400 transition-colors shrink-0" />
           <div>
             <div class="font-semibold">
               Зрители
             </div>
-            <div class="text-sm text-white/40">
+            <div class="text-xs text-white/40 leading-tight">
               CRM, заметки, статистика
             </div>
           </div>
         </NuxtLink>
-        <NuxtLink to="/cabinet/widgets" class="bg-[#1e1e24] border border-white/5 hover:border-site-accent/30 p-4 flex items-center gap-4 transition-colors group">
-          <Icon name="lucide:layout" class="size-8 text-white/30 group-hover:text-site-accent transition-colors" />
+        <NuxtLink to="/cabinet/widgets" class="bg-[#1e1e24] border border-white/5 hover:border-teal-500/30 rounded-lg p-4 flex items-center gap-4 transition-colors group">
+          <Icon name="lucide:layout" class="size-8 text-white/30 group-hover:text-teal-400 transition-colors shrink-0" />
           <div>
             <div class="font-semibold">
               Виджеты
             </div>
-            <div class="text-sm text-white/40">
+            <div class="text-xs text-white/40 leading-tight">
               Ссылки для OBS
+            </div>
+          </div>
+        </NuxtLink>
+        <NuxtLink to="/cabinet/live?demo=1" class="bg-[#1e1e24] border border-white/5 hover:border-teal-500/30 rounded-lg p-4 flex items-center gap-4 transition-colors group">
+          <Icon name="lucide:play-circle" class="size-8 text-white/30 group-hover:text-teal-400 transition-colors shrink-0" />
+          <div>
+            <div class="font-semibold">
+              Демо Live-панели
+            </div>
+            <div class="text-xs text-white/40 leading-tight">
+              Тестовые данные для знакомства
             </div>
           </div>
         </NuxtLink>

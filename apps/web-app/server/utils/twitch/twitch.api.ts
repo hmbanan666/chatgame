@@ -127,6 +127,77 @@ export async function getStreamInfo(userId: string): Promise<{ viewerCount: numb
   return { viewerCount: stream.viewer_count, startedAt: stream.started_at }
 }
 
+// ── Channel Info ────────────────────────────────────────
+
+export async function getChannelInfo(broadcasterId: string): Promise<{ title: string, gameName: string, gameId: string, tags: string[], language: string } | null> {
+  const data = await twitchFetchJson(`/channels?broadcaster_id=${broadcasterId}`)
+  const channel = data?.data?.[0]
+  if (!channel) {
+    return null
+  }
+  return {
+    title: channel.title,
+    gameName: channel.game_name,
+    gameId: channel.game_id,
+    tags: channel.tags ?? [],
+    language: channel.broadcaster_language ?? '',
+  }
+}
+
+export async function updateChannelInfo(broadcasterId: string, params: { title?: string, game_id?: string, tags?: string[] }): Promise<boolean> {
+  const res = await twitchFetch(
+    `/channels?broadcaster_id=${broadcasterId}`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
+    },
+  )
+  return res.status === 204
+}
+
+export async function searchCategories(query: string): Promise<{ id: string, name: string, boxArtUrl: string }[]> {
+  const data = await twitchFetchJson(`/search/categories?query=${encodeURIComponent(query)}&first=8`)
+  return (data?.data ?? []).map((c: any) => ({
+    id: c.id,
+    name: c.name,
+    boxArtUrl: (c.box_art_url ?? '').replace('{width}', '52').replace('{height}', '72'),
+  }))
+}
+
+export interface TwitchRewardFull {
+  id: string
+  title: string
+  cost: number
+  prompt: string
+  isEnabled: boolean
+  backgroundColor: string
+  imageUrl: string
+  isManageable: boolean
+}
+
+export async function getAllChannelRewards(broadcasterId: string): Promise<TwitchRewardFull[]> {
+  const res = await twitchFetch(
+    `/channel_points/custom_rewards?broadcaster_id=${broadcasterId}`,
+  )
+
+  if (!res.ok) {
+    return []
+  }
+
+  const data = await res.json()
+  return (data.data ?? []).map((r: any) => ({
+    id: r.id,
+    title: r.title,
+    cost: r.cost,
+    prompt: r.prompt ?? '',
+    isEnabled: r.is_enabled,
+    backgroundColor: r.background_color ?? '',
+    imageUrl: r.image?.url_2x ?? r.default_image?.url_2x ?? '',
+    isManageable: r.is_user_input_required === false,
+  }))
+}
+
 export async function getCustomRewards(broadcasterId: string): Promise<TwitchReward[]> {
   const res = await twitchFetch(
     `/channel_points/custom_rewards?broadcaster_id=${broadcasterId}&only_manageable_rewards=true`,
