@@ -12,14 +12,16 @@ export default defineNitroPlugin(async (nitroApp) => {
 
   await waitForMigration()
 
-  const streamers = await db.streamer.findAll()
+  const streamers = await db.profile.findActiveStreamers()
   if (streamers.length === 0) {
     logger.warn('No active streamers found, skipping Twitch init')
     return
   }
 
   for (const streamer of streamers) {
-    initStreamJourneyRoom(streamer.twitchChannelId)
+    if (streamer.twitchId) {
+      initStreamJourneyRoom(streamer.twitchId)
+    }
   }
 
   const controller = getTwitchController()

@@ -1,13 +1,13 @@
 export default defineEventHandler(async (event) => {
-  const streamerId = getRouterParam(event, 'streamerId')
-  if (!streamerId) {
+  const twitchChannelId = getRouterParam(event, 'streamerId')
+  if (!twitchChannelId) {
     throw createError({ status: 400 })
   }
 
-  const streamer = await db.streamer.findByTwitchChannelId(streamerId)
-  if (!streamer) {
+  const profile = await db.profile.findByTwitchId(twitchChannelId)
+  if (!profile) {
     throw createError({ status: 404 })
   }
 
-  return db.backlogItem.findActiveByStreamerId(streamer.id)
+  return db.backlogItem.findActiveByStreamerId(profile.id)
 })

@@ -13,7 +13,6 @@ import { ProfileRepository } from './profile'
 import { RedemptionRepository } from './redemption'
 import { SpriteRepository } from './sprite'
 import { StreamRepository } from './stream'
-import { StreamerRepository } from './streamer'
 import { StreamerNoteRepository } from './streamerNote'
 import { StreamerViewerRepository } from './streamerViewer'
 import { TransactionRepository } from './transaction'
@@ -32,7 +31,6 @@ class Repository {
   readonly redemption = RedemptionRepository
   readonly streamerViewer = StreamerViewerRepository
   readonly stream = StreamRepository
-  readonly streamer = StreamerRepository
   readonly streamerNote = StreamerNoteRepository
   readonly transaction = TransactionRepository
   readonly payment = PaymentRepository

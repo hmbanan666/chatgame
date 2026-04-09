@@ -9,11 +9,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, message: 'Forbidden' })
   }
 
-  const streamer = await db.streamer.findByTwitchChannelId(profile.twitchId!)
-  if (!streamer) {
-    return { redemptions: [], totalCost: 0, count: 0 }
-  }
-
   const query = getQuery(event)
   const streamId = query.streamId as string | undefined
 
@@ -26,8 +21,8 @@ export default defineEventHandler(async (event) => {
   }
 
   const [redemptions, summary] = await Promise.all([
-    db.redemption.findByStreamerId(streamer.id, 100),
-    db.redemption.sumByStreamerId(streamer.id),
+    db.redemption.findByStreamerId(profile.id, 100),
+    db.redemption.sumByStreamerId(profile.id),
   ])
   return { redemptions, ...summary }
 })

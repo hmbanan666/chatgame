@@ -1,11 +1,11 @@
 export default defineEventHandler(async () => {
   const { twitchChannelId } = useRuntimeConfig()
 
-  const streamer = await db.streamer.findByTwitchChannelId(twitchChannelId)
-  if (!streamer) {
+  const profile = await db.profile.findByTwitchId(twitchChannelId)
+  if (!profile) {
     return []
   }
 
-  const rows = await db.streamerViewer.findRandomNames(streamer.id, 20)
+  const rows = await db.streamerViewer.findRandomNames(profile.id, 20)
   return rows.map((r) => r.name).filter((n): n is string => !!n)
 })

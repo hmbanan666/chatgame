@@ -23,17 +23,6 @@ export default defineEventHandler(async (event) => {
 
   if (action === 'approve') {
     await db.profile.approveStreamer(profileId)
-
-    if (profile.twitchId) {
-      const existing = await db.streamer.findByTwitchChannelId(profile.twitchId)
-      if (!existing) {
-        await db.streamer.create({
-          twitchChannelId: profile.twitchId,
-          twitchChannelName: profile.userName ?? profile.twitchId,
-        })
-      }
-    }
-
     return { ok: true, action: 'approved' }
   }
 

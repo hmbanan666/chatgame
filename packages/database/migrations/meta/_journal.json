@@ -148,6 +148,13 @@
       "when": 1775727355709,
       "tag": "0020_typical_lester",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1775729231928,
+      "tag": "0021_wise_penance",
+      "breakpoints": true
     }
   ]
 }

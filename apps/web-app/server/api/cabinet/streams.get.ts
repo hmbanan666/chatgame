@@ -9,19 +9,14 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, message: 'Forbidden' })
   }
 
-  const streamer = await db.streamer.findByTwitchChannelId(profile.twitchId!)
-  if (!streamer) {
-    return { streams: [] as any[], total: 0, page: 1, limit: 20, totalPages: 0 }
-  }
-
   const query = getQuery(event)
   const page = Math.max(1, Number(query.page) || 1)
   const limit = Math.min(100, Math.max(1, Number(query.limit) || 20))
   const offset = (page - 1) * limit
 
   const [streams, total] = await Promise.all([
-    db.stream.findByStreamerId(streamer.id, limit, offset),
-    db.stream.countByStreamerId(streamer.id),
+    db.stream.findByStreamerId(profile.id, limit, offset),
+    db.stream.countByStreamerId(profile.id),
   ])
 
   return {

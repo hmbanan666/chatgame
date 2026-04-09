@@ -21,6 +21,7 @@ export const profiles = pgTable('profile', {
   level: integer('level').notNull().default(1),
   watchTimeMin: integer('watch_time_min').notNull().default(0),
   activeEditionId: text('active_edition_id'),
+  donationAlertsUserId: text('donation_alerts_user_id'),
 })
 
 export const profilesRelations = relations(profiles, ({ many }) => ({
@@ -29,6 +30,7 @@ export const profilesRelations = relations(profiles, ({ many }) => ({
   transactions: many(transactions),
   itemEditions: many(inventoryItemEditions),
   payments: many(payments),
+  streams: many(streams),
 }))
 
 // ── Payment ──────────────────────────────────────────────
@@ -86,22 +88,6 @@ export const productItemsRelations = relations(productItems, ({ one }) => ({
   product: one(products, { fields: [productItems.productId], references: [products.id] }),
 }))
 
-// ── Streamer ────────────────────────────────────────────
-
-export const streamers = pgTable('streamer', {
-  id: cuid2('id').defaultRandom().primaryKey(),
-  createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-  isActive: boolean('is_active').notNull().default(true),
-  twitchChannelId: text('twitch_channel_id').notNull().unique(),
-  twitchChannelName: text('twitch_channel_name').notNull(),
-  donationAlertsUserId: text('donation_alerts_user_id'),
-})
-
-export const streamersRelations = relations(streamers, ({ many }) => ({
-  streams: many(streams),
-}))
-
 // ── Stream ──────────────────────────────────────────────
 
 export const streams = pgTable('stream', {
@@ -126,7 +112,7 @@ export const streams = pgTable('stream', {
 })
 
 export const streamsRelations = relations(streams, ({ one }) => ({
-  streamer: one(streamers, { fields: [streams.streamerId], references: [streamers.id] }),
+  streamer: one(profiles, { fields: [streams.streamerId], references: [profiles.id] }),
 }))
 
 // ── Backlog ─────────────────────────────────────────────
@@ -149,7 +135,7 @@ export const backlogItems = pgTable('backlog_item', {
 })
 
 export const backlogItemsRelations = relations(backlogItems, ({ one }) => ({
-  streamer: one(streamers, { fields: [backlogItems.streamerId], references: [streamers.id] }),
+  streamer: one(profiles, { fields: [backlogItems.streamerId], references: [profiles.id] }),
 }))
 
 // ── Twitch ───────────────────────────────────────────────

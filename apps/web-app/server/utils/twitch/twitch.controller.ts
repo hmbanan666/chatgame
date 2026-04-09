@@ -106,14 +106,14 @@ class TwitchController {
   }
 
   async serve() {
-    const streamer = (await db.streamer.findAll())[0]
+    const streamer = (await db.profile.findActiveStreamers())[0]
     if (!streamer) {
       throw new Error('No active streamer found')
     }
 
-    this.#channel = streamer.twitchChannelName
-    this.#userId = streamer.twitchChannelId
-    this.#service = new TwitchService(streamer.twitchChannelId, streamer.id)
+    this.#channel = streamer.userName!
+    this.#userId = streamer.twitchId!
+    this.#service = new TwitchService(streamer.twitchId!, streamer.id)
 
     // Chat
     this.#chat = new TwitchChat(this.#channel)

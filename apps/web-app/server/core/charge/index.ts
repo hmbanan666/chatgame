@@ -12,7 +12,7 @@ export const chargeRooms: WagonSession[] = []
 export async function initCharges() {
   const logger = useLogger('charge:init')
 
-  const streamers = await db.streamer.findAll()
+  const streamers = await db.profile.findActiveStreamers()
   if (streamers.length === 0) {
     logger.warn('No active streamers found, skipping charge init')
     return
@@ -21,12 +21,16 @@ export async function initCharges() {
   const controller = getTwitchController()
 
   for (const streamer of streamers) {
+    if (!streamer.twitchId || !streamer.userName) {
+      continue
+    }
+
     const session = new WagonSession(
       {
-        id: streamer.twitchChannelId,
+        id: streamer.twitchId,
         streamerId: streamer.id,
-        twitchChannelId: streamer.twitchChannelId,
-        twitchChannelName: streamer.twitchChannelName,
+        twitchChannelId: streamer.twitchId,
+        twitchChannelName: streamer.userName,
       },
       streamer.donationAlertsUserId
         ? new DonateController(streamer.donationAlertsUserId)
@@ -35,7 +39,7 @@ export async function initCharges() {
 
     // Create Twitch rewards dynamically (requires channel:manage:redemptions scope)
     try {
-      const mappings = await createWagonRewards(streamer.twitchChannelId, logger)
+      const mappings = await createWagonRewards(streamer.twitchId, logger)
       session.rewardMappings = mappings
     } catch {
       logger.warn(`Twitch rewards not available (missing scope?), wagon actions disabled`)
@@ -45,7 +49,7 @@ export async function initCharges() {
     await session.initStream()
     if (session.streamId) {
       const startedAt = new Date(session.stats.streamStartedAt)
-      getViewerQuestService(streamer.id, streamer.twitchChannelId).setStreamStartedAt(startedAt)
+      getViewerQuestService(streamer.id, streamer.twitchId).setStreamStartedAt(startedAt)
       controller.service.setStreamStartedAt(startedAt)
     }
 
@@ -90,7 +94,7 @@ export async function initCharges() {
       await session.startStream()
       session.connectDonateClient()
       const startedAt = new Date(session.stats.streamStartedAt)
-      getViewerQuestService(streamer.id, streamer.twitchChannelId).setStreamStartedAt(startedAt)
+      getViewerQuestService(streamer.id, streamer.twitchId!).setStreamStartedAt(startedAt)
       controller.service.setStreamStartedAt(startedAt)
     })
 
@@ -101,7 +105,7 @@ export async function initCharges() {
     })
 
     chargeRooms.push(session)
-    logger.success(`Wagon session initialized for ${streamer.twitchChannelName}`)
+    logger.success(`Wagon session initialized for ${streamer.userName}`)
   }
 }
 

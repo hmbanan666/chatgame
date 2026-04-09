@@ -11,26 +11,15 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, message: 'Forbidden' })
   }
 
-  const streamer = await db.streamer.findByTwitchChannelId(profile.twitchId!)
-  if (!streamer) {
-    return {
-      connected: false,
-      streamer: null,
-      stream: null,
-      twitchStatus: 'DISCONNECTED',
-      couponStatus: 'STOPPED',
-    }
-  }
-
-  const stream = await db.stream.findLive(streamer.id)
+  const stream = await db.stream.findLive(profile.id)
   const controller = getTwitchController()
 
   return {
     connected: true,
     streamer: {
-      id: streamer.id,
-      twitchChannelId: streamer.twitchChannelId,
-      twitchChannelName: streamer.twitchChannelName,
+      id: profile.id,
+      twitchChannelId: profile.twitchId,
+      twitchChannelName: profile.userName,
     },
     stream: stream
       ? {

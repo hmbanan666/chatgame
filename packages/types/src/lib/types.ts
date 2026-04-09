@@ -11,6 +11,7 @@ export interface Profile {
   level: number
   mana: number
   activeEditionId: string
+  donationAlertsUserId: string | null
 }
 
 export interface ProfileWithTokens extends Profile {

@@ -249,6 +249,20 @@ export class ProfileRepository {
     return refundAmount
   }
 
+  static findActiveStreamers() {
+    const db = useDatabase()
+    return db.query.profiles.findMany({
+      where: (t, { eq }) => eq(t.isStreamer, true),
+    })
+  }
+
+  static updateStreamerSettings(id: string, data: { donationAlertsUserId?: string | null }) {
+    const db = useDatabase()
+    return db.update(tables.profiles)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(tables.profiles.id, id))
+  }
+
   static async getTokensCount(type: string) {
     const db = useDatabase()
     const result = await db.select({ count: count() })
