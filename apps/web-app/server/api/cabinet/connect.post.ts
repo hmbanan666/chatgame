@@ -29,6 +29,7 @@ export default defineEventHandler(async (event) => {
     await db.twitchAccessToken.updateByUserId(profile.twitchId, {
       accessToken: res.access_token,
       refreshToken: res.refresh_token,
+      scope: res.scope,
       expiresIn: res.expires_in,
       obtainmentTimestamp: Date.now().toString(),
     })
