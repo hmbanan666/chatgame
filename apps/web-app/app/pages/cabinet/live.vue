@@ -407,9 +407,11 @@
                 color="warning"
                 class="flex-1"
                 :loading="profileModalLoading === 'coins'"
+                :disabled="!isDemo && streamerCoins < 1"
+                :title="!isDemo && streamerCoins < 1 ? 'Недостаточно монет' : ''"
                 @click="rewardFromModal('coins', 1)"
               >
-                +1 монета
+                +1 монета ({{ streamerCoins }})
               </UButton>
               <UButton
                 variant="ghost"
@@ -439,6 +441,14 @@ const { user } = useUserSession()
 const roomId = user.value?.twitchId || ''
 const channelName = user.value?.userName || ''
 const isDemo = useRoute().query.demo === '1'
+const streamerCoins = ref(0)
+
+if (user.value?.id && !isDemo) {
+  const { data: myProfile } = await useFetch(() => `/api/profile/${user.value!.id}`)
+  if (myProfile.value) {
+    streamerCoins.value = myProfile.value.coins ?? 0
+  }
+}
 
 if (!roomId) {
   throw createError({ statusCode: 404 })
@@ -1047,6 +1057,9 @@ async function rewardFromModal(type: 'xp' | 'coins', amount: number) {
       method: 'POST',
       body: { twitchId, type, amount, roomId },
     })
+    if (type === 'coins') {
+      streamerCoins.value -= amount
+    }
   } catch {
     // silently fail
   } finally {

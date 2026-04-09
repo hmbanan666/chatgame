@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const { twitchId, type, roomId } = body
-  const amount = Math.min(Math.max(1, Number(body.amount)), type === 'xp' ? 100 : 10)
+  const amount = Math.min(Math.max(1, Number(body.amount)), type === 'xp' ? 100 : 50)
 
   const profile = await db.profile.findByTwitchId(twitchId)
   if (!profile) {
@@ -31,7 +31,27 @@ export default defineEventHandler(async (event) => {
   }
 
   if (type === 'coins') {
+    if (streamerProfile.coins < amount) {
+      throw createError({ statusCode: 400, message: 'NOT_ENOUGH_COINS' })
+    }
+
+    await db.profile.addCoins(streamerProfile.id, -amount)
     await db.profile.addCoins(profile.id, amount)
+
+    await db.transaction.create({
+      type: 'STREAMER_GIFT_SENT',
+      amount: -amount,
+      profileId: streamerProfile.id,
+      entityId: profile.id,
+      text: `Gift to ${profile.userName ?? twitchId}`,
+    })
+    await db.transaction.create({
+      type: 'COINS_FROM_STREAMER_GIFT',
+      amount,
+      profileId: profile.id,
+      entityId: streamerProfile.id,
+      text: `Gift from ${streamerProfile.userName}`,
+    })
 
     let codename = 'twitchy'
     if (profile.activeEditionId) {

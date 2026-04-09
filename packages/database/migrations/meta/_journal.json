@@ -141,6 +141,13 @@
       "when": 1775674751008,
       "tag": "0019_adorable_scarecrow",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1775727355709,
+      "tag": "0020_typical_lester",
+      "breakpoints": true
     }
   ]
 }

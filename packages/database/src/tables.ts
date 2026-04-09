@@ -12,6 +12,8 @@ export const profiles = pgTable('profile', {
   userName: text('user_name'),
   isStreamer: boolean('is_streamer').notNull().default(false),
   streamerRequestedAt: timestamp('streamer_requested_at', { precision: 3, withTimezone: true, mode: 'date' }),
+  streamerRequestStatus: text('streamer_request_status'),
+  streamerRequestPaidCoins: integer('streamer_request_paid_coins').notNull().default(0),
   coupons: integer('coupons').notNull().default(0),
   coins: integer('coins').notNull().default(0),
   mana: integer('mana').notNull().default(0),

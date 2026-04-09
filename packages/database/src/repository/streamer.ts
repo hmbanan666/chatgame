@@ -17,6 +17,11 @@ export class StreamerRepository {
     })
   }
 
+  static create(data: { twitchChannelId: string, twitchChannelName: string }) {
+    const db = useDatabase()
+    return db.insert(tables.streamers).values(data).returning()
+  }
+
   static update(id: string, data: { isActive?: boolean, twitchChannelName?: string, donationAlertsUserId?: string | null }) {
     const db = useDatabase()
     return db.update(tables.streamers)

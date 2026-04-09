@@ -1,5 +1,5 @@
 import { createId } from '@paralleldrive/cuid2'
-import { and, count, eq, lt, sql } from 'drizzle-orm'
+import { and, count, eq, gte, lt, sql } from 'drizzle-orm'
 import { useDatabase } from '../database'
 import * as tables from '../tables'
 
@@ -199,11 +199,54 @@ export class ProfileRepository {
     )
   }
 
-  static requestStreamer(id: string) {
+  static async requestStreamerWithPayment(id: string, fee: number) {
+    const db = useDatabase()
+    const [result] = await db.update(tables.profiles)
+      .set({
+        coins: sql`${tables.profiles.coins} - ${fee}`,
+        streamerRequestedAt: new Date(),
+        streamerRequestStatus: 'PENDING',
+        streamerRequestPaidCoins: fee,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(tables.profiles.id, id), gte(tables.profiles.coins, fee)))
+      .returning()
+
+    return result ?? null
+  }
+
+  static approveStreamer(id: string) {
     const db = useDatabase()
     return db.update(tables.profiles)
-      .set({ streamerRequestedAt: new Date(), updatedAt: new Date() })
+      .set({
+        isStreamer: true,
+        streamerRequestStatus: 'APPROVED',
+        updatedAt: new Date(),
+      })
       .where(eq(tables.profiles.id, id))
+  }
+
+  static async rejectStreamer(id: string) {
+    const db = useDatabase()
+    const profile = await db.query.profiles.findFirst({
+      where: (t, { eq }) => eq(t.id, id),
+      columns: { streamerRequestPaidCoins: true },
+    })
+    if (!profile) {
+      return null
+    }
+
+    const refundAmount = profile.streamerRequestPaidCoins
+    await db.update(tables.profiles)
+      .set({
+        streamerRequestStatus: 'REJECTED',
+        coins: sql`${tables.profiles.coins} + ${refundAmount}`,
+        streamerRequestPaidCoins: 0,
+        updatedAt: new Date(),
+      })
+      .where(eq(tables.profiles.id, id))
+
+    return refundAmount
   }
 
   static async getTokensCount(type: string) {
