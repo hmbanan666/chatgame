@@ -12,10 +12,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Profile not found' })
   }
 
-  if (profile.isStreamer) {
-    return { ok: true, alreadyStreamer: true }
-  }
-
   const body = await readBody(event)
   if (!body?.code) {
     throw createError({ statusCode: 400, message: 'Missing code' })
@@ -25,28 +21,43 @@ export default defineEventHandler(async (event) => {
 
   const res = await obtainTwitchAccessToken(body.code, publicEnv.streamerRedirectUrl)
 
-  // Save access token
-  const [twitchAccessToken] = await db.twitchAccessToken.create({
-    id: createId(),
-    userId: profile.twitchId,
-    accessToken: res.access_token,
-    refreshToken: res.refresh_token,
-    scope: res.scope,
-    expiresIn: res.expires_in,
-    obtainmentTimestamp: Date.now().toString(),
-  })
+  // Check if token already exists for this user
+  const existingToken = await db.twitchAccessToken.findByUserId(profile.twitchId)
 
-  // Create addon token link
-  await db.twitchToken.create({
-    id: createId(),
-    accessTokenId: twitchAccessToken!.id,
-    profileId: profile.id,
-    status: 'ACTIVE',
-    type: 'ADDON',
-  })
+  if (existingToken) {
+    // Update existing token (reconnect flow)
+    await db.twitchAccessToken.updateByUserId(profile.twitchId, {
+      accessToken: res.access_token,
+      refreshToken: res.refresh_token,
+      expiresIn: res.expires_in,
+      obtainmentTimestamp: Date.now().toString(),
+    })
+  } else {
+    // Save new access token
+    const [twitchAccessToken] = await db.twitchAccessToken.create({
+      id: createId(),
+      userId: profile.twitchId,
+      accessToken: res.access_token,
+      refreshToken: res.refresh_token,
+      scope: res.scope,
+      expiresIn: res.expires_in,
+      obtainmentTimestamp: Date.now().toString(),
+    })
 
-  // Activate streamer
-  await db.profile.activateStreamer(profile.id)
+    // Create addon token link
+    await db.twitchToken.create({
+      id: createId(),
+      accessTokenId: twitchAccessToken!.id,
+      profileId: profile.id,
+      status: 'ACTIVE',
+      type: 'ADDON',
+    })
+  }
+
+  // Activate streamer (idempotent)
+  if (!profile.isStreamer) {
+    await db.profile.activateStreamer(profile.id)
+  }
 
   return { ok: true }
 })

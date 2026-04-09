@@ -21,7 +21,7 @@
           </div>
           <div class="flex items-center justify-between">
             <span class="text-white/50">Channel ID</span>
-            <code class="text-xs text-white/40 bg-[#0f0f14] px-2 py-1">{{ overview.streamer.twitchChannelId }}</code>
+            <code class="text-xs text-white/40 bg-[#0f0f14] px-2 py-1 rounded">{{ overview.streamer.twitchChannelId }}</code>
           </div>
           <div class="flex items-center justify-between">
             <span class="text-white/50">Бот</span>
@@ -33,23 +33,18 @@
               <span class="text-sm">{{ overview.twitchStatus === 'CONNECTED' ? 'Подключён' : 'Отключён' }}</span>
             </div>
           </div>
+          <a
+            v-if="reconnectUrl"
+            :href="reconnectUrl"
+            class="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-[#6441a5] hover:bg-[#7b5cbf] text-white text-sm font-semibold rounded-lg transition-colors"
+          >
+            <Icon name="lucide:refresh-cw" class="size-4" />
+            Переподключить Twitch
+          </a>
         </div>
         <div v-else class="text-white/40">
           Не настроен
         </div>
-      </section>
-
-      <!-- Widget settings hint -->
-      <section class="bg-[#1e1e24] border border-white/5 rounded-lg p-6 space-y-4">
-        <h2 class="font-pixel text-lg font-bold">
-          Виджеты
-        </h2>
-        <p class="text-white/40 text-sm">
-          Настройки виджетов (цвета, звуки, позиции) будут доступны в следующем обновлении.
-        </p>
-        <NuxtLink to="/cabinet/widgets" class="text-sm text-teal-400 hover:underline">
-          Посмотреть ссылки на виджеты
-        </NuxtLink>
       </section>
 
       <!-- Danger zone -->
@@ -72,4 +67,6 @@ definePageMeta({
 })
 
 const { data: overview, pending } = useFetch('/api/cabinet/overview')
+const { data: authData } = useFetch('/api/cabinet/auth-url')
+const reconnectUrl = computed(() => authData.value?.url ?? null)
 </script>

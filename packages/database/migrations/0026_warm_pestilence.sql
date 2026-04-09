@@ -1,0 +1,1 @@
+ALTER TABLE "streamer_currency" ADD COLUMN "name_plural" text;

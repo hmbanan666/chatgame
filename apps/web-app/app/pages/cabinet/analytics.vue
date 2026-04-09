@@ -110,9 +110,10 @@
               icon="lucide:tree-pine"
             />
             <CabinetStatCard
-              label="Купоны"
-              :value="stream.couponsTaken"
-              icon="lucide:ticket"
+              v-if="stream.tokensAwarded"
+              label="Валюта"
+              :value="stream.tokensAwarded"
+              icon="lucide:gem"
             />
           </div>
 

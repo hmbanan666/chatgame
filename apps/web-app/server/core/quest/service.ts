@@ -134,7 +134,7 @@ export class ViewerQuestService {
       // Engagement: quest completed → +1 streamer token
       let tokensEarned = 0
       let currencyEmoji: string | undefined
-      let currencyName: string | undefined
+      let currencyNamePlural: string | undefined
       const engagementService = getEngagementService(this.#streamerId)
       if (engagementService) {
         const awarded = await engagementService.onQuest(quest.profileId)
@@ -143,7 +143,7 @@ export class ViewerQuestService {
           const info = await engagementService.getCurrencyInfo()
           if (info) {
             currencyEmoji = info.emoji
-            currencyName = info.name
+            currencyNamePlural = info.namePlural ?? info.name
           }
         }
       }
@@ -165,7 +165,7 @@ export class ViewerQuestService {
           totalCoins: profile?.coins ?? 0,
           tokensEarned,
           currencyEmoji,
-          currencyName,
+          currencyNamePlural,
         },
       })
 

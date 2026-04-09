@@ -4,7 +4,7 @@ import { destroyEngagementService, getEngagementService } from '~~/server/core/e
 import { getLevelingService } from '~~/server/core/leveling/service'
 import { getViewerQuestService } from '~~/server/core/quest'
 import { createCustomReward, getCustomRewards, updateCustomReward } from '~~/server/utils/twitch/twitch.api'
-import { getTwitchController } from '../../utils/twitch/twitch.controller'
+import { getOrCreateController } from '../../utils/twitch/twitch.controller'
 import { DonateController } from './donateClient'
 import { WAGON_ACTIONS, WagonSession } from './stream'
 
@@ -19,12 +19,17 @@ export async function initCharges() {
     return
   }
 
-  const controller = getTwitchController()
-
   for (const streamer of streamers) {
     if (!streamer.twitchId || !streamer.userName) {
       continue
     }
+
+    // Get THIS streamer's controller (created in plugin boot)
+    const controller = getOrCreateController({
+      id: streamer.id,
+      twitchId: streamer.twitchId,
+      userName: streamer.userName,
+    })
 
     const session = new WagonSession(
       {
@@ -43,7 +48,7 @@ export async function initCharges() {
       const mappings = await createWagonRewards(streamer.twitchId, logger)
       session.rewardMappings = mappings
     } catch {
-      logger.warn(`Twitch rewards not available (missing scope?), wagon actions disabled`)
+      logger.warn(`[${streamer.userName}] Twitch rewards not available, wagon actions disabled`)
     }
 
     // Link streamer coin earning to quest service
@@ -58,7 +63,7 @@ export async function initCharges() {
       controller.service.setStreamStartedAt(startedAt)
     }
 
-    // Subscribe to shared Twitch events
+    // Subscribe to THIS streamer's events only
     controller.onMessage((_channel, _userName, userId) => {
       session.handleMessage(userId)
     })

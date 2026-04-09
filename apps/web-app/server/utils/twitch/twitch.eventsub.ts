@@ -204,7 +204,7 @@ export class TwitchEventSub {
       return
     }
 
-    const res = await twitchFetch('/eventsub/subscriptions', {
+    const res = await twitchFetch(this.#userId, '/eventsub/subscriptions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

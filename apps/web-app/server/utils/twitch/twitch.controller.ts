@@ -16,22 +16,24 @@ type RedemptionHandler = (event: RedemptionEvent) => void
 type FollowHandler = (userName: string) => void
 type RaidHandler = (userName: string, viewers: number) => void
 
-class TwitchController {
-  #channel!: string
-  #userId!: string
-  #service!: TwitchService
+export interface StreamerData {
+  id: string
+  twitchId: string
+  userName: string
+}
 
-  #chat!: TwitchChat
-  #eventSub!: TwitchEventSub
+export class TwitchController {
+  readonly #channel: string
+  readonly #userId: string
+  readonly #streamerId: string
+  readonly #service: TwitchService
+
+  #chat: TwitchChat
+  #eventSub: TwitchEventSub
   #isStreaming = false
 
-  #manaUpdateId: ReturnType<typeof setInterval> | null = null
   #infoMessageId: ReturnType<typeof setInterval> | null = null
   #streamPollId: ReturnType<typeof setInterval> | null = null
-
-  get service() {
-    return this.#service
-  }
 
   #messageHandlers: MessageHandler[] = []
   #redemptionHandlers: RedemptionHandler[] = []
@@ -39,6 +41,27 @@ class TwitchController {
   #raidHandlers: RaidHandler[] = []
   #onlineHandlers: (() => void)[] = []
   #offlineHandlers: (() => void)[] = []
+
+  constructor(streamer: StreamerData) {
+    this.#channel = streamer.userName
+    this.#userId = streamer.twitchId
+    this.#streamerId = streamer.id
+    this.#service = new TwitchService(streamer.twitchId, streamer.id)
+    this.#chat = new TwitchChat(streamer.userName, streamer.twitchId)
+    this.#eventSub = new TwitchEventSub(streamer.twitchId)
+  }
+
+  get service() {
+    return this.#service
+  }
+
+  get userId() {
+    return this.#userId
+  }
+
+  get streamerId() {
+    return this.#streamerId
+  }
 
   get status() {
     return this.#isStreaming ? 'RUNNING' : 'STOPPED'
@@ -56,13 +79,13 @@ class TwitchController {
     this.#isStreaming = value
 
     if (value) {
-      logger.info('Stream went online — connecting clients')
+      logger.info(`[${this.#channel}] Stream went online — connecting clients`)
       this.#connectClients()
       for (const handler of this.#onlineHandlers) {
         handler()
       }
     } else {
-      logger.info('Stream went offline — disconnecting clients')
+      logger.info(`[${this.#channel}] Stream went offline — disconnecting clients`)
       this.#disconnectClients()
       for (const handler of this.#offlineHandlers) {
         handler()
@@ -99,17 +122,7 @@ class TwitchController {
   }
 
   async serve() {
-    const streamer = (await db.profile.findActiveStreamers())[0]
-    if (!streamer) {
-      throw new Error('No active streamer found')
-    }
-
-    this.#channel = streamer.userName!
-    this.#userId = streamer.twitchId!
-    this.#service = new TwitchService(streamer.twitchId!, streamer.id)
-
-    // Chat
-    this.#chat = new TwitchChat(this.#channel)
+    // Wire chat messages
     this.#chat.onMessage(async (userName, userId, text, replyTo) => {
       try {
         const answer = await this.#service.handleMessage({ userId, userName, text, replyTo })
@@ -125,13 +138,11 @@ class TwitchController {
           handler(this.#channel, userName, userId, text, replyTo)
         }
       } catch (err) {
-        logger.error('Failed to handle chat message', err)
+        logger.error(`[${this.#channel}] Failed to handle chat message`, err)
       }
     })
-    // Don't connect yet — will connect when stream goes online
 
-    // EventSub (channel point redemptions)
-    this.#eventSub = new TwitchEventSub(this.#userId)
+    // Wire EventSub
     this.#eventSub.onRedemption((event) => {
       for (const handler of this.#redemptionHandlers) {
         handler(event)
@@ -156,27 +167,19 @@ class TwitchController {
         const isOnline = await getStreamByUserId(this.#userId)
         this.isStreaming = isOnline
       } catch (err) {
-        logger.error('Stream status check failed — isStreaming stays', this.#isStreaming, err)
+        logger.error(`[${this.#channel}] Stream status check failed`, err)
       }
     }
 
     await checkStream()
     this.#streamPollId = setInterval(checkStream, 60_000)
 
-    // Periodic tasks
-    this.#manaUpdateId = setInterval(async () => {
-      try {
-        await db.profile.updateManaOnAll()
-      } catch (err) {
-        logger.error('Mana update failed', err)
-      }
-    }, 1000 * 60 * 120)
-
+    // Info message interval
     this.#infoMessageId = setInterval(async () => {
       if (this.#isStreaming) {
         try {
           const session = chargeRooms.find((r) => r.id === this.#userId) ?? null
-          const questService = getViewerQuestService(this.#service.streamerId)
+          const questService = getViewerQuestService(this.#streamerId)
           const streamStart = new Date(session?.stats.streamStartedAt ?? Date.now())
           const streamMinutes = Math.floor((Date.now() - streamStart.getTime()) / 60_000)
 
@@ -193,17 +196,19 @@ class TwitchController {
             data: { text: infoMsg },
           })
         } catch (err) {
-          logger.error('Info announcement failed', err)
+          logger.error(`[${this.#channel}] Info announcement failed`, err)
         }
       }
     }, 1000 * 60 * 10)
+
+    logger.info(`[${this.#channel}] Controller started`)
   }
 
   async #connectClients() {
     try {
       await this.#chat?.connect()
     } catch (err) {
-      logger.error('Chat connect failed:', err)
+      logger.error(`[${this.#channel}] Chat connect failed:`, err)
     }
     this.#eventSub?.connect()
   }
@@ -214,11 +219,6 @@ class TwitchController {
   }
 
   destroy() {
-    if (this.#manaUpdateId) {
-      clearInterval(this.#manaUpdateId)
-      this.#manaUpdateId = null
-    }
-
     if (this.#infoMessageId) {
       clearInterval(this.#infoMessageId)
       this.#infoMessageId = null
@@ -239,15 +239,64 @@ class TwitchController {
     this.#onlineHandlers = []
     this.#offlineHandlers = []
 
-    logger.info('TwitchController destroyed')
+    logger.info(`[${this.#channel}] Controller destroyed`)
   }
 }
 
-let _twitchController: TwitchController | null = null
+// ── Per-streamer registry ──────────────────────────────
 
-export function getTwitchController(): TwitchController {
-  if (!_twitchController) {
-    _twitchController = new TwitchController()
+const _controllers = new Map<string, TwitchController>()
+
+/** Global mana update (runs once, not per-streamer) */
+let _manaUpdateId: ReturnType<typeof setInterval> | null = null
+
+export function getOrCreateController(streamer: StreamerData): TwitchController {
+  let controller = _controllers.get(streamer.id)
+  if (!controller) {
+    controller = new TwitchController(streamer)
+    _controllers.set(streamer.id, controller)
   }
-  return _twitchController
+  return controller
+}
+
+export function getController(streamerId: string): TwitchController | null {
+  return _controllers.get(streamerId) ?? null
+}
+
+export function getControllerByTwitchId(twitchId: string): TwitchController | null {
+  for (const controller of _controllers.values()) {
+    if (controller.userId === twitchId) {
+      return controller
+    }
+  }
+  return null
+}
+
+export function getAllControllers(): TwitchController[] {
+  return [..._controllers.values()]
+}
+
+export function destroyAllControllers() {
+  for (const controller of _controllers.values()) {
+    controller.destroy()
+  }
+  _controllers.clear()
+
+  if (_manaUpdateId) {
+    clearInterval(_manaUpdateId)
+    _manaUpdateId = null
+  }
+}
+
+export function startGlobalTasks() {
+  if (_manaUpdateId) {
+    return
+  }
+  _manaUpdateId = setInterval(async () => {
+    try {
+      await db.profile.updateManaOnAll()
+    } catch (err) {
+      logger.error('Mana update failed', err)
+    }
+  }, 1000 * 60 * 120)
 }

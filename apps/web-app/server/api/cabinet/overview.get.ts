@@ -1,4 +1,4 @@
-import { getTwitchController } from '../../utils/twitch/twitch.controller'
+import { getController } from '../../utils/twitch/twitch.controller'
 
 export default defineEventHandler(async (event) => {
   const session = await getUserSession(event)
@@ -12,10 +12,10 @@ export default defineEventHandler(async (event) => {
   }
 
   const stream = await db.stream.findLive(profile.id)
-  const controller = getTwitchController()
+  const controller = getController(profile.id)
 
   return {
-    connected: true,
+    connected: !!controller,
     streamer: {
       id: profile.id,
       twitchChannelId: profile.twitchId,
@@ -34,6 +34,6 @@ export default defineEventHandler(async (event) => {
           treesChopped: stream.treesChopped,
         }
       : null,
-    twitchStatus: controller.status,
+    twitchStatus: controller?.status ?? 'STOPPED',
   }
 })

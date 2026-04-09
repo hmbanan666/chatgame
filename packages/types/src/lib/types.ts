@@ -142,6 +142,7 @@ export interface StreamerCurrency {
   createdAt: Date
   updatedAt: Date
   name: string
+  namePlural: string | null
   emoji: string
   characterPrice: number
   streamerId: string

@@ -155,8 +155,6 @@
       </div>
     </div>
 
-    <div class="pixel-divider" />
-
     <!-- CHARACTERS COLLECTION -->
     <div
       id="characters"
@@ -232,7 +230,10 @@
               </div>
             </div>
             <div v-else class="w-full mt-1 px-2">
-              <p v-if="char.price > 0" class="text-xs text-white/40 flex items-center justify-center gap-1 mb-0.5">
+              <p v-if="char.unlockedBy === 'STREAMER_CURRENCY' && getCurrencyEmoji(char.streamerId)" class="text-xs text-white/40 flex items-center justify-center gap-1 mb-0.5">
+                {{ getCurrencyEmoji(char.streamerId) }}
+              </p>
+              <p v-else-if="char.price > 0" class="text-xs text-white/40 flex items-center justify-center gap-1 mb-0.5">
                 <Image src="/coin.png" class="size-3" />
                 {{ char.price }}
               </p>
@@ -270,19 +271,9 @@
           v-for="(product, index) in (shopProducts ?? [])"
           :key="product.id"
           class="relative transition-all duration-200 hover:-translate-y-1"
-          :class="[
-            recommendedProduct && product.id === recommendedProduct.id ? 'ring-2 ring-[#14b8a6]' : '',
-          ]"
         >
-          <!-- Tier badge -->
           <div
-            v-if="recommendedProduct && product.id === recommendedProduct.id"
-            class="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 bg-[#6441a5] text-white text-xs font-bold whitespace-nowrap rounded-md animate-pulse"
-          >
-            Подходит!
-          </div>
-          <div
-            v-else-if="index === 2"
+            v-if="index === 2"
             class="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 bg-[#2a2a2e] text-white text-xs font-bold whitespace-nowrap rounded-md border border-white/10"
           >
             Популярное
@@ -422,7 +413,7 @@
                 Нужно {{ streamerCurrency.characterPrice }} {{ streamerCurrency.emoji }} — у тебя {{ streamerCurrencyBalance }}
               </p>
               <p class="text-xs text-white/30 text-center">
-                Смотри стримы и копи {{ streamerCurrency.name }}!
+                Смотри стримы и копи {{ streamerCurrency.emoji }}!
               </p>
             </div>
           </template>
@@ -497,7 +488,7 @@ const nextCharacterNudge = computed(() => {
   }
   const coins = profile.value.coins ?? 0
   const unowned = characters.value
-    .filter((c: { id: string, price: number }) => c.price > 0 && !isCharacterOwned(c.id))
+    .filter((c: { id: string, price: number, unlockedBy: string }) => c.price > 0 && c.unlockedBy !== 'STREAMER_CURRENCY' && !isCharacterOwned(c.id))
     .sort((a: { price: number }, b: { price: number }) => a.price - b.price)
   if (!unowned.length) {
     return null
@@ -508,14 +499,6 @@ const nextCharacterNudge = computed(() => {
     return { character: closest, deficit: 0, canAfford: true }
   }
   return { character: closest, deficit, canAfford: false }
-})
-
-const recommendedProduct = computed(() => {
-  if (!nextCharacterNudge.value || nextCharacterNudge.value.canAfford) {
-    return null
-  }
-  const deficit = nextCharacterNudge.value.deficit
-  return shopProducts.value?.find((p) => p.coins + p.bonusCoins >= deficit) ?? shopProducts.value?.at(-1) ?? null
 })
 
 function formatWatchTime(minutes: number): string {
@@ -560,6 +543,42 @@ const isBuyingCharacter = ref(false)
 // Streamer currency for exclusive characters
 const streamerCurrency = ref<{ name: string, emoji: string, characterPrice: number } | null>(null)
 const streamerCurrencyBalance = ref(0)
+const currencyCache = ref<Record<string, { name: string, namePlural?: string | null, emoji: string, characterPrice: number }>>({})
+
+// Preload currency info for all exclusive characters
+const exclusiveStreamerIds = computed(() => {
+  if (!characters.value) {
+    return []
+  }
+  return [...new Set(
+    characters.value
+      .filter((c: { unlockedBy: string, streamerId: string | null }) => c.unlockedBy === 'STREAMER_CURRENCY' && c.streamerId)
+      .map((c: { streamerId: string | null }) => c.streamerId!),
+  )]
+})
+
+watch(exclusiveStreamerIds, async (ids) => {
+  for (const id of ids) {
+    if (currencyCache.value[id]) {
+      continue
+    }
+    try {
+      const data = await $fetch(`/api/streamer/${id}/currency`)
+      if (data.currency) {
+        currencyCache.value[id] = data.currency
+      }
+    } catch {
+      // skip
+    }
+  }
+}, { immediate: true })
+
+function getCurrencyEmoji(streamerId: string | null): string | null {
+  if (!streamerId) {
+    return null
+  }
+  return currencyCache.value[streamerId]?.emoji ?? null
+}
 
 watch(selectedCharacter, async (char) => {
   if (char?.unlockedBy === 'STREAMER_CURRENCY' && char.streamerId) {
@@ -567,6 +586,9 @@ watch(selectedCharacter, async (char) => {
       const data = await $fetch(`/api/streamer/${char.streamerId}/currency`)
       streamerCurrency.value = data.currency
       streamerCurrencyBalance.value = data.balance
+      if (data.currency) {
+        currencyCache.value[char.streamerId] = data.currency
+      }
     } catch {
       streamerCurrency.value = null
       streamerCurrencyBalance.value = 0

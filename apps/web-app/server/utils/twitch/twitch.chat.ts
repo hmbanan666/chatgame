@@ -3,7 +3,7 @@
  * Replaces @twurple/easy-bot Bot and @twurple/chat ChatClient.
  */
 
-import { reloadTwitchToken } from './twitch.auth'
+import { getTwitchToken } from './twitch.auth'
 
 const logger = useLogger('twitch:chat')
 
@@ -14,13 +14,15 @@ type ChatMessageHandler = (userName: string, userId: string, text: string, reply
 export class TwitchChat {
   #ws: WebSocket | null = null
   #channel: string
+  #userId: string
   #isDestroyed = false
   #reconnectTimer: ReturnType<typeof setTimeout> | null = null
   #pingInterval: ReturnType<typeof setInterval> | null = null
   #messageHandlers: ChatMessageHandler[] = []
 
-  constructor(channel: string) {
+  constructor(channel: string, userId: string) {
     this.#channel = channel.toLowerCase()
+    this.#userId = userId
   }
 
   onMessage(handler: ChatMessageHandler) {
@@ -38,7 +40,7 @@ export class TwitchChat {
 
     this.#isDestroyed = false
 
-    const token = await reloadTwitchToken()
+    const token = await getTwitchToken(this.#userId)
 
     this.#ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443')
 

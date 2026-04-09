@@ -23,9 +23,13 @@ export default defineEventHandler(async (event) => {
     offset,
   })
 
+  // Exclude streamer from their own viewer list
+  const filtered = rows.filter((r) => r.profileId !== profile.id)
+  const filteredTotal = filtered.length < rows.length ? total - 1 : total
+
   return {
-    viewers: rows,
-    total,
+    viewers: filtered,
+    total: filteredTotal,
     page,
     limit,
     totalPages: Math.ceil(total / limit),

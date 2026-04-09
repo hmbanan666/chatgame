@@ -40,7 +40,7 @@ type EventQuestComplete = {
     totalCoins: number
     tokensEarned?: number
     currencyEmoji?: string
-    currencyName?: string
+    currencyNamePlural?: string
   }
 }
 
@@ -55,7 +55,7 @@ type EventDonation = {
     xpEarned: number
     tokensEarned?: number
     currencyEmoji?: string
-    currencyName?: string
+    currencyNamePlural?: string
   }
 }
 

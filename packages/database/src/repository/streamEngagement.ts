@@ -1,4 +1,4 @@
-import { and, eq, sql } from 'drizzle-orm'
+import { and, eq, inArray, sql, sum } from 'drizzle-orm'
 import { useDatabase } from '../database'
 import * as tables from '../tables'
 
@@ -51,5 +51,19 @@ export class StreamEngagementRepository {
         eq(tables.streamEngagements.profileId, profileId),
       ))
       .returning()
+  }
+
+  static async sumTokensByStreamIds(streamIds: string[]) {
+    const db = useDatabase()
+    const rows = await db
+      .select({
+        streamId: tables.streamEngagements.streamId,
+        total: sum(tables.streamEngagements.tokensAwarded).mapWith(Number),
+      })
+      .from(tables.streamEngagements)
+      .where(inArray(tables.streamEngagements.streamId, streamIds))
+      .groupBy(tables.streamEngagements.streamId)
+
+    return rows
   }
 }

@@ -534,7 +534,7 @@ export class WagonSession {
     // Engagement: donation → +1 token per 100 RUB
     let tokensEarned = 0
     let currencyEmoji: string | undefined
-    let currencyName: string | undefined
+    let currencyNamePlural: string | undefined
     const engagementService = getEngagementService(this.streamerId)
     if (engagementService) {
       try {
@@ -545,7 +545,7 @@ export class WagonSession {
             const info = await engagementService.getCurrencyInfo()
             if (info) {
               currencyEmoji = info.emoji
-              currencyName = info.name
+              currencyNamePlural = info.namePlural ?? info.name
             }
           }
         }
@@ -577,7 +577,7 @@ export class WagonSession {
         xpEarned: xpAmount,
         tokensEarned,
         currencyEmoji,
-        currencyName,
+        currencyNamePlural,
       },
     })
 

@@ -1,6 +1,6 @@
 import { waitForMigration } from '@chatgame/database'
 import { initStreamJourneyRoom } from '../core/stream-journey'
-import { getTwitchController } from '../utils/twitch/twitch.controller'
+import { destroyAllControllers, getOrCreateController, startGlobalTasks } from '../utils/twitch/twitch.controller'
 
 export default defineNitroPlugin(async (nitroApp) => {
   const logger = useLogger('plugin:twitch')
@@ -18,19 +18,29 @@ export default defineNitroPlugin(async (nitroApp) => {
     return
   }
 
+  // Start global tasks (mana update — once for all)
+  startGlobalTasks()
+
+  // Initialize per-streamer controllers
   for (const streamer of streamers) {
-    if (streamer.twitchId) {
-      initStreamJourneyRoom(streamer.twitchId)
+    if (!streamer.twitchId || !streamer.userName) {
+      continue
     }
+
+    initStreamJourneyRoom(streamer.twitchId)
+
+    const controller = getOrCreateController({
+      id: streamer.id,
+      twitchId: streamer.twitchId,
+      userName: streamer.userName,
+    })
+    await controller.serve()
+
+    logger.success(`Twitch controller started for ${streamer.userName}`)
   }
 
-  const controller = getTwitchController()
-  await controller.serve()
-
-  logger.success('Twitch server started')
-
   nitroApp.hooks.hook('close', () => {
-    logger.info('Shutting down Twitch controller...')
-    controller.destroy()
+    logger.info('Shutting down all Twitch controllers...')
+    destroyAllControllers()
   })
 })

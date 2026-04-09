@@ -39,34 +39,37 @@
           </div>
         </div>
 
-        <div class="bg-[#1e1e24] border border-white/5 rounded-lg p-4 space-y-2">
+        <NuxtLink to="/cabinet/currency" class="bg-[#1e1e24] border border-white/5 hover:border-amber-500/30 rounded-lg p-4 space-y-2 transition-colors block">
           <div class="flex items-center gap-2 text-sm text-white/50">
-            <Icon name="lucide:ticket" class="size-4" />
+            <Icon name="lucide:gem" class="size-4" />
             Эксклюзивная валюта
           </div>
-          <div class="flex items-center gap-2">
-            <NuxtLink to="/cabinet/currency" class="text-lg font-semibold text-teal-400 hover:underline">
-              Настроить
-            </NuxtLink>
+          <div v-if="currency?.currency" class="flex items-center gap-2">
+            <span class="text-lg font-semibold">{{ currency.currency.emoji }} {{ currency.currency.name }}</span>
           </div>
-        </div>
+          <div v-else class="flex items-center gap-2">
+            <span class="text-sm text-amber-400">Настроить →</span>
+          </div>
+        </NuxtLink>
       </div>
 
-      <!-- Weekly earnings -->
+      <!-- Streamer coins -->
       <div v-if="earnings" class="bg-[#1e1e24] border border-white/5 rounded-lg p-4 space-y-3">
         <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2 text-sm text-white/50">
-            <Icon name="lucide:coins" class="size-4" />
-            Заработок за неделю
+          <div class="text-sm text-white/50">
+            Ваши монеты
           </div>
-          <span class="text-xs text-white/30">
-            Сброс {{ formatDaysLeft(earnings.weekResetsAt) }}
-          </span>
+          <div class="flex items-center gap-2">
+            <Image src="/coin.png" class="size-5" />
+            <span class="text-lg font-bold text-teal-400">
+              {{ earnings.coins }}
+            </span>
+          </div>
         </div>
         <div class="space-y-1">
           <div class="flex items-center justify-between">
-            <span class="text-lg font-semibold">{{ earnings.weeklyEarned }} / {{ earnings.weeklyLimit }}</span>
-            <span class="text-sm text-white/40">монет</span>
+            <span class="text-sm text-white/40">Заработано за неделю</span>
+            <span class="text-sm">{{ earnings.weeklyEarned }} / {{ earnings.weeklyLimit }}</span>
           </div>
           <div class="w-full h-2 bg-[#141418] rounded-full overflow-hidden">
             <div
@@ -74,6 +77,9 @@
               :style="{ width: `${Math.min(100, (earnings.weeklyEarned / earnings.weeklyLimit) * 100)}%` }"
             />
           </div>
+          <p class="text-xs text-white/30">
+            Монеты начисляются за активность зрителей. Лимит {{ earnings.weeklyLimit }} в неделю. Сброс {{ formatDaysLeft(earnings.weekResetsAt) }}.
+          </p>
         </div>
       </div>
 
@@ -113,11 +119,14 @@
       </div>
 
       <!-- Not connected -->
-      <div v-if="!data.connected" class="bg-[#1e1e24] border border-teal-500/30 rounded-lg p-6 text-center space-y-4">
-        <Icon name="lucide:plug-zap" class="size-12 text-teal-400 mx-auto" />
-        <p class="text-white/60">
-          Подключение не настроено. Обратись к администратору.
+      <div v-if="!data.connected" class="bg-[#1e1e24] border border-white/5 rounded-lg p-6 text-center space-y-4">
+        <Icon name="lucide:plug-zap" class="size-12 text-white/20 mx-auto" />
+        <p class="text-white/40 text-sm">
+          Twitch-бот не подключён. Переподключите Twitch в настройках.
         </p>
+        <NuxtLink to="/cabinet/settings" class="text-sm text-teal-400 hover:underline">
+          Настройки
+        </NuxtLink>
       </div>
 
       <!-- Quick links -->
@@ -168,6 +177,7 @@ definePageMeta({
 
 const { data, pending } = useFetch('/api/cabinet/overview')
 const { data: earnings } = useFetch('/api/cabinet/earnings')
+const { data: currency } = useFetch('/api/cabinet/currency')
 
 function formatDaysLeft(dateStr: string | Date) {
   const ms = new Date(dateStr).getTime() - Date.now()

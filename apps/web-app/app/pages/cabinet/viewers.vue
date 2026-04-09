@@ -65,7 +65,7 @@
               </div>
             </td>
             <td class="text-center px-4 py-3 hidden sm:table-cell">
-              <span class="bg-site-highlight/20 text-site-highlight px-2 py-0.5 text-xs font-bold">
+              <span class="bg-site-highlight/20 text-site-highlight px-2 py-0.5 text-xs font-bold rounded">
                 {{ viewer.level }}
               </span>
             </td>
@@ -117,7 +117,7 @@
       <template #body>
         <div class="space-y-6">
           <div class="flex items-center gap-4">
-            <div class="size-16 bg-[#141418] flex items-center justify-center shrink-0">
+            <div class="size-16 bg-[#141418] flex items-center justify-center shrink-0 rounded-lg">
               <Icon name="lucide:user" class="size-8 text-white/30" />
             </div>
             <div>
@@ -125,7 +125,7 @@
                 {{ selectedViewer.userName }}
               </h2>
               <div class="flex items-center gap-2 mt-1">
-                <span class="bg-site-highlight/20 text-site-highlight px-2 py-0.5 text-xs font-bold">
+                <span class="bg-site-highlight/20 text-site-highlight px-2 py-0.5 text-xs font-bold rounded">
                   Ур. {{ selectedViewer.level }}
                 </span>
                 <span class="text-xs text-white/40">{{ formatWatchTime(selectedViewer.watchTimeMin) }}</span>
@@ -134,7 +134,7 @@
           </div>
 
           <div class="grid grid-cols-2 gap-4 text-sm">
-            <div class="bg-[#141418] p-3 space-y-1">
+            <div class="bg-[#141418] p-3 space-y-1 rounded-lg">
               <div class="text-white/40 text-xs">
                 Сообщения
               </div>
@@ -142,7 +142,7 @@
                 {{ selectedViewer.messagesCount }}
               </div>
             </div>
-            <div class="bg-[#141418] p-3 space-y-1">
+            <div class="bg-[#141418] p-3 space-y-1 rounded-lg">
               <div class="text-white/40 text-xs">
                 Время у тебя
               </div>
@@ -150,7 +150,7 @@
                 {{ formatWatchTime(selectedViewer.watchTimeMin) }}
               </div>
             </div>
-            <div class="bg-[#141418] p-3 space-y-1">
+            <div class="bg-[#141418] p-3 space-y-1 rounded-lg">
               <div class="text-white/40 text-xs">
                 Первый визит
               </div>
@@ -158,7 +158,7 @@
                 {{ formatDate(selectedViewer.createdAt) }}
               </div>
             </div>
-            <div class="bg-[#141418] p-3 space-y-1">
+            <div class="bg-[#141418] p-3 space-y-1 rounded-lg">
               <div class="text-white/40 text-xs">
                 Уровень (общий)
               </div>
@@ -166,7 +166,7 @@
                 {{ selectedViewer.level }}
               </div>
             </div>
-            <div class="bg-[#141418] p-3 space-y-1">
+            <div class="bg-[#141418] p-3 space-y-1 rounded-lg">
               <div class="text-white/40 text-xs">
                 Монеты
               </div>
@@ -174,7 +174,7 @@
                 {{ selectedViewer.coins }}
               </div>
             </div>
-            <div class="bg-[#141418] p-3 space-y-1">
+            <div class="bg-[#141418] p-3 space-y-1 rounded-lg">
               <div class="text-white/40 text-xs">
                 Купоны
               </div>
@@ -192,14 +192,20 @@
             <textarea
               v-model="viewerNote"
               placeholder="Заметка о зрителе..."
-              class="w-full bg-[#141418] border border-white/10 text-sm text-white placeholder-white/20 px-3 py-2 resize-none focus:border-teal-500/50 focus:outline-none"
+              class="w-full bg-[#141418] border border-white/10 rounded-lg text-sm text-white placeholder-white/20 px-3 py-2 resize-none focus:border-teal-500/50 focus:outline-none"
               rows="3"
             />
-            <div v-if="noteSaving" class="text-xs text-white/20">
-              Сохранение...
-            </div>
           </div>
         </div>
+      </template>
+      <template #footer>
+        <PixelButton
+          :disabled="noteSaving"
+          class="w-full!"
+          @click="saveNoteNow"
+        >
+          {{ noteSaving ? 'Сохранение...' : 'Сохранить' }}
+        </PixelButton>
       </template>
     </USlideover>
   </div>
@@ -235,7 +241,6 @@ const selectedViewer = ref<any>(null)
 const slideoverOpen = ref(false)
 const viewerNote = ref('')
 const noteSaving = ref(false)
-let noteDebounce: ReturnType<typeof setTimeout> | null = null
 
 watch(selectedViewer, async (v) => {
   if (v) {
@@ -253,27 +258,22 @@ watch(selectedViewer, async (v) => {
   }
 })
 
-watch(viewerNote, (text) => {
+async function saveNoteNow() {
   if (!selectedViewer.value) {
     return
   }
-  if (noteDebounce) {
-    clearTimeout(noteDebounce)
-  }
   noteSaving.value = true
-  noteDebounce = setTimeout(async () => {
-    try {
-      await $fetch('/api/dashboard/note', {
-        method: 'POST',
-        body: { profileId: selectedViewer.value.profileId, text },
-      })
-    } catch {
-      // skip
-    } finally {
-      noteSaving.value = false
-    }
-  }, 1000)
-})
+  try {
+    await $fetch('/api/dashboard/note', {
+      method: 'POST',
+      body: { profileId: selectedViewer.value.profileId, text: viewerNote.value },
+    })
+  } catch {
+    // skip
+  } finally {
+    noteSaving.value = false
+  }
+}
 
 watch(slideoverOpen, (open) => {
   if (!open) {

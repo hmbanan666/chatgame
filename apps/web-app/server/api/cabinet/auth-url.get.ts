@@ -1,4 +1,6 @@
 const STREAMER_SCOPES = [
+  'chat:read',
+  'chat:edit',
   'channel:manage:redemptions',
   'channel:read:subscriptions',
   'moderator:read:followers',

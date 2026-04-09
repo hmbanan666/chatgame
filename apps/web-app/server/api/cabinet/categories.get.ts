@@ -17,5 +17,5 @@ export default defineEventHandler(async (event) => {
     return []
   }
 
-  return searchCategories(q)
+  return searchCategories(profile.twitchId!, q)
 })

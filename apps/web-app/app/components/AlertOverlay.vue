@@ -52,7 +52,7 @@
             </p>
 
             <AlertRewardBlock v-if="currentAlert.data.tokensEarned" label="Награда">
-              <span class="text-3xl font-black text-amber-400">+{{ currentAlert.data.tokensEarned }} {{ currentAlert.data.currencyEmoji }}</span>
+              <span class="text-3xl font-black text-amber-400">+{{ currentAlert.data.tokensEarned }} {{ currentAlert.data.currencyEmoji }} {{ pluralizeCurrency(currentAlert.data.tokensEarned, currentAlert.data.currencyNamePlural) }}</span>
             </AlertRewardBlock>
             <AlertRewardBlock v-else label="Награда">
               <span class="text-3xl font-black text-game-bright">+{{ currentAlert.data.reward }} {{ pluralizationRu(currentAlert.data.reward, ['монета', 'монеты', 'монет']) }}</span>
@@ -91,7 +91,7 @@
             <div class="flex items-center justify-center gap-3 mt-2">
               <span v-if="currentAlert.data.xpEarned" class="text-xl font-black text-game-bright">+{{ currentAlert.data.xpEarned }} XP</span>
               <span v-if="currentAlert.data.tokensEarned" class="text-game-muted">·</span>
-              <span v-if="currentAlert.data.tokensEarned" class="text-xl font-black text-amber-400">+{{ currentAlert.data.tokensEarned }} {{ currentAlert.data.currencyEmoji ?? '🎯' }}</span>
+              <span v-if="currentAlert.data.tokensEarned" class="text-xl font-black text-amber-400">+{{ currentAlert.data.tokensEarned }} {{ currentAlert.data.currencyEmoji ?? '🎯' }} {{ pluralizeCurrency(currentAlert.data.tokensEarned, currentAlert.data.currencyNamePlural) }}</span>
               <span class="text-game-muted">·</span>
               <span class="text-base text-game-secondary-5">Спасибо за поддержку!</span>
             </div>
@@ -357,6 +357,17 @@ const ACTION_ICONS: Record<string, string> = {
 
 function getActionIcon(action: string): string {
   return ACTION_ICONS[action] ?? 'lucide:circle'
+}
+
+function pluralizeCurrency(count: number, namePlural?: string): string {
+  if (!namePlural) {
+    return ''
+  }
+  const forms = namePlural.split(',')
+  if (forms.length < 3) {
+    return forms[0] ?? ''
+  }
+  return pluralizationRu(count, forms as [string, string, string])
 }
 
 function currencySymbol(currency: string): string {

@@ -1,6 +1,6 @@
 /**
  * Native Twitch OAuth token management.
- * Replaces @twurple/auth RefreshingAuthProvider.
+ * Per-streamer token storage — supports multiple streamers simultaneously.
  */
 
 const logger = useLogger('twitch:auth')
@@ -10,29 +10,30 @@ interface TwitchToken {
   refreshToken: string
 }
 
-let _token: TwitchToken | null = null
+/** Per-streamer token cache: twitchUserId → token */
+const _tokens = new Map<string, TwitchToken>()
 
-export async function getTwitchToken(): Promise<TwitchToken> {
-  if (_token) {
-    return _token
+export async function getTwitchToken(userId: string): Promise<TwitchToken> {
+  const cached = _tokens.get(userId)
+  if (cached) {
+    return cached
   }
 
-  return reloadTwitchToken()
+  return reloadTwitchToken(userId)
 }
 
-export async function reloadTwitchToken(): Promise<TwitchToken> {
-  const { twitchChannelId } = useRuntimeConfig()
-  const userId = twitchChannelId.toString()
-
+export async function reloadTwitchToken(userId: string): Promise<TwitchToken> {
   const stored = await db.twitchAccessToken.findByUserId(userId)
   if (!stored) {
     throw new Error(`No Twitch access token for user ${userId}`)
   }
 
-  _token = {
+  const token: TwitchToken = {
     accessToken: stored.accessToken,
     refreshToken: stored.refreshToken as string,
   }
+
+  _tokens.set(userId, token)
 
   // Auto-refresh if token is expired or about to expire (5 min buffer)
   if (stored.expiresIn && stored.obtainmentTimestamp) {
@@ -40,17 +41,17 @@ export async function reloadTwitchToken(): Promise<TwitchToken> {
     const expiresAt = obtainedAt + (stored.expiresIn * 1000)
     const bufferMs = 5 * 60_000
     if (Date.now() >= expiresAt - bufferMs) {
-      logger.info('Token expired or about to expire, refreshing...')
-      return refreshTwitchToken()
+      logger.info(`Token expired for user ${userId}, refreshing...`)
+      return refreshTwitchToken(userId)
     }
   }
 
-  return _token
+  return token
 }
 
-export async function refreshTwitchToken(): Promise<TwitchToken> {
-  const { oauthTwitchClientId, oauthTwitchClientSecret, twitchChannelId } = useRuntimeConfig()
-  const current = await getTwitchToken()
+export async function refreshTwitchToken(userId: string): Promise<TwitchToken> {
+  const { oauthTwitchClientId, oauthTwitchClientSecret } = useRuntimeConfig()
+  const current = await getTwitchToken(userId)
 
   const params = new URLSearchParams({
     client_id: oauthTwitchClientId,
@@ -63,25 +64,31 @@ export async function refreshTwitchToken(): Promise<TwitchToken> {
   const data = await res.json()
 
   if (!data.access_token) {
-    logger.error('Token refresh failed, status keys:', Object.keys(data))
-    throw new Error('Failed to refresh Twitch token')
+    logger.error(`Token refresh failed for user ${userId}, keys:`, Object.keys(data))
+    throw new Error(`Failed to refresh Twitch token for ${userId}`)
   }
 
-  _token = {
+  const token: TwitchToken = {
     accessToken: data.access_token,
     refreshToken: data.refresh_token,
   }
 
+  _tokens.set(userId, token)
+
   // Persist to DB
-  await db.twitchAccessToken.updateByUserId(twitchChannelId.toString(), {
+  await db.twitchAccessToken.updateByUserId(userId, {
     accessToken: data.access_token,
     refreshToken: data.refresh_token,
     expiresIn: data.expires_in,
     obtainmentTimestamp: Date.now().toString(),
   })
 
-  logger.info('Token refreshed')
-  return _token
+  logger.info(`Token refreshed for user ${userId}`)
+  return token
+}
+
+export function clearTokenCache(userId: string) {
+  _tokens.delete(userId)
 }
 
 export function getClientId(): string {

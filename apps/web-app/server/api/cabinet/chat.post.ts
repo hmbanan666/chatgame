@@ -1,4 +1,4 @@
-import { getTwitchController } from '../../utils/twitch/twitch.controller'
+import { getController } from '../../utils/twitch/twitch.controller'
 
 export default defineEventHandler(async (event) => {
   const session = await getUserSession(event)
@@ -17,8 +17,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Empty message' })
   }
 
-  const controller = getTwitchController()
-  if (controller.status !== 'RUNNING') {
+  const controller = getController(profile.id)
+  if (!controller || controller.status !== 'RUNNING') {
     throw createError({ statusCode: 503, message: 'Chat not connected' })
   }
 

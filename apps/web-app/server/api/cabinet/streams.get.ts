@@ -19,8 +19,19 @@ export default defineEventHandler(async (event) => {
     db.stream.countByStreamerId(profile.id),
   ])
 
+  // Aggregate tokens awarded per stream from engagement table
+  const streamIds = streams.map((s) => s.id)
+  const tokenCounts = streamIds.length > 0
+    ? await db.streamEngagement.sumTokensByStreamIds(streamIds)
+    : []
+
+  const tokenMap = new Map(tokenCounts.map((t) => [t.streamId, t.total]))
+
   return {
-    streams,
+    streams: streams.map((s) => ({
+      ...s,
+      tokensAwarded: tokenMap.get(s.id) ?? 0,
+    })),
     total,
     page,
     limit,

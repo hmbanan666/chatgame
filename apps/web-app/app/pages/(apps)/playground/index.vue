@@ -151,15 +151,15 @@ function triggerAlert(type: string) {
   const generators: Record<string, () => EventMessage> = {
     NEW_VIEWER: () => ({ id, type: 'NEW_VIEWER', data: { userName, codename } }),
     NEW_FOLLOWER: () => ({ id, type: 'NEW_FOLLOWER', data: { userName } }),
-    QUEST_COMPLETE: () => ({ id, type: 'QUEST_COMPLETE', data: { userName, codename, questText: 'Срубить 10 деревьев', reward: getRandInteger(1, 3), xpReward: pick([3, 5, 10]), totalCoins: getRandInteger(10, 200), tokensEarned: 1, currencyEmoji: '🍌', currencyName: 'бананов' } }),
+    QUEST_COMPLETE: () => ({ id, type: 'QUEST_COMPLETE', data: { userName, codename, questText: 'Срубить 10 деревьев', reward: getRandInteger(1, 3), xpReward: pick([3, 5, 10]), totalCoins: getRandInteger(10, 200), tokensEarned: 1, currencyEmoji: '🍌', currencyNamePlural: 'Банан,Банана,Бананов' } }),
     LEVEL_UP: () => ({ id, type: 'LEVEL_UP', data: { userName, codename, level: getRandInteger(2, 20), reward: 1 } }),
     COUPON_TAKEN: () => ({ id, type: 'COUPON_TAKEN', data: { userName, codename, totalCoupons: getRandInteger(1, 10) } }),
     DONATION: () => {
       const amount = getRandInteger(50, 500)
       const tokensEarned = Math.floor(amount / 100)
-      return { id, type: 'DONATION', data: { userName, codename, amount, currency: 'RUB', message: 'Крутой стрим!', xpEarned: Math.max(1, Math.floor(amount / 5)), tokensEarned, currencyEmoji: '🍌', currencyName: 'бананов' } }
+      return { id, type: 'DONATION', data: { userName, codename, amount, currency: 'RUB', message: 'Крутой стрим!', xpEarned: Math.max(1, Math.floor(amount / 5)), tokensEarned, currencyEmoji: '🍌', currencyNamePlural: 'Банан,Банана,Бананов' } }
     },
-    EXCLUSIVE_UNLOCK: () => ({ id, type: 'EXCLUSIVE_UNLOCK', data: { userName, codename, characterName: 'Banana', currencyName: 'бананов', currencyEmoji: '🍌' } }),
+    EXCLUSIVE_UNLOCK: () => ({ id, type: 'EXCLUSIVE_UNLOCK', data: { userName, codename, characterName: 'Banana', currencyName: 'Бананов', currencyEmoji: '🍌' } }),
     RAID: () => {
       const v = getRandInteger(5, 300)
       return { id, type: 'RAID', data: { userName: pick(NAMES), viewers: v, xpEarned: v * 2 } }

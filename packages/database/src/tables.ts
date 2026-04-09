@@ -281,6 +281,7 @@ export const streamerCurrencies = pgTable('streamer_currency', {
   createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
   name: text('name').notNull(),
+  namePlural: text('name_plural'),
   emoji: text('emoji').notNull(),
   characterPrice: integer('character_price').notNull().default(100),
   streamerId: text('streamer_id').notNull().unique(),

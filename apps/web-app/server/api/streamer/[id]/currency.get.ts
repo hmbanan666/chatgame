@@ -22,6 +22,7 @@ export default defineEventHandler(async (event) => {
   return {
     currency: {
       name: currency.name,
+      namePlural: currency.namePlural,
       emoji: currency.emoji,
       characterPrice: currency.characterPrice,
       characterId: currency.characterId,

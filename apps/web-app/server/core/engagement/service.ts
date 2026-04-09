@@ -14,7 +14,7 @@ export class StreamEngagementService {
   readonly #streamerId: string
   readonly #streamId: string
   #watchTimeCheckId: ReturnType<typeof setInterval> | null = null
-  #currencyCache: { emoji: string, name: string } | null = null
+  #currencyCache: { emoji: string, name: string, namePlural: string | null } | null = null
 
   constructor(streamerId: string, streamId: string) {
     this.#streamerId = streamerId
@@ -27,13 +27,13 @@ export class StreamEngagementService {
   }
 
   /** Get cached currency info for alerts */
-  async getCurrencyInfo(): Promise<{ emoji: string, name: string } | null> {
+  async getCurrencyInfo(): Promise<{ emoji: string, name: string, namePlural: string | null } | null> {
     if (this.#currencyCache) {
       return this.#currencyCache
     }
     const currency = await db.streamerCurrency.findByStreamerId(this.#streamerId)
     if (currency) {
-      this.#currencyCache = { emoji: currency.emoji, name: currency.name }
+      this.#currencyCache = { emoji: currency.emoji, name: currency.name, namePlural: currency.namePlural }
     }
     return this.#currencyCache
   }

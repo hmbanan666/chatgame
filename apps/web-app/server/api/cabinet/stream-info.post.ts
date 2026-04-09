@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
   }
 
   if (body.gameName) {
-    const categories = await searchCategories(body.gameName)
+    const categories = await searchCategories(profile.twitchId, body.gameName)
     if (categories.length > 0) {
       params.game_id = categories[0]!.id
     }

@@ -10,8 +10,9 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody(event)
-  const { name, emoji, characterPrice, characterId } = body as {
+  const { name, namePlural, emoji, characterPrice, characterId } = body as {
     name?: string
+    namePlural?: string
     emoji?: string
     characterPrice?: number
     characterId?: string | null
@@ -39,6 +40,7 @@ export default defineEventHandler(async (event) => {
   const currency = await db.streamerCurrency.upsert(profile.id, {
     name,
     emoji,
+    ...(namePlural !== undefined && { namePlural }),
     ...(characterPrice !== undefined && { characterPrice }),
     ...(characterId !== undefined && { characterId }),
   })

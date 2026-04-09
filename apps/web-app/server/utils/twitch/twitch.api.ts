@@ -9,8 +9,8 @@ const BASE_URL = 'https://api.twitch.tv/helix'
 
 const logger = useLogger('twitch:api')
 
-export async function twitchFetch(path: string, options?: RequestInit): Promise<Response> {
-  const token = await getTwitchToken()
+export async function twitchFetch(userId: string, path: string, options?: RequestInit): Promise<Response> {
+  const token = await getTwitchToken(userId)
 
   let res = await fetch(`${BASE_URL}${path}`, {
     ...options,
@@ -23,7 +23,7 @@ export async function twitchFetch(path: string, options?: RequestInit): Promise<
 
   // Token expired — refresh and retry once
   if (res.status === 401) {
-    const newToken = await refreshTwitchToken()
+    const newToken = await refreshTwitchToken(userId)
     res = await fetch(`${BASE_URL}${path}`, {
       ...options,
       headers: {
@@ -37,13 +37,13 @@ export async function twitchFetch(path: string, options?: RequestInit): Promise<
   return res
 }
 
-async function twitchFetchJson(path: string, options?: RequestInit): Promise<any> {
-  const res = await twitchFetch(path, options)
+async function twitchFetchJson(userId: string, path: string, options?: RequestInit): Promise<any> {
+  const res = await twitchFetch(userId, path, options)
   return res.json()
 }
 
 export async function getStreamByUserId(userId: string): Promise<boolean> {
-  const data = await twitchFetchJson(`/streams?user_id=${userId}`)
+  const data = await twitchFetchJson(userId, `/streams?user_id=${userId}`)
   return data?.data?.length > 0
 }
 
@@ -65,7 +65,7 @@ interface TwitchReward {
 }
 
 export async function createCustomReward(broadcasterId: string, params: CreateRewardParams): Promise<TwitchReward | null> {
-  const res = await twitchFetch(
+  const res = await twitchFetch(broadcasterId,
     `/channel_points/custom_rewards?broadcaster_id=${broadcasterId}`,
     {
       method: 'POST',
@@ -85,7 +85,7 @@ export async function createCustomReward(broadcasterId: string, params: CreateRe
 }
 
 export async function updateCustomReward(broadcasterId: string, rewardId: string, params: Partial<CreateRewardParams>): Promise<boolean> {
-  const res = await twitchFetch(
+  const res = await twitchFetch(broadcasterId,
     `/channel_points/custom_rewards?broadcaster_id=${broadcasterId}&id=${rewardId}`,
     {
       method: 'PATCH',
@@ -104,7 +104,7 @@ export async function updateCustomReward(broadcasterId: string, rewardId: string
 }
 
 export async function deleteCustomReward(broadcasterId: string, rewardId: string): Promise<boolean> {
-  const res = await twitchFetch(
+  const res = await twitchFetch(broadcasterId,
     `/channel_points/custom_rewards?broadcaster_id=${broadcasterId}&id=${rewardId}`,
     { method: 'DELETE' },
   )
@@ -119,7 +119,7 @@ export async function deleteCustomReward(broadcasterId: string, rewardId: string
 }
 
 export async function getStreamInfo(userId: string): Promise<{ viewerCount: number, startedAt: string } | null> {
-  const data = await twitchFetchJson(`/streams?user_id=${userId}`)
+  const data = await twitchFetchJson(userId, `/streams?user_id=${userId}`)
   const stream = data?.data?.[0]
   if (!stream) {
     return null
@@ -130,7 +130,7 @@ export async function getStreamInfo(userId: string): Promise<{ viewerCount: numb
 // ── Channel Info ────────────────────────────────────────
 
 export async function getChannelInfo(broadcasterId: string): Promise<{ title: string, gameName: string, gameId: string, tags: string[], language: string } | null> {
-  const data = await twitchFetchJson(`/channels?broadcaster_id=${broadcasterId}`)
+  const data = await twitchFetchJson(broadcasterId, `/channels?broadcaster_id=${broadcasterId}`)
   const channel = data?.data?.[0]
   if (!channel) {
     return null
@@ -145,7 +145,7 @@ export async function getChannelInfo(broadcasterId: string): Promise<{ title: st
 }
 
 export async function updateChannelInfo(broadcasterId: string, params: { title?: string, game_id?: string, tags?: string[] }): Promise<boolean> {
-  const res = await twitchFetch(
+  const res = await twitchFetch(broadcasterId,
     `/channels?broadcaster_id=${broadcasterId}`,
     {
       method: 'PATCH',
@@ -156,8 +156,8 @@ export async function updateChannelInfo(broadcasterId: string, params: { title?:
   return res.status === 204
 }
 
-export async function searchCategories(query: string): Promise<{ id: string, name: string, boxArtUrl: string }[]> {
-  const data = await twitchFetchJson(`/search/categories?query=${encodeURIComponent(query)}&first=8`)
+export async function searchCategories(broadcasterId: string, query: string): Promise<{ id: string, name: string, boxArtUrl: string }[]> {
+  const data = await twitchFetchJson(broadcasterId, `/search/categories?query=${encodeURIComponent(query)}&first=8`)
   return (data?.data ?? []).map((c: any) => ({
     id: c.id,
     name: c.name,
@@ -177,7 +177,7 @@ export interface TwitchRewardFull {
 }
 
 export async function getAllChannelRewards(broadcasterId: string): Promise<TwitchRewardFull[]> {
-  const res = await twitchFetch(
+  const res = await twitchFetch(broadcasterId,
     `/channel_points/custom_rewards?broadcaster_id=${broadcasterId}`,
   )
 
@@ -199,7 +199,7 @@ export async function getAllChannelRewards(broadcasterId: string): Promise<Twitc
 }
 
 export async function getCustomRewards(broadcasterId: string): Promise<TwitchReward[]> {
-  const res = await twitchFetch(
+  const res = await twitchFetch(broadcasterId,
     `/channel_points/custom_rewards?broadcaster_id=${broadcasterId}&only_manageable_rewards=true`,
   )
 
@@ -216,7 +216,7 @@ export async function getCustomRewards(broadcasterId: string): Promise<TwitchRew
 // ── Chat ─────────────────────────────────────────────────
 
 export async function sendChatAnnouncement(broadcasterId: string, message: string): Promise<void> {
-  const res = await twitchFetch(
+  const res = await twitchFetch(broadcasterId,
     `/chat/announcements?broadcaster_id=${broadcasterId}&moderator_id=${broadcasterId}`,
     {
       method: 'POST',
