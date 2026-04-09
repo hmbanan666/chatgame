@@ -199,65 +199,22 @@ export class ProfileRepository {
     )
   }
 
-  static requestStreamer(id: string) {
-    const db = useDatabase()
-    return db.update(tables.profiles)
-      .set({
-        streamerRequestedAt: new Date(),
-        streamerRequestStatus: 'PENDING',
-        updatedAt: new Date(),
-      })
-      .where(eq(tables.profiles.id, id))
-  }
-
-  static async requestStreamerWithPayment(id: string, fee: number) {
-    const db = useDatabase()
-    const [result] = await db.update(tables.profiles)
-      .set({
-        coins: sql`${tables.profiles.coins} - ${fee}`,
-        streamerRequestedAt: new Date(),
-        streamerRequestStatus: 'PENDING',
-        streamerRequestPaidCoins: fee,
-        updatedAt: new Date(),
-      })
-      .where(and(eq(tables.profiles.id, id), gte(tables.profiles.coins, fee)))
-      .returning()
-
-    return result ?? null
-  }
-
-  static approveStreamer(id: string) {
+  static activateStreamer(id: string) {
     const db = useDatabase()
     return db.update(tables.profiles)
       .set({
         isStreamer: true,
-        streamerRequestStatus: 'APPROVED',
         updatedAt: new Date(),
       })
       .where(eq(tables.profiles.id, id))
   }
 
-  static async rejectStreamer(id: string) {
+  static deductCoinsAtomic(id: string, amount: number) {
     const db = useDatabase()
-    const profile = await db.query.profiles.findFirst({
-      where: (t, { eq }) => eq(t.id, id),
-      columns: { streamerRequestPaidCoins: true },
-    })
-    if (!profile) {
-      return null
-    }
-
-    const refundAmount = profile.streamerRequestPaidCoins
-    await db.update(tables.profiles)
-      .set({
-        streamerRequestStatus: 'REJECTED',
-        coins: sql`${tables.profiles.coins} + ${refundAmount}`,
-        streamerRequestPaidCoins: 0,
-        updatedAt: new Date(),
-      })
-      .where(eq(tables.profiles.id, id))
-
-    return refundAmount
+    return db.update(tables.profiles)
+      .set({ coins: sql`${tables.profiles.coins} - ${amount}`, updatedAt: new Date() })
+      .where(and(eq(tables.profiles.id, id), gte(tables.profiles.coins, amount)))
+      .returning()
   }
 
   static unlockPremium(id: string) {

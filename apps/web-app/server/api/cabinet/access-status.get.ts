@@ -1,4 +1,4 @@
-import { STREAMER_APPLICATION_FEE } from '@chatgame/types'
+import { STREAMER_PREMIUM_COST } from '@chatgame/types'
 
 const TRIAL_STREAMS = 5
 
@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
       status: 'premium' as const,
       streamsUsed: 0,
       streamsTotal: TRIAL_STREAMS,
-      unlockCost: STREAMER_APPLICATION_FEE,
+      unlockCost: STREAMER_PREMIUM_COST,
       coins: profile.coins,
     }
   }
@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
     status: streamsUsed >= TRIAL_STREAMS ? 'locked' as const : 'trial' as const,
     streamsUsed,
     streamsTotal: TRIAL_STREAMS,
-    unlockCost: STREAMER_APPLICATION_FEE,
+    unlockCost: STREAMER_PREMIUM_COST,
     coins: profile.coins,
   }
 })

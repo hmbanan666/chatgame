@@ -1,6 +1,7 @@
-import type { TokenCreateResponse, TwitchAccessTokenResponse, TwitchToken } from '@chatgame/types'
+import type { TokenCreateResponse, TwitchToken } from '@chatgame/types'
 import type { EventHandlerRequest } from 'h3'
 import { createId } from '@paralleldrive/cuid2'
+import { obtainTwitchAccessToken } from '~~/server/utils/twitch/twitch.auth'
 
 const logger = useLogger('twitch:code')
 
@@ -24,13 +25,12 @@ export default defineEventHandler<EventHandlerRequest, Promise<TokenCreateRespon
       })
     }
 
-    const res = await obtainTwitchAccessToken(body.code, publicEnv.signInRedirectUrl)
-
-    if (!res?.access_token) {
-      throw createError({
-        statusCode: 400,
-        message: 'Not correct code',
-      })
+    let res
+    try {
+      res = await obtainTwitchAccessToken(body.code, publicEnv.signInRedirectUrl)
+    } catch (err) {
+      logger.error('Token exchange failed', err)
+      throw createError({ statusCode: 400, message: 'Not correct code' })
     }
 
     const [twitchAccessToken] = await db.twitchAccessToken.create({
@@ -57,20 +57,3 @@ export default defineEventHandler<EventHandlerRequest, Promise<TokenCreateRespon
     }
   },
 )
-
-async function obtainTwitchAccessToken(code: string, redirectUrl: string) {
-  const { oauthTwitchClientSecret, oauthTwitchClientId } = useRuntimeConfig()
-
-  try {
-    const response = await fetch(
-      `https://id.twitch.tv/oauth2/token?client_id=${oauthTwitchClientId}&client_secret=${oauthTwitchClientSecret}&code=${code}&grant_type=authorization_code&redirect_uri=${redirectUrl}`,
-      {
-        method: 'POST',
-      },
-    )
-    return (await response.json()) as TwitchAccessTokenResponse
-  } catch (err) {
-    logger.error('obtainTwitchAccessToken', err)
-    return null
-  }
-}

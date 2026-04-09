@@ -38,7 +38,7 @@
           Не хватает {{ (access?.unlockCost ?? 100) - (access?.coins ?? 0) }} монет
         </p>
         <UButton
-          to="/shop"
+          to="/profile#shop"
           class="btn-pixel bg-white/10! hover:bg-white/20! text-white! rounded-none! px-6!"
         >
           Перейти в магазин

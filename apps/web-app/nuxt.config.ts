@@ -82,6 +82,7 @@ export default defineNuxtConfig({
     donationAlertsClientSecret: '',
     public: {
       signInRedirectUrl: '',
+      streamerRedirectUrl: '',
       websocketUrl: '',
     },
   },

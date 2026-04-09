@@ -60,7 +60,7 @@
         5 стримов бесплатно
       </h3>
       <p class="text-sm text-white/40">
-        Подай заявку, попробуй все инструменты на 5 стримах. Потом — анлок за 100 монет (заработаешь их за это время).
+        Подключи канал, попробуй все инструменты на 5 стримах. Потом — анлок за 100 монет (заработаешь их за это время).
       </p>
     </div>
 
@@ -71,7 +71,7 @@
           Начни с авторизации
         </h2>
         <p class="text-white/40">
-          Войди через Twitch, а потом подай заявку на кабинет стримера
+          Войди через Twitch, а потом подключи канал
         </p>
         <UButton
           :to="authUrl"
@@ -84,7 +84,7 @@
         </UButton>
       </template>
 
-      <template v-else-if="streamerStatus === 'approved'">
+      <template v-else-if="isStreamer">
         <Icon name="lucide:check-circle" class="size-12 text-green-400 mx-auto" />
         <h2 class="font-pixel text-xl font-bold">
           Кабинет активен
@@ -97,52 +97,23 @@
         </UButton>
       </template>
 
-      <template v-else-if="streamerStatus === 'pending'">
-        <Icon name="lucide:clock" class="size-12 text-site-highlight mx-auto" />
-        <h2 class="font-pixel text-xl font-bold">
-          Заявка на рассмотрении
-        </h2>
-        <p class="text-white/40">
-          Мы проверим твой канал и подключим кабинет. Обычно это занимает до 24 часов.
-        </p>
-      </template>
-
-      <template v-else-if="streamerStatus === 'rejected'">
-        <Icon name="lucide:x-circle" class="size-12 text-red-400 mx-auto" />
-        <h2 class="font-pixel text-xl font-bold">
-          Заявка отклонена
-        </h2>
-        <p class="text-white/40">
-          Можешь подать заявку повторно.
-        </p>
-        <UButton
-          :loading="requesting"
-          class="btn-pixel bg-site-accent! hover:bg-site-accent-bright! text-white! rounded-none! px-8!"
-          @click="requestAccess"
-        >
-          Подать заявку повторно
-        </UButton>
-      </template>
-
       <template v-else>
         <h2 class="font-pixel text-xl font-bold">
-          Хочу кабинет стримера
+          Подключи свой канал
         </h2>
         <p class="text-white/40">
-          Подай заявку — мы проверим твой канал и подключим инструменты
+          Разреши доступ к каналу через Twitch — и кабинет стримера откроется автоматически
         </p>
         <UButton
-          :loading="requesting"
-          class="btn-pixel bg-site-accent! hover:bg-site-accent-bright! text-white! rounded-none! px-8!"
-          @click="requestAccess"
+          :to="streamerAuthUrl"
+          external
+          size="xl"
+          icon="simple-icons:twitch"
+          class="btn-pixel bg-[#6441a5]! hover:bg-[#7B5BBF]! text-white! rounded-none! px-8!"
         >
-          Подать заявку (бесплатно)
+          Подключить канал
         </UButton>
       </template>
-
-      <p v-if="requestError" class="text-sm text-red-400">
-        {{ requestError }}
-      </p>
     </div>
   </div>
 </template>
@@ -152,34 +123,14 @@ useHead({ title: 'Для стримеров' })
 
 const { loggedIn, user } = useUserSession()
 const { authUrl } = useAuthUrl()
+const { streamerAuthUrl } = useStreamerAuthUrl()
 
-const streamerStatus = ref<'none' | 'pending' | 'approved' | 'rejected'>('none')
-const requesting = ref(false)
-const requestError = ref('')
+const isStreamer = ref(false)
 
 if (loggedIn.value && user.value?.id) {
   const { data: profile } = await useFetch(() => `/api/profile/${user.value!.id}`)
-  if (profile.value) {
-    if (profile.value.isStreamer) {
-      streamerStatus.value = 'approved'
-    } else if (profile.value.streamerRequestStatus === 'PENDING') {
-      streamerStatus.value = 'pending'
-    } else if (profile.value.streamerRequestStatus === 'REJECTED') {
-      streamerStatus.value = 'rejected'
-    }
-  }
-}
-
-async function requestAccess() {
-  requesting.value = true
-  requestError.value = ''
-  try {
-    const res = await $fetch('/api/cabinet/request', { method: 'POST' })
-    streamerStatus.value = res.status as 'pending' | 'approved'
-  } catch {
-    requestError.value = 'Ошибка при отправке заявки'
-  } finally {
-    requesting.value = false
+  if (profile.value?.isStreamer) {
+    isStreamer.value = true
   }
 }
 </script>

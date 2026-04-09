@@ -162,6 +162,13 @@
       "when": 1775729647587,
       "tag": "0022_daily_the_renegades",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1775730418763,
+      "tag": "0023_confused_apocalypse",
+      "breakpoints": true
     }
   ]
 }

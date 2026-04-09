@@ -5,7 +5,6 @@ export interface Profile {
   twitchId: string
   userName: string
   isStreamer: boolean
-  streamerRequestStatus: string | null
   coupons: number
   coins: number
   level: number
@@ -183,8 +182,7 @@ export interface Transaction {
     | 'COINS_FROM_COUPON'
     | 'POINTS_FROM_LEVEL_UP'
     | 'POINTS_FROM_CHARACTER_UNLOCK'
-    | 'STREAMER_APPLICATION_FEE'
-    | 'STREAMER_APPLICATION_REFUND'
+    | 'STREAMER_PREMIUM_UNLOCK'
     | 'COINS_FROM_STREAMER_GIFT'
     | 'STREAMER_GIFT_SENT'
   text: string | null
@@ -243,7 +241,7 @@ export interface TwitchAccessTokenResponse {
 
 // ── Constants ──────────────────────────────────────────────
 
-export const STREAMER_APPLICATION_FEE = 100
+export const STREAMER_PREMIUM_COST = 100
 
 export interface TwitchAccessToken {
   id: string

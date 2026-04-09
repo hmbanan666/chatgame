@@ -76,3 +76,24 @@ export async function refreshTwitchToken(): Promise<TwitchToken> {
 export function getClientId(): string {
   return useRuntimeConfig().oauthTwitchClientId
 }
+
+export async function obtainTwitchAccessToken(code: string, redirectUrl: string) {
+  const { oauthTwitchClientSecret, oauthTwitchClientId } = useRuntimeConfig()
+
+  const response = await fetch(
+    `https://id.twitch.tv/oauth2/token?client_id=${oauthTwitchClientId}&client_secret=${oauthTwitchClientSecret}&code=${code}&grant_type=authorization_code&redirect_uri=${redirectUrl}`,
+    { method: 'POST' },
+  )
+
+  if (!response.ok) {
+    throw new Error(`Twitch token exchange failed: ${response.status}`)
+  }
+
+  return response.json() as Promise<{
+    access_token: string
+    refresh_token: string
+    scope: string[]
+    expires_in: number
+    token_type: string
+  }>
+}
