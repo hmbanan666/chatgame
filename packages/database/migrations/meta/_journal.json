@@ -169,6 +169,13 @@
       "when": 1775730418763,
       "tag": "0023_confused_apocalypse",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1775738618577,
+      "tag": "0024_crazy_namorita",
+      "breakpoints": true
     }
   ]
 }

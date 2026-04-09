@@ -29,6 +29,11 @@ export class TwitchService {
     this.#seenThisStream.clear()
   }
 
+  async addStreamerCoin(amount = 1): Promise<boolean> {
+    const result = await db.profile.addStreamerEarnings(this.#streamerId, amount)
+    return result !== null && result.added > 0
+  }
+
   async handleMessage({
     userName,
     userId,
@@ -81,9 +86,6 @@ export class TwitchService {
         },
       })
       chatAnnouncements.push(`Добро пожаловать, ${userName}! Пиши в чат, качай уровень и собирай персонажей на chatgame.space`)
-
-      // Streamer earns 1 coin for new unique viewer
-      await db.profile.addCoins(this.#streamerId, 1)
     }
 
     // Viewer quest (skip for streamer)
@@ -108,7 +110,7 @@ export class TwitchService {
         roomId: this.#roomId,
         lastActionAt: viewer.lastSeenAt,
         streamerViewerId: viewer.id,
-        streamerProfileId: this.#streamerId,
+        addStreamerCoin: () => this.addStreamerCoin(),
       })
     } catch {
       // Lock timeout or DB error — skip XP, don't block chat

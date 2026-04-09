@@ -23,10 +23,15 @@ export class ViewerQuestService {
   readonly #streamerId: string
   readonly #channelId: string
   #streamStartedAt: Date = new Date()
+  #addStreamerCoin?: () => Promise<boolean>
 
   constructor(streamerId: string, channelId: string) {
     this.#streamerId = streamerId
     this.#channelId = channelId
+  }
+
+  setAddStreamerCoin(fn: () => Promise<boolean>) {
+    this.#addStreamerCoin = fn
   }
 
   get activeCount() {
@@ -121,7 +126,9 @@ export class ViewerQuestService {
       await db.profile.addCoins(quest.profileId, quest.reward)
 
       // Streamer earns 1 coin for viewer quest completion
-      await db.profile.addCoins(this.#streamerId, 1)
+      if (this.#addStreamerCoin) {
+        await this.#addStreamerCoin()
+      }
 
       if (quest.xpReward > 0) {
         await getLevelingService().addXpForAction(quest.profileId, quest.xpReward, this.#channelId)

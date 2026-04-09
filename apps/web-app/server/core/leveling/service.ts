@@ -11,7 +11,7 @@ interface MessageContext {
   roomId: string
   lastActionAt: Date | null
   streamerViewerId?: string
-  streamerProfileId?: string
+  addStreamerCoin?: () => Promise<boolean>
 }
 
 export interface LevelingResult {
@@ -66,8 +66,8 @@ export class LevelingService {
       await db.profile.addLevel(ctx.profileId)
       await db.profile.addCoins(ctx.profileId, reward)
 
-      if (ctx.streamerProfileId) {
-        await db.profile.addCoins(ctx.streamerProfileId, 1)
+      if (ctx.addStreamerCoin) {
+        await ctx.addStreamerCoin()
       }
 
       sendAlertMessage(ctx.roomId, {
@@ -87,7 +87,7 @@ export class LevelingService {
   }
 
   /** Add XP for channel point redemptions (by twitchId) or donations (by userName) */
-  async addXpForAction(identifier: string, amount: number, roomId: string, byUserName = false, streamerProfileId?: string) {
+  async addXpForAction(identifier: string, amount: number, roomId: string, byUserName = false, addStreamerCoin?: () => Promise<boolean>) {
     const profile = byUserName
       ? await db.profile.findByUserName(identifier)
       : await db.profile.findByTwitchId(identifier)
@@ -110,8 +110,8 @@ export class LevelingService {
       await db.profile.addLevel(profile.id)
       await db.profile.addCoins(profile.id, reward)
 
-      if (streamerProfileId) {
-        await db.profile.addCoins(streamerProfileId, 1)
+      if (addStreamerCoin) {
+        await addStreamerCoin()
       }
 
       let codename = 'twitchy'

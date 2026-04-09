@@ -54,6 +54,31 @@
         </div>
       </div>
 
+      <!-- Weekly earnings -->
+      <div v-if="earnings" class="bg-[#1e1e24] border border-white/5 rounded-lg p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2 text-sm text-white/50">
+            <Icon name="lucide:coins" class="size-4" />
+            Заработок за неделю
+          </div>
+          <span class="text-xs text-white/30">
+            Сброс {{ formatDaysLeft(earnings.weekResetsAt) }}
+          </span>
+        </div>
+        <div class="space-y-1">
+          <div class="flex items-center justify-between">
+            <span class="text-lg font-semibold">{{ earnings.weeklyEarned }} / {{ earnings.weeklyLimit }}</span>
+            <span class="text-sm text-white/40">монет</span>
+          </div>
+          <div class="w-full h-2 bg-[#141418] rounded-full overflow-hidden">
+            <div
+              class="h-full bg-white transition-all duration-500 rounded-full"
+              :style="{ width: `${Math.min(100, (earnings.weeklyEarned / earnings.weeklyLimit) * 100)}%` }"
+            />
+          </div>
+        </div>
+      </div>
+
       <!-- Live stream stats -->
       <div v-if="data.stream" class="bg-[#1e1e24] border border-white/5 p-6 space-y-4">
         <h2 class="font-pixel text-lg font-bold text-site-highlight">
@@ -148,4 +173,20 @@ definePageMeta({
 })
 
 const { data, pending } = useFetch('/api/cabinet/overview')
+const { data: earnings } = useFetch('/api/cabinet/earnings')
+
+function formatDaysLeft(dateStr: string | Date) {
+  const ms = new Date(dateStr).getTime() - Date.now()
+  const days = Math.ceil(ms / (24 * 60 * 60 * 1000))
+  if (days <= 0) {
+    return 'скоро'
+  }
+  if (days === 1) {
+    return 'через 1 день'
+  }
+  if (days < 5) {
+    return `через ${days} дня`
+  }
+  return `через ${days} дней`
+}
 </script>

@@ -224,6 +224,48 @@ export class ProfileRepository {
       .where(eq(tables.profiles.id, id))
   }
 
+  static async addStreamerEarnings(id: string, amount: number, weeklyLimit = 200) {
+    const db = useDatabase()
+    const profile = await db.query.profiles.findFirst({
+      where: (t, { eq }) => eq(t.id, id),
+      columns: { streamerCoinsEarnedWeekly: true, streamerWeekResetAt: true },
+    })
+    if (!profile) {
+      return null
+    }
+
+    const now = new Date()
+    let weeklyEarned = profile.streamerCoinsEarnedWeekly
+    let resetAt = profile.streamerWeekResetAt
+
+    // Reset if week has passed or never set
+    if (!resetAt || now.getTime() - resetAt.getTime() >= 7 * 24 * 60 * 60 * 1000) {
+      weeklyEarned = 0
+      resetAt = now
+    }
+
+    const actual = Math.min(amount, weeklyLimit - weeklyEarned)
+    if (actual <= 0) {
+      return { added: 0, weeklyTotal: weeklyEarned, weeklyLimit, weekResetsAt: new Date(resetAt.getTime() + 7 * 24 * 60 * 60 * 1000) }
+    }
+
+    await db.update(tables.profiles)
+      .set({
+        coins: sql`${tables.profiles.coins} + ${actual}`,
+        streamerCoinsEarnedWeekly: weeklyEarned + actual,
+        streamerWeekResetAt: resetAt,
+        updatedAt: now,
+      })
+      .where(eq(tables.profiles.id, id))
+
+    return {
+      added: actual,
+      weeklyTotal: weeklyEarned + actual,
+      weeklyLimit,
+      weekResetsAt: new Date(resetAt.getTime() + 7 * 24 * 60 * 60 * 1000),
+    }
+  }
+
   static findActiveStreamers() {
     const db = useDatabase()
     return db.query.profiles.findMany({

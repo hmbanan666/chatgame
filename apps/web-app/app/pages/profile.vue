@@ -23,7 +23,7 @@
       <div class="max-w-3xl mx-auto px-4 space-y-6">
         <!-- Avatar + name + level -->
         <div class="flex flex-col items-center gap-3 text-center">
-          <div class="size-20 rounded-lg ring-4 ring-site-highlight bg-[#1e1e24] flex items-center justify-center overflow-hidden">
+          <div class="size-20 rounded-lg ring-2 ring-white/10 bg-[#1e1e24] flex items-center justify-center overflow-hidden">
             <SpriteAnimation
               v-if="profile?.activeCharacter?.character.codename"
               :codename="profile.activeCharacter.character.codename"
@@ -36,7 +36,7 @@
             />
           </div>
           <div>
-            <h2 class="font-pixel text-2xl md:text-3xl font-bold text-site-text">
+            <h2 class="text-2xl md:text-3xl font-bold text-site-text">
               {{ profile?.userName }}
             </h2>
             <div class="flex flex-row gap-2 items-center justify-center mt-1">
@@ -50,7 +50,7 @@
           <div v-if="xpProgress" class="w-full max-w-xs">
             <div class="w-full h-2.5 bg-[#1e1e24] rounded-lg overflow-hidden">
               <div
-                class="h-full bg-teal-500 transition-all duration-500"
+                class="h-full bg-white transition-all duration-500"
                 :style="{ width: `${xpProgress.percent}%` }"
               />
             </div>
@@ -226,7 +226,7 @@
               </div>
               <div class="w-full h-1 bg-[#18181b]/15 rounded-lg overflow-hidden">
                 <div
-                  class="h-full bg-teal-500"
+                  class="h-full bg-white"
                   :style="{ width: `${getCharXpPercent(char.id)}%` }"
                 />
               </div>
@@ -283,13 +283,13 @@
           </div>
           <div
             v-else-if="index === 2"
-            class="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 bg-[#2a2a2e] text-white text-xs font-bold whitespace-nowrap rounded-md"
+            class="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 bg-[#2a2a2e] text-white text-xs font-bold whitespace-nowrap rounded-md border border-white/10"
           >
             Популярное
           </div>
           <div
             v-else-if="index >= 3"
-            class="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 bg-[#2a2a2e] text-white text-xs font-bold whitespace-nowrap rounded-md"
+            class="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 bg-[#2a2a2e] text-white text-xs font-bold whitespace-nowrap rounded-md border border-white/10"
           >
             Выгодно
           </div>

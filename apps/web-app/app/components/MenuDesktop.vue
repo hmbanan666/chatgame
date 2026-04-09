@@ -1,6 +1,6 @@
 <template>
   <nav class="hidden md:flex">
-    <ul class="text-lg">
+    <ul class="text-base">
       <li
         v-for="link in currentLinks"
         :key="link.path"

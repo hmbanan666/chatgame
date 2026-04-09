@@ -45,11 +45,15 @@ export async function initCharges() {
       logger.warn(`Twitch rewards not available (missing scope?), wagon actions disabled`)
     }
 
+    // Link streamer coin earning to quest service
+    const questService = getViewerQuestService(streamer.id, streamer.twitchId)
+    questService.setAddStreamerCoin(() => controller.service.addStreamerCoin())
+
     // Resume existing stream or wait for new one
     await session.initStream()
     if (session.streamId) {
       const startedAt = new Date(session.stats.streamStartedAt)
-      getViewerQuestService(streamer.id, streamer.twitchId).setStreamStartedAt(startedAt)
+      questService.setStreamStartedAt(startedAt)
       controller.service.setStreamStartedAt(startedAt)
     }
 

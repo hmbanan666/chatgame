@@ -1,0 +1,2 @@
+ALTER TABLE "profile" ADD COLUMN "streamer_coins_earned_weekly" integer DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE "profile" ADD COLUMN "streamer_week_reset_at" timestamp (3) with time zone;
