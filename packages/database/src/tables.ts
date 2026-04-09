@@ -234,6 +234,7 @@ export const characters = pgTable('character', {
   unlockedBy: text('unlocked_by').notNull().default('COINS'),
   coefficient: integer('coefficient').notNull().default(1),
   price: integer('price').notNull().default(0),
+  streamerId: text('streamer_id'),
 })
 
 export const charactersRelations = relations(characters, ({ many }) => ({
@@ -271,6 +272,59 @@ export const characterLevels = pgTable('character_level', {
 export const characterLevelsRelations = relations(characterLevels, ({ one }) => ({
   inventoryItem: one(inventoryItems, { fields: [characterLevels.inventoryItemId], references: [inventoryItems.id] }),
   character: one(characters, { fields: [characterLevels.characterId], references: [characters.id] }),
+}))
+
+// ── Streamer Currency ───────────────────────────────────
+
+export const streamerCurrencies = pgTable('streamer_currency', {
+  id: cuid2('id').defaultRandom().primaryKey(),
+  createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+  name: text('name').notNull(),
+  emoji: text('emoji').notNull(),
+  characterPrice: integer('character_price').notNull().default(100),
+  streamerId: text('streamer_id').notNull().unique(),
+  characterId: text('character_id'),
+})
+
+export const streamerCurrenciesRelations = relations(streamerCurrencies, ({ one }) => ({
+  streamer: one(profiles, { fields: [streamerCurrencies.streamerId], references: [profiles.id] }),
+  character: one(characters, { fields: [streamerCurrencies.characterId], references: [characters.id] }),
+}))
+
+export const streamerCurrencyBalances = pgTable('streamer_currency_balance', {
+  id: cuid2('id').defaultRandom().primaryKey(),
+  createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+  balance: integer('balance').notNull().default(0),
+  streamerId: text('streamer_id').notNull(),
+  profileId: text('profile_id').notNull(),
+}, (t) => [
+  unique('currency_balance_streamer_profile').on(t.streamerId, t.profileId),
+])
+
+export const streamerCurrencyBalancesRelations = relations(streamerCurrencyBalances, ({ one }) => ({
+  streamer: one(profiles, { fields: [streamerCurrencyBalances.streamerId], references: [profiles.id], relationName: 'currencyBalanceAsStreamer' }),
+  profile: one(profiles, { fields: [streamerCurrencyBalances.profileId], references: [profiles.id], relationName: 'currencyBalanceAsViewer' }),
+}))
+
+// ── Stream Engagement ──────────────────────────────────
+
+export const streamEngagements = pgTable('stream_engagement', {
+  id: cuid2('id').defaultRandom().primaryKey(),
+  createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+  tier1Claimed: boolean('tier1_claimed').notNull().default(false),
+  tier2Claimed: boolean('tier2_claimed').notNull().default(false),
+  tokensAwarded: integer('tokens_awarded').notNull().default(0),
+  streamId: text('stream_id').notNull(),
+  profileId: text('profile_id').notNull(),
+}, (t) => [
+  unique('engagement_stream_profile').on(t.streamId, t.profileId),
+])
+
+export const streamEngagementsRelations = relations(streamEngagements, ({ one }) => ({
+  stream: one(streams, { fields: [streamEngagements.streamId], references: [streams.id] }),
+  profile: one(profiles, { fields: [streamEngagements.profileId], references: [profiles.id] }),
 }))
 
 // ── Coupon ───────────────────────────────────────────────

@@ -5,7 +5,6 @@ import { dictionary } from './locale'
 interface AnnouncementContext {
   session: WagonSession | null
   questService: ViewerQuestService | null
-  lastCouponCommand: string | null
   seenCount: number
   streamMinutes: number
 }
@@ -24,12 +23,6 @@ const providers: AnnouncementProvider[] = [
     weight: 3,
     condition: (ctx) => (ctx.session?.fuelPercent ?? 100) <= 25 && (ctx.session?.fuel ?? 0) > 0,
     message: (ctx) => `Топливо ${Math.round(ctx.session!.fuel)}/${ctx.session!.maxFuel}! Заправь вагон за баллы канала — получишь XP!`,
-  },
-  {
-    id: 'unclaimed_coupon',
-    weight: 3,
-    condition: (ctx) => ctx.lastCouponCommand !== null && (ctx.session?.stats.couponsTaken ?? 0) === 0,
-    message: (ctx) => `Купон всё ещё ждёт! Пиши !купон ${ctx.lastCouponCommand}`,
   },
   {
     id: 'no_donations',

@@ -408,6 +408,24 @@
               Активный персонаж
             </p>
           </template>
+          <template v-else-if="selectedCharacter.unlockedBy === 'STREAMER_CURRENCY' && selectedCharacter.streamerId && streamerCurrency">
+            <button
+              v-if="streamerCurrencyBalance >= streamerCurrency.characterPrice"
+              :disabled="isBuyingCharacter"
+              class="btn-pixel px-6 py-3 w-full bg-amber-500 text-white text-base font-semibold rounded-lg cursor-pointer flex items-center justify-center gap-2"
+              @click="buyCharacter(selectedCharacter.id)"
+            >
+              <span>Разблокировать {{ streamerCurrency.emoji }}</span>
+            </button>
+            <div v-else class="space-y-2">
+              <p class="text-sm text-white/50 text-center">
+                Нужно {{ streamerCurrency.characterPrice }} {{ streamerCurrency.emoji }} — у тебя {{ streamerCurrencyBalance }}
+              </p>
+              <p class="text-xs text-white/30 text-center">
+                Смотри стримы и копи {{ streamerCurrency.name }}!
+              </p>
+            </div>
+          </template>
           <template v-else-if="selectedCharacter.price > 0">
             <button
               v-if="(profile?.coins ?? 0) >= selectedCharacter.price"
@@ -538,6 +556,26 @@ function getProductCharacterNickname(product: { items?: { type: string, entityId
 const isLoading = ref(false)
 const isExchanging = ref(false)
 const isBuyingCharacter = ref(false)
+
+// Streamer currency for exclusive characters
+const streamerCurrency = ref<{ name: string, emoji: string, characterPrice: number } | null>(null)
+const streamerCurrencyBalance = ref(0)
+
+watch(selectedCharacter, async (char) => {
+  if (char?.unlockedBy === 'STREAMER_CURRENCY' && char.streamerId) {
+    try {
+      const data = await $fetch(`/api/streamer/${char.streamerId}/currency`)
+      streamerCurrency.value = data.currency
+      streamerCurrencyBalance.value = data.balance
+    } catch {
+      streamerCurrency.value = null
+      streamerCurrencyBalance.value = 0
+    }
+  } else {
+    streamerCurrency.value = null
+    streamerCurrencyBalance.value = 0
+  }
+})
 
 function isCharacterOwned(characterId: string): boolean {
   return profile.value?.characterEditions?.some(

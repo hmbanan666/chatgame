@@ -32,10 +32,8 @@ export default defineEventHandler(async (event) => {
           donationsTotal: stream.donationsTotal,
           peakViewers: stream.peakViewers,
           treesChopped: stream.treesChopped,
-          couponsTaken: stream.couponsTaken,
         }
       : null,
     twitchStatus: controller.status,
-    couponStatus: controller.couponGeneratorStatus,
   }
 })

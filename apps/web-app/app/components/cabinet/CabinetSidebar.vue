@@ -56,6 +56,7 @@ const navItems = computed(() => [
   { label: 'Кабинет', icon: 'lucide:home', path: '/cabinet' },
   { label: 'Live-панель', icon: 'lucide:monitor', path: '/cabinet/live' },
   { label: 'Зрители', icon: 'lucide:users', path: '/cabinet/viewers' },
+  { label: 'Валюта', icon: 'lucide:gem', path: '/cabinet/currency' },
   { label: 'Аналитика', icon: 'lucide:bar-chart-3', path: '/cabinet/analytics' },
   { label: 'Виджеты', icon: 'lucide:layout', path: '/cabinet/widgets' },
   { label: 'Настройки', icon: 'lucide:settings', path: '/cabinet/settings' },

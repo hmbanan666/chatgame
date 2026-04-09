@@ -2,6 +2,7 @@ import type { CaravanState, WagonActionCode, WagonActionConfig, WagonEffect, Wag
 import type { DonateController } from './donateClient'
 import { createId } from '@paralleldrive/cuid2'
 import { sendAlertMessage, sendGameMessage } from '~~/server/api/websocket'
+import { getEngagementService } from '~~/server/core/engagement'
 import { getLevelingService } from '~~/server/core/leveling/service'
 import { getStreamInfo, sendChatAnnouncement, updateCustomReward } from '~~/server/utils/twitch/twitch.api'
 import { createNextRoute, createPausedState } from './caravan'
@@ -513,7 +514,7 @@ export class WagonSession {
 
   // ── Handle donation ─────────────────────────────────
 
-  handleDonation(event: { username: string, amount: number, currency: string, message: string }) {
+  async handleDonation(event: { username: string, amount: number, currency: string, message: string }) {
     this.#logger.log('Donation received', event.username, event.amount, event.currency)
 
     const fuelAmount = this.#convertDonationToFuel(event.currency, event.amount)
@@ -529,6 +530,29 @@ export class WagonSession {
     getLevelingService().addXpForAction(event.username, xpAmount, this.id, true).catch((err) => {
       this.#logger.error('Failed to add XP for donation', err)
     })
+
+    // Engagement: donation → +1 token per 100 RUB
+    let tokensEarned = 0
+    let currencyEmoji: string | undefined
+    let currencyName: string | undefined
+    const engagementService = getEngagementService(this.streamerId)
+    if (engagementService) {
+      try {
+        const profile = await db.profile.findByUserName(event.username)
+        if (profile) {
+          tokensEarned = await engagementService.onDonate(profile.id, event.amount, event.currency)
+          if (tokensEarned > 0) {
+            const info = await engagementService.getCurrencyInfo()
+            if (info) {
+              currencyEmoji = info.emoji
+              currencyName = info.name
+            }
+          }
+        }
+      } catch (err) {
+        this.#logger.error('Failed to award engagement token for donation', err)
+      }
+    }
 
     this.donations.push({
       id: createId(),
@@ -551,6 +575,9 @@ export class WagonSession {
         currency: event.currency,
         message: event.message ?? '',
         xpEarned: xpAmount,
+        tokensEarned,
+        currencyEmoji,
+        currencyName,
       },
     })
 

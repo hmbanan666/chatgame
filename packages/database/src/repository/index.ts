@@ -13,6 +13,9 @@ import { ProfileRepository } from './profile'
 import { RedemptionRepository } from './redemption'
 import { SpriteRepository } from './sprite'
 import { StreamRepository } from './stream'
+import { StreamEngagementRepository } from './streamEngagement'
+import { StreamerCurrencyRepository } from './streamerCurrency'
+import { StreamerCurrencyBalanceRepository } from './streamerCurrencyBalance'
 import { StreamerNoteRepository } from './streamerNote'
 import { StreamerViewerRepository } from './streamerViewer'
 import { TransactionRepository } from './transaction'
@@ -31,6 +34,9 @@ class Repository {
   readonly redemption = RedemptionRepository
   readonly streamerViewer = StreamerViewerRepository
   readonly stream = StreamRepository
+  readonly streamEngagement = StreamEngagementRepository
+  readonly streamerCurrency = StreamerCurrencyRepository
+  readonly streamerCurrencyBalance = StreamerCurrencyBalanceRepository
   readonly streamerNote = StreamerNoteRepository
   readonly transaction = TransactionRepository
   readonly payment = PaymentRepository

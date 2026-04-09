@@ -58,9 +58,10 @@ export interface Character {
   codename: string
   nickname: string
   isReady: boolean
-  unlockedBy: 'COINS' | 'SHOP' | 'TROPHY'
+  unlockedBy: 'COINS' | 'SHOP' | 'TROPHY' | 'STREAMER_CURRENCY'
   price: number
   coefficient: number
+  streamerId: string | null
 }
 
 export interface CharacterWithProfile extends Character {
@@ -136,6 +137,36 @@ export interface Coupon {
   profileId: string | null
 }
 
+export interface StreamerCurrency {
+  id: string
+  createdAt: Date
+  updatedAt: Date
+  name: string
+  emoji: string
+  characterPrice: number
+  streamerId: string
+  characterId: string | null
+}
+
+export interface StreamerCurrencyBalance {
+  id: string
+  createdAt: Date
+  updatedAt: Date
+  balance: number
+  streamerId: string
+  profileId: string
+}
+
+export interface StreamEngagement {
+  id: string
+  createdAt: Date
+  tier1Claimed: boolean
+  tier2Claimed: boolean
+  tokensAwarded: number
+  streamId: string
+  profileId: string
+}
+
 /** @deprecated Use StreamerViewer for per-streamer viewer data */
 export interface Player {
   id: string
@@ -185,6 +216,8 @@ export interface Transaction {
     | 'STREAMER_PREMIUM_UNLOCK'
     | 'COINS_FROM_STREAMER_GIFT'
     | 'STREAMER_GIFT_SENT'
+    | 'STREAMER_TOKEN_EARNED'
+    | 'COUPONS_EXCHANGED'
   text: string | null
 }
 

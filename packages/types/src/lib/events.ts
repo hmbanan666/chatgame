@@ -15,6 +15,7 @@ export type Events
     | EventWagonAction
     | EventStreamerReward
     | EventCaravanArrived
+    | EventExclusiveUnlock
 
 type EventNewPlayerMessage = {
   type: 'NEW_PLAYER_MESSAGE'
@@ -37,6 +38,9 @@ type EventQuestComplete = {
     reward: number
     xpReward: number
     totalCoins: number
+    tokensEarned?: number
+    currencyEmoji?: string
+    currencyName?: string
   }
 }
 
@@ -49,6 +53,9 @@ type EventDonation = {
     currency: string
     message: string
     xpEarned: number
+    tokensEarned?: number
+    currencyEmoji?: string
+    currencyName?: string
   }
 }
 
@@ -124,6 +131,17 @@ type EventStreamerReward = {
     codename: string
     amount: number
     rewardType: 'coins'
+  }
+}
+
+type EventExclusiveUnlock = {
+  type: 'EXCLUSIVE_UNLOCK'
+  data: {
+    userName: string
+    codename: string
+    characterName: string
+    currencyName: string
+    currencyEmoji: string
   }
 }
 

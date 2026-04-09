@@ -1,4 +1,5 @@
 import { sendAlertMessage } from '~~/server/api/websocket'
+import { getEngagementService } from '~~/server/core/engagement'
 import { getLevelingService } from '~~/server/core/leveling/service'
 import { QUEST_TEMPLATES } from './templates'
 
@@ -130,6 +131,23 @@ export class ViewerQuestService {
         await this.#addStreamerCoin()
       }
 
+      // Engagement: quest completed → +1 streamer token
+      let tokensEarned = 0
+      let currencyEmoji: string | undefined
+      let currencyName: string | undefined
+      const engagementService = getEngagementService(this.#streamerId)
+      if (engagementService) {
+        const awarded = await engagementService.onQuest(quest.profileId)
+        if (awarded) {
+          tokensEarned = 1
+          const info = await engagementService.getCurrencyInfo()
+          if (info) {
+            currencyEmoji = info.emoji
+            currencyName = info.name
+          }
+        }
+      }
+
       if (quest.xpReward > 0) {
         await getLevelingService().addXpForAction(quest.profileId, quest.xpReward, this.#channelId)
       }
@@ -145,6 +163,9 @@ export class ViewerQuestService {
           reward: quest.reward,
           xpReward: quest.xpReward,
           totalCoins: profile?.coins ?? 0,
+          tokensEarned,
+          currencyEmoji,
+          currencyName,
         },
       })
 

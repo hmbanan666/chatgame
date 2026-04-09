@@ -113,6 +113,7 @@ const alertButtons = [
   { type: 'LEVEL_UP', label: 'Уровень', class: 'bg-emerald-600 hover:bg-emerald-500 text-white' },
   { type: 'COUPON_TAKEN', label: 'Купон', class: 'bg-violet-600 hover:bg-violet-500 text-white' },
   { type: 'DONATION', label: 'Донат', class: 'bg-red-600 hover:bg-red-500 text-white' },
+  { type: 'EXCLUSIVE_UNLOCK', label: 'Эксклюзив', class: 'bg-yellow-600 hover:bg-yellow-500 text-white' },
   { type: 'RAID', label: 'Рейд', class: 'bg-indigo-600 hover:bg-indigo-500 text-white' },
   { type: 'PURCHASE', label: 'Покупка', class: 'bg-teal-600 hover:bg-teal-500 text-white' },
   { type: 'CARAVAN_ARRIVED', label: 'Караван', class: 'bg-emerald-600 hover:bg-emerald-500 text-white' },
@@ -150,13 +151,15 @@ function triggerAlert(type: string) {
   const generators: Record<string, () => EventMessage> = {
     NEW_VIEWER: () => ({ id, type: 'NEW_VIEWER', data: { userName, codename } }),
     NEW_FOLLOWER: () => ({ id, type: 'NEW_FOLLOWER', data: { userName } }),
-    QUEST_COMPLETE: () => ({ id, type: 'QUEST_COMPLETE', data: { userName, codename, questText: 'Срубить 10 деревьев', reward: getRandInteger(1, 3), xpReward: pick([3, 5, 10]), totalCoins: getRandInteger(10, 200) } }),
+    QUEST_COMPLETE: () => ({ id, type: 'QUEST_COMPLETE', data: { userName, codename, questText: 'Срубить 10 деревьев', reward: getRandInteger(1, 3), xpReward: pick([3, 5, 10]), totalCoins: getRandInteger(10, 200), tokensEarned: 1, currencyEmoji: '🍌', currencyName: 'бананов' } }),
     LEVEL_UP: () => ({ id, type: 'LEVEL_UP', data: { userName, codename, level: getRandInteger(2, 20), reward: 1 } }),
     COUPON_TAKEN: () => ({ id, type: 'COUPON_TAKEN', data: { userName, codename, totalCoupons: getRandInteger(1, 10) } }),
     DONATION: () => {
       const amount = getRandInteger(50, 500)
-      return { id, type: 'DONATION', data: { userName, codename, amount, currency: 'RUB', message: 'Крутой стрим!', xpEarned: Math.max(1, Math.floor(amount / 5)) } }
+      const tokensEarned = Math.floor(amount / 100)
+      return { id, type: 'DONATION', data: { userName, codename, amount, currency: 'RUB', message: 'Крутой стрим!', xpEarned: Math.max(1, Math.floor(amount / 5)), tokensEarned, currencyEmoji: '🍌', currencyName: 'бананов' } }
     },
+    EXCLUSIVE_UNLOCK: () => ({ id, type: 'EXCLUSIVE_UNLOCK', data: { userName, codename, characterName: 'Banana', currencyName: 'бананов', currencyEmoji: '🍌' } }),
     RAID: () => {
       const v = getRandInteger(5, 300)
       return { id, type: 'RAID', data: { userName: pick(NAMES), viewers: v, xpEarned: v * 2 } }

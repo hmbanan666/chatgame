@@ -1,5 +1,4 @@
 import { chargeRooms } from '~~/server/core/charge'
-import { getTwitchController } from '~~/server/utils/twitch/twitch.controller'
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
@@ -10,8 +9,6 @@ export default defineEventHandler(async (event) => {
       status: 404,
     })
   }
-
-  const twitch = getTwitchController()
 
   return {
     id: session.id,
@@ -25,6 +22,5 @@ export default defineEventHandler(async (event) => {
     viewerCount: session.viewerCount,
     biome: session.biome,
     caravan: session.caravan,
-    nextCouponAt: twitch.nextCouponAt?.toISOString() ?? null,
   }
 })

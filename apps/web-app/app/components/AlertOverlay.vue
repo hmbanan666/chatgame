@@ -51,19 +51,22 @@
               {{ currentAlert.data.questText }}
             </p>
 
-            <AlertRewardBlock label="Награда">
+            <AlertRewardBlock v-if="currentAlert.data.tokensEarned" label="Награда">
+              <span class="text-3xl font-black text-amber-400">+{{ currentAlert.data.tokensEarned }} {{ currentAlert.data.currencyEmoji }}</span>
+            </AlertRewardBlock>
+            <AlertRewardBlock v-else label="Награда">
               <span class="text-3xl font-black text-game-bright">+{{ currentAlert.data.reward }} {{ pluralizationRu(currentAlert.data.reward, ['монета', 'монеты', 'монет']) }}</span>
               <Image src="/coin.png" class="h-8 w-8 image-rendering-pixelated" />
             </AlertRewardBlock>
 
             <div class="flex items-center justify-center gap-3 mt-3">
               <span v-if="currentAlert.data.xpReward" class="text-xl font-black text-game-bright">+{{ currentAlert.data.xpReward }} XP</span>
-              <span v-if="currentAlert.data.xpReward" class="text-game-muted">·</span>
+              <span v-if="currentAlert.data.reward" class="text-game-muted">·</span>
+              <span v-if="currentAlert.data.reward" class="text-xl font-black text-game-bright flex items-center gap-1">+{{ currentAlert.data.reward }} <Image src="/coin.png" class="h-5 w-5 image-rendering-pixelated" /></span>
+              <span class="text-game-muted">·</span>
               <span class="text-base text-game-text">
                 У тебя <span class="font-black text-game-bright">{{ currentAlert.data.totalCoins }}</span> монет
               </span>
-              <span class="text-game-muted">·</span>
-              <span class="text-base font-bold text-game-secondary-5">Трать на chatgame.space</span>
             </div>
           </template>
 
@@ -87,7 +90,9 @@
 
             <div class="flex items-center justify-center gap-3 mt-2">
               <span v-if="currentAlert.data.xpEarned" class="text-xl font-black text-game-bright">+{{ currentAlert.data.xpEarned }} XP</span>
-              <span v-if="currentAlert.data.xpEarned" class="text-game-muted">·</span>
+              <span v-if="currentAlert.data.tokensEarned" class="text-game-muted">·</span>
+              <span v-if="currentAlert.data.tokensEarned" class="text-xl font-black text-amber-400">+{{ currentAlert.data.tokensEarned }} {{ currentAlert.data.currencyEmoji ?? '🎯' }}</span>
+              <span class="text-game-muted">·</span>
               <span class="text-base text-game-secondary-5">Спасибо за поддержку!</span>
             </div>
           </template>
@@ -250,6 +255,22 @@
             </div>
           </template>
 
+          <template v-else-if="currentAlert.type === 'EXCLUSIVE_UNLOCK'">
+            <AlertHeader
+              icon="lucide:crown"
+              title="Эксклюзив разблокирован!"
+              :user-name="currentAlert.data.userName"
+            />
+
+            <AlertRewardBlock>
+              <span class="text-3xl font-black text-amber-400">{{ currentAlert.data.currencyEmoji }} {{ currentAlert.data.characterName }}</span>
+            </AlertRewardBlock>
+
+            <div class="flex items-center justify-center gap-3 mt-2">
+              <span class="text-base text-game-secondary-5">Эксклюзивный персонаж получен!</span>
+            </div>
+          </template>
+
           <template v-else-if="currentAlert.type === 'STREAMER_REWARD'">
             <AlertHeader
               icon="lucide:gift"
@@ -394,6 +415,7 @@ const ALERT_CONFIG = {
   WAGON_ACTION: { bursts: 5, burstDelay: 180, duration: 8000 },
   CARAVAN_ARRIVED: { bursts: 10, burstDelay: 150, duration: 25000 },
   STREAMER_REWARD: { bursts: 4, burstDelay: 200, duration: 6000 },
+  EXCLUSIVE_UNLOCK: { bursts: 20, burstDelay: 100, duration: 20000 },
 } as const
 
 function spawnParticles(burstCount: number, burstDelay: number) {

@@ -1,9 +1,7 @@
 import type { RedemptionEvent } from './twitch.eventsub'
-import { getDateMinusMinutes } from '#shared/utils/date'
 import { sendGameMessage } from '~~/server/api/websocket'
 import { getNextAnnouncement } from '~~/server/core/announcements'
 import { chargeRooms } from '~~/server/core/charge'
-import { dictionary } from '~~/server/core/locale'
 import { getViewerQuestService } from '~~/server/core/quest'
 import { getStreamByUserId, sendChatAnnouncement } from './twitch.api'
 import { TwitchChat } from './twitch.chat'
@@ -27,9 +25,6 @@ class TwitchController {
   #eventSub!: TwitchEventSub
   #isStreaming = false
 
-  #couponGeneratorId: ReturnType<typeof setInterval> | null = null
-  #lastCouponGeneratedAt: Date | null = null
-  #lastCouponCommand: string | null = null
   #manaUpdateId: ReturnType<typeof setInterval> | null = null
   #infoMessageId: ReturnType<typeof setInterval> | null = null
   #streamPollId: ReturnType<typeof setInterval> | null = null
@@ -63,14 +58,12 @@ class TwitchController {
     if (value) {
       logger.info('Stream went online — connecting clients')
       this.#connectClients()
-      this.startCouponGenerator()
       for (const handler of this.#onlineHandlers) {
         handler()
       }
     } else {
       logger.info('Stream went offline — disconnecting clients')
       this.#disconnectClients()
-      this.stopCouponGenerator()
       for (const handler of this.#offlineHandlers) {
         handler()
       }
@@ -190,7 +183,6 @@ class TwitchController {
           const infoMsg = getNextAnnouncement({
             session,
             questService,
-            lastCouponCommand: this.#lastCouponCommand,
             seenCount: this.#service.seenCount,
             streamMinutes,
           })
@@ -205,58 +197,6 @@ class TwitchController {
         }
       }
     }, 1000 * 60 * 10)
-  }
-
-  startCouponGenerator() {
-    if (this.#couponGeneratorId) {
-      return
-    }
-
-    this.#lastCouponGeneratedAt = new Date()
-    this.#couponGeneratorId = setInterval(async () => {
-      try {
-        const cutoff = getDateMinusMinutes(60 * 24)
-        const coupon = await db.coupon.generate(cutoff)
-        if (!coupon) {
-          logger.warn('Coupon generation returned null')
-          return
-        }
-
-        this.#lastCouponGeneratedAt = new Date()
-        this.#lastCouponCommand = coupon.activationCommand
-        const t = dictionary('ru')
-        const couponMsg = t.twitch.coupon.newCoupon.replace('{command}', coupon.activationCommand)
-        this.#chat.say(couponMsg)
-        sendGameMessage(this.#userId, {
-          event: 'systemMessage',
-          data: { text: couponMsg },
-        })
-      } catch (err) {
-        logger.error('Coupon generation failed', err)
-      }
-    }, 1000 * 60 * 45)
-  }
-
-  stopCouponGenerator() {
-    if (this.#couponGeneratorId) {
-      clearInterval(this.#couponGeneratorId)
-      this.#couponGeneratorId = null
-    }
-  }
-
-  get lastCouponGeneratedAt() {
-    return this.#lastCouponGeneratedAt
-  }
-
-  get nextCouponAt() {
-    if (!this.#couponGeneratorId || !this.#lastCouponGeneratedAt) {
-      return null
-    }
-    return new Date(this.#lastCouponGeneratedAt.getTime() + 45 * 60 * 1000)
-  }
-
-  get couponGeneratorStatus() {
-    return this.#couponGeneratorId ? 'RUNNING' : 'STOPPED'
   }
 
   async #connectClients() {
@@ -274,8 +214,6 @@ class TwitchController {
   }
 
   destroy() {
-    this.stopCouponGenerator()
-
     if (this.#manaUpdateId) {
       clearInterval(this.#manaUpdateId)
       this.#manaUpdateId = null

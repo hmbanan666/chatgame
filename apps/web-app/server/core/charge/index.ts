@@ -1,5 +1,6 @@
 import type { RewardMapping } from './stream'
 import { sendAlertMessage } from '~~/server/api/websocket'
+import { destroyEngagementService, getEngagementService } from '~~/server/core/engagement'
 import { getLevelingService } from '~~/server/core/leveling/service'
 import { getViewerQuestService } from '~~/server/core/quest'
 import { createCustomReward, getCustomRewards, updateCustomReward } from '~~/server/utils/twitch/twitch.api'
@@ -100,12 +101,18 @@ export async function initCharges() {
       const startedAt = new Date(session.stats.streamStartedAt)
       getViewerQuestService(streamer.id, streamer.twitchId!).setStreamStartedAt(startedAt)
       controller.service.setStreamStartedAt(startedAt)
+
+      // Start engagement service for streamer currency
+      if (session.streamId) {
+        getEngagementService(streamer.id, session.streamId)
+      }
     })
 
     controller.onStreamOffline(() => {
       session.endStream()
       session.disconnectDonateClient()
       getViewerQuestService(streamer.id).reset()
+      destroyEngagementService(streamer.id)
     })
 
     chargeRooms.push(session)

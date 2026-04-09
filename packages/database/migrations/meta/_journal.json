@@ -176,6 +176,13 @@
       "when": 1775738618577,
       "tag": "0024_crazy_namorita",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1775741079276,
+      "tag": "0025_whole_machine_man",
+      "breakpoints": true
     }
   ]
 }

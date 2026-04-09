@@ -42,14 +42,12 @@
         <div class="bg-[#1e1e24] border border-white/5 rounded-lg p-4 space-y-2">
           <div class="flex items-center gap-2 text-sm text-white/50">
             <Icon name="lucide:ticket" class="size-4" />
-            Генератор купонов
+            Эксклюзивная валюта
           </div>
           <div class="flex items-center gap-2">
-            <span
-              class="size-2.5 rounded-full"
-              :class="data.couponStatus === 'ACTIVE' ? 'bg-green-500' : 'bg-white/20'"
-            />
-            <span class="text-lg font-semibold">{{ data.couponStatus === 'ACTIVE' ? 'Активен' : 'Остановлен' }}</span>
+            <NuxtLink to="/cabinet/currency" class="text-lg font-semibold text-teal-400 hover:underline">
+              Настроить
+            </NuxtLink>
           </div>
         </div>
       </div>
@@ -110,11 +108,7 @@
             :value="data.stream.treesChopped"
             icon="lucide:tree-pine"
           />
-          <CabinetStatCard
-            label="Купоны"
-            :value="data.stream.couponsTaken"
-            icon="lucide:ticket"
-          />
+          <!-- Coupons removed -->
         </div>
       </div>
 
