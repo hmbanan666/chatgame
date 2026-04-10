@@ -20,6 +20,7 @@ export default defineEventHandler(async (event) => {
       id: profile.id,
       twitchChannelId: profile.twitchId,
       twitchChannelName: profile.userName,
+      donationAlertsUserId: profile.donationAlertsUserId,
     },
     stream: stream
       ? {

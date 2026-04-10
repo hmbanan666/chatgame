@@ -23,7 +23,7 @@ export async function getTwitchToken(userId: string): Promise<TwitchToken> {
 }
 
 export async function reloadTwitchToken(userId: string): Promise<TwitchToken> {
-  const stored = await db.twitchAccessToken.findByUserId(userId)
+  const stored = await db.oauthAccessToken.findByUserId(userId, 'twitch')
   if (!stored) {
     throw new Error(`No Twitch access token for user ${userId}`)
   }
@@ -76,7 +76,7 @@ export async function refreshTwitchToken(userId: string): Promise<TwitchToken> {
   _tokens.set(userId, token)
 
   // Persist to DB
-  await db.twitchAccessToken.updateByUserId(userId, {
+  await db.oauthAccessToken.updateByUserId(userId, 'twitch', {
     accessToken: data.access_token,
     refreshToken: data.refresh_token,
     expiresIn: data.expires_in,

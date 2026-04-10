@@ -22,11 +22,11 @@ export default defineEventHandler(async (event) => {
   const res = await obtainTwitchAccessToken(body.code, publicEnv.streamerRedirectUrl)
 
   // Check if token already exists for this user
-  const existingToken = await db.twitchAccessToken.findByUserId(profile.twitchId)
+  const existingToken = await db.oauthAccessToken.findByUserId(profile.twitchId, 'twitch')
 
   if (existingToken) {
     // Update existing token (reconnect flow)
-    await db.twitchAccessToken.updateByUserId(profile.twitchId, {
+    await db.oauthAccessToken.updateByUserId(profile.twitchId, 'twitch', {
       accessToken: res.access_token,
       refreshToken: res.refresh_token,
       scope: res.scope,
@@ -35,8 +35,9 @@ export default defineEventHandler(async (event) => {
     })
   } else {
     // Save new access token
-    const [twitchAccessToken] = await db.twitchAccessToken.create({
+    const [twitchAccessToken] = await db.oauthAccessToken.create({
       id: createId(),
+      provider: 'twitch',
       userId: profile.twitchId,
       accessToken: res.access_token,
       refreshToken: res.refresh_token,

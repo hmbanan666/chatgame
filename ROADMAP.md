@@ -52,6 +52,16 @@ Two experiences:
 - Village building that persists between sessions
 - Community goals and milestones visible on stream
 
+### Viewer engagement and retention
+
+Priority order:
+
+1. **Daily rewards / streaks** — daily login bonus, streak multipliers (7 days = x3). Personal welcome messages in game world, visual effects on character spawn, stream alerts on long streaks
+2. **Viewer engagement score** — composite metric in CRM (watch time + chat + donations + quest participation). Helps streamers identify their most valuable viewers
+3. **Duels and mini-games** — `!duel @user 10` bet coins, random or XP-weighted outcome, winner takes pot. Visual combat later
+4. **Predictions** — viewers bet coins on caravan outcomes. Requires autonomous game loop first (caravan moves on timer, events happen without player input)
+5. **Donation milestones → caravan fuel** — deferred until audience grows. May pivot to in-game currency instead of real donations
+
 ### Technical
 
 - Multi-streamer support (already in the schema)

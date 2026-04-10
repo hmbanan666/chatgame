@@ -9,7 +9,7 @@ export type Product = InferSelectModel<typeof tables.products>
 export type ProductItem = InferSelectModel<typeof tables.productItems>
 
 export type TwitchToken = InferSelectModel<typeof tables.twitchTokens>
-export type TwitchAccessToken = InferSelectModel<typeof tables.twitchAccessTokens>
+export type OAuthAccessToken = InferSelectModel<typeof tables.oauthAccessTokens>
 
 export type StreamerViewer = InferSelectModel<typeof tables.streamerViewers>
 export type WidgetToken = InferSelectModel<typeof tables.widgetTokens>

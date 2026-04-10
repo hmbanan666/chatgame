@@ -3,6 +3,8 @@
  * Replaces @donation-alerts/events, @donation-alerts/api, @donation-alerts/auth.
  */
 
+import { clearDaTokenCache, fetchDaUserInfo, reloadDaAccessToken } from '~~/server/utils/donationalerts/da.auth'
+
 const logger = useLogger('donation-alerts')
 
 interface DonationEvent {
@@ -189,20 +191,8 @@ export class DonateController {
     }
 
     try {
-      const res = await fetch('https://www.donationalerts.com/api/v1/user/oauth', {
-        headers: {
-          Authorization: `Bearer ${this.#accessToken}`,
-        },
-      })
-
-      const data = await res.json()
-      if (!data?.data) {
-        logger.error('DA user/oauth: no data in response')
-        return null
-      }
-
-      const token = data.data.socket_connection_token
-      return token ?? null
+      const info = await fetchDaUserInfo(this.#accessToken)
+      return info.socketConnectionToken ?? null
     } catch (err) {
       logger.error('Failed to get socket connection token', err)
       return null
@@ -210,48 +200,16 @@ export class DonateController {
   }
 
   async #getAccessToken(): Promise<string | null> {
-    const {
-      donationAlertsClientId,
-      donationAlertsClientSecret,
-    } = useRuntimeConfig()
-
-    const stored = await db.twitchAccessToken.findByUserId(this.#userId)
-    if (!stored) {
-      logger.error(`No DonationAlerts token for user ${this.#userId}`)
+    try {
+      // Force reload from DB (+ auto-refresh if expired) to pick up fresh tokens
+      clearDaTokenCache(this.#userId)
+      const token = await reloadDaAccessToken(this.#userId)
+      this.#accessToken = token.accessToken
+      return token.accessToken
+    } catch (err) {
+      logger.error(`No DonationAlerts token for user ${this.#userId}`, err)
       return null
     }
-
-    // Refresh token
-    try {
-      const res = await fetch('https://www.donationalerts.com/oauth/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          grant_type: 'refresh_token',
-          refresh_token: stored.refreshToken,
-          client_id: donationAlertsClientId,
-          client_secret: donationAlertsClientSecret,
-        }),
-      })
-
-      const data = await res.json()
-      if (data.access_token) {
-        this.#accessToken = data.access_token
-        await db.twitchAccessToken.updateByUserId(this.#userId, {
-          accessToken: data.access_token,
-          refreshToken: data.refresh_token,
-          expiresIn: data.expires_in,
-          obtainmentTimestamp: Date.now().toString(),
-        })
-        logger.info('DonationAlerts token refreshed')
-        return data.access_token
-      }
-    } catch (err) {
-      logger.warn('DA token refresh failed', err)
-    }
-
-    this.#accessToken = stored.accessToken
-    return stored.accessToken
   }
 
   async #getSubscribeToken(client: string): Promise<string | null> {

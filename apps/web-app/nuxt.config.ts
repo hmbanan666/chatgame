@@ -81,6 +81,7 @@ export default defineNuxtConfig({
     public: {
       signInRedirectUrl: '',
       streamerRedirectUrl: '',
+      donationAlertsRedirectUrl: '',
       websocketUrl: '',
     },
   },

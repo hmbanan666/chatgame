@@ -6,6 +6,7 @@ import { CharacterLevelRepository } from './characterLevel'
 import { CouponRepository } from './coupon'
 import { InventoryItemRepository } from './inventoryItem'
 import { InventoryItemEditionRepository } from './inventoryItemEdition'
+import { OAuthAccessTokenRepository } from './oauthAccessToken'
 import { PaymentRepository } from './payment'
 import { ProductRepository } from './product'
 import { ProductItemRepository } from './productItem'
@@ -19,7 +20,6 @@ import { StreamerCurrencyBalanceRepository } from './streamerCurrencyBalance'
 import { StreamerNoteRepository } from './streamerNote'
 import { StreamerViewerRepository } from './streamerViewer'
 import { TransactionRepository } from './transaction'
-import { TwitchAccessTokenRepository } from './twitchAccessToken'
 import { TwitchTokenRepository } from './twitchToken'
 import { WidgetTokenRepository } from './widgetToken'
 
@@ -45,7 +45,7 @@ class Repository {
   readonly inventoryItem = InventoryItemRepository
   readonly inventoryItemEdition = InventoryItemEditionRepository
   readonly twitchToken = TwitchTokenRepository
-  readonly twitchAccessToken = TwitchAccessTokenRepository
+  readonly oauthAccessToken = OAuthAccessTokenRepository
   readonly widgetToken = WidgetTokenRepository
 
   async checkHealth(): Promise<boolean> {

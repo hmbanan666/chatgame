@@ -4,22 +4,22 @@
       <template v-if="error">
         <Icon name="lucide:x-circle" class="size-12 text-red-400 mx-auto" />
         <h2 class="font-pixel text-xl font-bold">
-          Ошибка подключения
+          Ошибка подключения DonationAlerts
         </h2>
         <p class="text-white/40 text-sm">
           {{ error }}
         </p>
         <UButton
-          to="/for-streamers"
+          to="/cabinet/settings"
           class="btn-pixel bg-white/10! hover:bg-white/20! text-white! rounded-none! px-6!"
         >
-          Попробовать снова
+          Вернуться в настройки
         </UButton>
       </template>
       <template v-else>
         <Icon name="lucide:loader-2" class="size-12 text-site-accent mx-auto animate-spin" />
         <h2 class="font-pixel text-xl font-bold">
-          Подключаем канал...
+          Подключаем DonationAlerts...
         </h2>
       </template>
     </div>
@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-useHead({ title: 'Подключение канала' })
+useHead({ title: 'Подключение DonationAlerts' })
 
 const route = useRoute()
 const error = ref('')
@@ -36,18 +36,18 @@ const code = route.query.code as string | undefined
 
 onMounted(async () => {
   if (!code) {
-    error.value = 'Не получен код авторизации от Twitch'
+    error.value = 'Не получен код авторизации от DonationAlerts'
     return
   }
 
   try {
-    await $fetch('/api/cabinet/connect', {
+    await $fetch('/api/cabinet/donationalerts-connect', {
       method: 'POST',
       body: { code },
     })
-    await navigateTo('/cabinet')
+    await navigateTo('/cabinet/settings')
   } catch (err: any) {
-    error.value = err?.data?.message || 'Не удалось подключить канал'
+    error.value = err?.data?.message || 'Не удалось подключить DonationAlerts'
   }
 })
 </script>

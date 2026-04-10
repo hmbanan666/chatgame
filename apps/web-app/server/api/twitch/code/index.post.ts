@@ -33,8 +33,9 @@ export default defineEventHandler<EventHandlerRequest, Promise<TokenCreateRespon
       throw createError({ statusCode: 400, message: 'Not correct code' })
     }
 
-    const [twitchAccessToken] = await db.twitchAccessToken.create({
+    const [twitchAccessToken] = await db.oauthAccessToken.create({
       id: createId(),
+      provider: 'twitch',
       userId: profile.twitchId!,
       accessToken: res.access_token,
       refreshToken: res.refresh_token,

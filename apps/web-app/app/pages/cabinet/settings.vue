@@ -47,6 +47,52 @@
         </div>
       </section>
 
+      <!-- DonationAlerts -->
+      <section class="bg-[#1e1e24] border border-white/5 rounded-lg p-6 space-y-4">
+        <h2 class="font-pixel text-lg font-bold">
+          DonationAlerts
+        </h2>
+        <p class="text-white/40 text-sm">
+          Подключите DonationAlerts, чтобы донаты зрителей влияли на вашего вагона и сессию стрима.
+        </p>
+
+        <div class="flex items-center justify-between">
+          <span class="text-white/50">Статус</span>
+          <div class="flex items-center gap-2">
+            <span
+              class="size-2 rounded-full"
+              :class="overview.streamer?.donationAlertsUserId ? 'bg-green-500' : 'bg-white/20'"
+            />
+            <span class="text-sm">{{ overview.streamer?.donationAlertsUserId ? 'Подключён' : 'Не подключён' }}</span>
+          </div>
+        </div>
+
+        <div v-if="overview.streamer?.donationAlertsUserId" class="flex items-center justify-between">
+          <span class="text-white/50">DA User ID</span>
+          <code class="text-xs text-white/40 bg-[#0f0f14] px-2 py-1 rounded">{{ overview.streamer.donationAlertsUserId }}</code>
+        </div>
+
+        <div class="flex items-center gap-3 pt-2">
+          <a
+            v-if="daAuthUrl"
+            :href="daAuthUrl"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-[#fe3a3a] hover:bg-[#ff5555] text-white text-sm font-semibold rounded-lg transition-colors"
+          >
+            <Icon name="lucide:link" class="size-4" />
+            {{ overview.streamer?.donationAlertsUserId ? 'Переподключить DonationAlerts' : 'Подключить DonationAlerts' }}
+          </a>
+          <UButton
+            v-if="overview.streamer?.donationAlertsUserId"
+            :loading="disconnectPending"
+            variant="outline"
+            color="error"
+            @click="disconnectDa"
+          >
+            Отключить
+          </UButton>
+        </div>
+      </section>
+
       <!-- Danger zone -->
       <section class="bg-[#1e1e24] border border-red-500/20 rounded-lg p-6 space-y-4">
         <h2 class="font-pixel text-lg font-bold text-red-400">
@@ -66,7 +112,21 @@ definePageMeta({
   middleware: ['cabinet'],
 })
 
-const { data: overview, pending } = useFetch('/api/cabinet/overview')
+const { data: overview, pending, refresh: refreshOverview } = useFetch('/api/cabinet/overview')
 const { data: authData } = useFetch('/api/cabinet/auth-url')
 const reconnectUrl = computed(() => authData.value?.url ?? null)
+
+const { data: daAuthData } = useFetch('/api/cabinet/donationalerts-auth-url')
+const daAuthUrl = computed(() => daAuthData.value?.url ?? null)
+
+const disconnectPending = ref(false)
+async function disconnectDa() {
+  disconnectPending.value = true
+  try {
+    await $fetch('/api/cabinet/donationalerts-disconnect', { method: 'POST' })
+    await refreshOverview()
+  } finally {
+    disconnectPending.value = false
+  }
+}
 </script>

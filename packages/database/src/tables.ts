@@ -157,17 +157,20 @@ export const twitchTokensRelations = relations(twitchTokens, ({ one }) => ({
   profile: one(profiles, { fields: [twitchTokens.profileId], references: [profiles.id] }),
 }))
 
-export const twitchAccessTokens = pgTable('twitch_access_token', {
+export const oauthAccessTokens = pgTable('oauth_access_token', {
   id: cuid2('id').defaultRandom().primaryKey(),
   createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+  provider: text('provider').notNull().default('twitch'),
   userId: text('user_id').notNull(),
   accessToken: text('access_token').notNull(),
   refreshToken: text('refresh_token'),
   scope: text('scope').array(),
   expiresIn: integer('expires_in'),
   obtainmentTimestamp: text('obtainment_timestamp').notNull(),
-})
+}, (t) => [
+  unique('oauth_access_token_provider_user_id').on(t.provider, t.userId),
+])
 
 // ── Streamer Viewer (per-streamer viewer stats) ─────────
 
