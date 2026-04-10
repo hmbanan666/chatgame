@@ -3,6 +3,7 @@
  * Replaces @twurple/api ApiClient.
  */
 
+import { sendGameMessage } from '~~/server/api/websocket'
 import { getClientId, getTwitchToken, refreshTwitchToken } from './twitch.auth'
 
 const BASE_URL = 'https://api.twitch.tv/helix'
@@ -228,5 +229,14 @@ export async function sendChatAnnouncement(broadcasterId: string, message: strin
   if (!res.ok) {
     const body = await res.text()
     logger.error(`Failed to send announcement (${res.status}): ${body}`)
+    return
   }
+
+  // Mirror the announcement into the dashboard chat panel as a system
+  // message — the Helix endpoint bypasses our IRC connection so the
+  // cabinet's chat would otherwise never see it.
+  sendGameMessage(broadcasterId, {
+    event: 'systemMessage',
+    data: { text: message },
+  })
 }

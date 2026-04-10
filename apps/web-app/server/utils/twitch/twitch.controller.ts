@@ -99,6 +99,24 @@ export class TwitchController {
 
   say(message: string) {
     this.#chat?.say(message)
+    // IRC PRIVMSG is fire-and-forget from our side — Twitch doesn't reliably
+    // echo it back to the same connection even with the echo-message cap.
+    // Push a synthetic newPlayerMessage to the dashboard so cabinet/live's
+    // chat panel sees our own outgoing messages (both streamer-sent and
+    // bot-sent).
+    sendGameMessage(this.#userId, {
+      event: 'newPlayerMessage',
+      data: {
+        text: message,
+        isFirstThisStream: false,
+        player: {
+          id: this.#userId,
+          name: this.#channel,
+          codename: 'twitchy',
+          level: 0,
+        },
+      },
+    })
   }
 
   onMessage(handler: MessageHandler) {

@@ -1,6 +1,8 @@
 import { sendAlertMessage } from '~~/server/api/websocket'
 import { getLevelingService } from '~~/server/core/leveling/service'
 
+const logger = useLogger('dashboard:reward')
+
 export default defineEventHandler(async (event) => {
   const session = await getUserSession(event)
   if (!session?.user?.id) {
@@ -8,16 +10,20 @@ export default defineEventHandler(async (event) => {
   }
 
   const streamerProfile = await db.profile.find(session.user.id)
-  if (!streamerProfile?.isStreamer) {
+  if (!streamerProfile?.isStreamer || !streamerProfile.twitchId) {
     throw createError({ statusCode: 403, message: 'Forbidden' })
   }
 
   const body = await readBody(event)
-  if (!body?.twitchId || !body?.type || !body?.amount || !body?.roomId) {
+  if (!body?.twitchId || !body?.type || !body?.amount) {
     throw createError({ statusCode: 400, message: 'Missing required fields' })
   }
 
-  const { twitchId, type, roomId } = body
+  // Always derive roomId from the server-side streamer profile. The client
+  // used to pass it, but if user.value wasn't hydrated yet it would be '' and
+  // the alert silently went nowhere.
+  const roomId = streamerProfile.twitchId
+  const { twitchId, type } = body
   const amount = Math.min(Math.max(1, Number(body.amount)), type === 'xp' ? 100 : 50)
 
   const profile = await db.profile.findByTwitchId(twitchId)
@@ -61,6 +67,7 @@ export default defineEventHandler(async (event) => {
       }
     }
 
+    logger.info(`Gift: ${streamerProfile.userName} → ${profile.userName ?? twitchId} +${amount} coins (room ${roomId})`)
     sendAlertMessage(roomId, {
       type: 'STREAMER_REWARD',
       data: {

@@ -1057,7 +1057,7 @@ async function rewardFromModal(type: 'xp' | 'coins', amount: number) {
   try {
     await $fetch('/api/dashboard/reward', {
       method: 'POST',
-      body: { twitchId, type, amount, roomId },
+      body: { twitchId, type, amount },
     })
     if (type === 'coins') {
       streamerCoins.value -= amount
