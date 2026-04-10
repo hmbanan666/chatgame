@@ -7,6 +7,7 @@ const STREAMER_SCOPES = [
   'channel:manage:redemptions',
   'channel:read:subscriptions',
   'moderator:read:followers',
+  'moderator:manage:announcements',
 ]
 
 describe('twitch streamer OAuth scopes', () => {
@@ -26,7 +27,11 @@ describe('twitch streamer OAuth scopes', () => {
     expect(STREAMER_SCOPES).toContain('moderator:read:followers')
   })
 
-  it('has exactly 5 required scopes', () => {
-    expect(STREAMER_SCOPES).toHaveLength(5)
+  it('includes moderator:manage:announcements for /announce chat messages', () => {
+    expect(STREAMER_SCOPES).toContain('moderator:manage:announcements')
+  })
+
+  it('has exactly 6 required scopes', () => {
+    expect(STREAMER_SCOPES).toHaveLength(6)
   })
 })

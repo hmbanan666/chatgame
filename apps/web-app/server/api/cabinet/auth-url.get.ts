@@ -4,6 +4,7 @@ const STREAMER_SCOPES = [
   'channel:manage:redemptions',
   'channel:read:subscriptions',
   'moderator:read:followers',
+  'moderator:manage:announcements',
 ].join(' ')
 
 export default defineEventHandler(() => {
