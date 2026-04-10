@@ -1,5 +1,5 @@
 import { createId } from '@paralleldrive/cuid2'
-import { obtainTwitchAccessToken } from '~~/server/utils/twitch/twitch.auth'
+import { clearTokenCache, obtainTwitchAccessToken } from '~~/server/utils/twitch/twitch.auth'
 
 export default defineEventHandler(async (event) => {
   const session = await getUserSession(event)
@@ -29,6 +29,11 @@ export default defineEventHandler(async (event) => {
     expiresIn: res.expires_in,
     obtainmentTimestamp: Date.now().toString(),
   })
+
+  // Drop any stale in-memory token — the old cached refresh_token would
+  // otherwise survive until the next server-side refresh and silently
+  // clobber the new scopes we just granted.
+  clearTokenCache(profile.twitchId)
 
   // First connect — link this token to the profile as an ADDON
   if (isFirstConnect) {

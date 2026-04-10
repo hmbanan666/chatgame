@@ -51,13 +51,21 @@ export async function reloadTwitchToken(userId: string): Promise<TwitchToken> {
 
 export async function refreshTwitchToken(userId: string): Promise<TwitchToken> {
   const { oauthTwitchClientId, oauthTwitchClientSecret } = useRuntimeConfig()
-  const current = await getTwitchToken(userId)
+
+  // Always read the refresh token from DB — the in-memory cache may hold a
+  // stale one from a previous OAuth grant with fewer scopes. If we refresh
+  // with an old refresh_token, Twitch returns an access_token scoped to the
+  // OLD grant, silently losing any scopes added during a reconnect.
+  const stored = await db.oauthAccessToken.findByUserId(userId, 'twitch')
+  if (!stored?.refreshToken) {
+    throw new Error(`No Twitch refresh token for user ${userId}`)
+  }
 
   const params = new URLSearchParams({
     client_id: oauthTwitchClientId,
     client_secret: oauthTwitchClientSecret,
     grant_type: 'refresh_token',
-    refresh_token: current.refreshToken,
+    refresh_token: stored.refreshToken,
   })
 
   const res = await fetch(`https://id.twitch.tv/oauth2/token?${params}`, { method: 'POST' })
