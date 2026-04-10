@@ -140,6 +140,26 @@ export async function initCharges() {
     })
 
     registerChargeRoom(session)
+
+    // Controller may have already flipped to "streaming" BEFORE charge-init
+    // attached the onStreamOnline handler above (happens on app restart mid-
+    // stream). Sync the session now so isLive and all derived state match.
+    if (controller.isStreaming && !session.isLive) {
+      try {
+        await session.startStream()
+        session.connectDonateClient()
+        const startedAt = new Date(session.stats.streamStartedAt)
+        getViewerQuestService(streamer.id, streamer.twitchId).setStreamStartedAt(startedAt)
+        controller.service.setStreamStartedAt(startedAt)
+        if (session.streamId) {
+          getEngagementService(streamer.id, session.streamId)
+        }
+        logger.info(`[${streamer.userName}] Synced session to already-live controller`)
+      } catch (err) {
+        logger.error(`[${streamer.userName}] Failed to sync session to live controller`, err)
+      }
+    }
+
     logger.success(`Wagon session initialized for ${streamer.userName}`)
   }
 }

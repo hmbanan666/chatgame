@@ -1,10 +1,10 @@
 <template>
   <div class="w-full h-full bg-[#111116] overflow-hidden p-3 relative">
-    <!-- Viewer Card — overlay top center -->
+    <!-- Viewer Card — overlay on the right, matching Events + Chat width -->
     <Transition name="card">
       <div
         v-if="activeViewerCard"
-        class="absolute top-3 left-1/2 -translate-x-1/2 z-50 w-full max-w-lg bg-[#1e1e26] border border-white/15 rounded-lg overflow-hidden shadow-2xl cursor-pointer"
+        class="absolute top-3 right-3 z-50 w-full max-w-[36.5rem] bg-[#1e1e26] border border-white/15 rounded-lg overflow-hidden shadow-2xl cursor-pointer"
         @click="dismissViewerCard"
       >
         <div class="h-0.5 bg-site-highlight/30">
@@ -53,38 +53,40 @@
         <span class="size-2 rounded-full" :class="isLive ? 'bg-green-500 animate-pulse' : 'bg-white/20'" />
         <span class="font-pixel text-xs text-site-text">{{ isLive ? streamUptime : '—' }}</span>
       </div>
-      <template v-if="isLive && stats">
-        <div class="text-white/40 flex items-center gap-1" title="Зрителей">
-          <Icon name="lucide:eye" class="size-3.5" /><span class="text-site-text font-bold">{{ stats.viewerCount }}</span>
-        </div>
-        <div class="text-white/40 flex items-center gap-1" title="Сообщений">
-          <Icon name="lucide:message-square" class="size-3.5" /><span class="text-site-text font-bold">{{ stats.stats.messagesCount }}</span>
-        </div>
-        <div class="text-white/40 flex items-center gap-1" title="Топливо">
-          <Icon name="lucide:fuel" class="size-3.5" /><span class="text-site-text font-bold">{{ Math.round(stats.fuel) }}/{{ stats.maxFuel }}</span>
-        </div>
-        <div class="text-white/40 flex items-center gap-1" title="Деревья">
-          <Icon name="lucide:tree-pine" class="size-3.5" /><span class="text-site-text font-bold">{{ stats.stats.treesChopped }}</span>
-        </div>
-        <div class="text-white/40 flex items-center gap-1" title="Купоны">
-          <Icon name="lucide:ticket" class="size-3.5" /><span class="text-site-text font-bold">{{ stats.stats.couponsTaken }}</span>
-        </div>
-        <div class="text-white/20 text-xs" title="Следующий купон">
-          {{ couponCountdown }}
-        </div>
-        <div
-          v-if="redemptionStats.totalCost > 0"
-          class="text-white/40 flex items-center gap-1 ml-2"
-          title="Баллы канала сожжено"
-        >
-          <Icon name="lucide:gift" class="size-3.5" /><span class="text-site-highlight font-bold">{{ redemptionStats.totalCost.toLocaleString() }}</span>
-          <span class="text-white/20 text-xs">на {{ redemptionStats.count }}</span>
-        </div>
-      </template>
-      <template v-else>
-        <span class="text-white/30">Оффлайн</span>
-      </template>
-      <span v-if="isDemo" class="bg-amber-500/20 text-amber-400 text-xs font-bold px-1.5 py-0.5 ml-auto">DEMO</span>
+      <span v-if="isDemo" class="bg-amber-500/20 text-amber-400 text-xs font-bold px-1.5 py-0.5">DEMO</span>
+      <div class="ml-auto flex items-center gap-6">
+        <template v-if="isLive && stats">
+          <div class="text-white/40 flex items-center gap-1" title="Зрителей">
+            <Icon name="lucide:eye" class="size-3.5" /><span class="text-site-text font-bold">{{ stats.viewerCount }}</span>
+          </div>
+          <div class="text-white/40 flex items-center gap-1" title="Сообщений">
+            <Icon name="lucide:message-square" class="size-3.5" /><span class="text-site-text font-bold">{{ stats.stats.messagesCount }}</span>
+          </div>
+          <div class="text-white/40 flex items-center gap-1" title="Топливо">
+            <Icon name="lucide:fuel" class="size-3.5" /><span class="text-site-text font-bold">{{ Math.round(stats.fuel) }}/{{ stats.maxFuel }}</span>
+          </div>
+          <div class="text-white/40 flex items-center gap-1" title="Деревья">
+            <Icon name="lucide:tree-pine" class="size-3.5" /><span class="text-site-text font-bold">{{ stats.stats.treesChopped }}</span>
+          </div>
+          <div class="text-white/40 flex items-center gap-1" title="Купоны">
+            <Icon name="lucide:ticket" class="size-3.5" /><span class="text-site-text font-bold">{{ stats.stats.couponsTaken }}</span>
+          </div>
+          <div class="text-white/20 text-xs" title="Следующий купон">
+            {{ couponCountdown }}
+          </div>
+          <div
+            v-if="redemptionStats.totalCost > 0"
+            class="text-white/40 flex items-center gap-1"
+            title="Баллы канала сожжено"
+          >
+            <Icon name="lucide:gift" class="size-3.5" /><span class="text-site-highlight font-bold">{{ redemptionStats.totalCost.toLocaleString() }}</span>
+            <span class="text-white/20 text-xs">на {{ redemptionStats.count }}</span>
+          </div>
+        </template>
+        <template v-else>
+          <span class="text-white/30">Оффлайн</span>
+        </template>
+      </div>
     </div>
 
     <!-- Main area: 3 columns -->
