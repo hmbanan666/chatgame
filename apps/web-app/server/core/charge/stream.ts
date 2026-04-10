@@ -618,6 +618,11 @@ export class WagonSession {
         this.stats.couponsTaken = existing.couponsTaken
         this.stats.peakViewers = existing.peakViewers
         this.stats.streamStartedAt = existing.startedAt.toISOString()
+        // The DB still has this stream marked live, so the session IS live
+        // — without this flag the charge-init catch-up would wrongly call
+        // startStream() and end up creating a brand-new stream record,
+        // losing all the stats we just loaded.
+        this.isLive = true
         this.#logger.info(`Resumed stream ${this.streamId}`)
       }
     } catch (err) {

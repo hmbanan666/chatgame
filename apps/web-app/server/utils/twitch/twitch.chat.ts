@@ -47,7 +47,10 @@ export class TwitchChat {
     this.#ws.addEventListener('open', () => {
       logger.info(`Chat connected to #${this.#channel}`)
 
-      this.#ws!.send(`CAP REQ :twitch.tv/tags twitch.tv/commands`)
+      // echo-message echoes our own PRIVMSGs back to us so the cabinet
+      // chat panel sees messages sent by the streamer via /api/cabinet/chat
+      // (and confirms delivery for messages sent by the bot).
+      this.#ws!.send(`CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/echo-message`)
       this.#ws!.send(`PASS oauth:${token.accessToken}`)
       this.#ws!.send(`NICK ${this.#channel}`)
       this.#ws!.send(`JOIN #${this.#channel}`)

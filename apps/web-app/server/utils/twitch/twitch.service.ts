@@ -55,13 +55,12 @@ export class TwitchService {
       return
     }
 
-    const { viewer, isNew } = await db.streamerViewer.findOrCreate(this.#streamerId, profile.id)
-    if (!viewer) {
-      return
-    }
-
-    // Update last seen + message count
-    await db.streamerViewer.updateLastSeen(viewer.id)
+    // Is the streamer echoing their own IRC message? (we enabled
+    // twitch.tv/echo-message so the dashboard sees bot/streamer messages).
+    // Skip all viewer progression (quests, XP, streaks, engagement) — the
+    // streamer shouldn't self-reward — but still forward to the dashboard
+    // so cabinet/live chat panel shows the message.
+    const isSelf = userId === this.#roomId
 
     // Resolve character
     let codename = 'twitchy'
@@ -73,77 +72,84 @@ export class TwitchService {
     }
 
     const chatAnnouncements: string[] = []
+    let viewer: Awaited<ReturnType<typeof db.streamerViewer.findOrCreate>>['viewer'] | null = null
+    let levelResult: { leveledUp: boolean, newLevel?: number } = { leveledUp: false }
 
-    // New viewer alert
-    if (isNew) {
-      sendAlertMessage(this.#roomId, {
-        type: 'NEW_VIEWER',
-        data: {
-          userName,
-          codename,
-        },
-      })
-      chatAnnouncements.push(`Добро пожаловать, ${userName}! Пиши в чат, качай уровень и собирай персонажей на chatgame.space`)
-    }
+    if (!isSelf) {
+      const { viewer: v, isNew } = await db.streamerViewer.findOrCreate(this.#streamerId, profile.id)
+      if (!v) {
+        return
+      }
+      viewer = v
 
-    // Viewer quest (skip for streamer)
-    if (userId !== this.#roomId) {
+      // Update last seen + message count
+      await db.streamerViewer.updateLastSeen(viewer.id)
+
+      // New viewer alert
+      if (isNew) {
+        sendAlertMessage(this.#roomId, {
+          type: 'NEW_VIEWER',
+          data: { userName, codename },
+        })
+        chatAnnouncements.push(`Добро пожаловать, ${userName}! Пиши в чат, качай уровень и собирай персонажей на chatgame.space`)
+      }
+
+      // Viewer quest
       const questService = getViewerQuestService(this.#streamerId, this.#roomId)
       await questService.tryAssignQuest(profile.id, userName, codename)
       const questResult = await questService.trackMessage(profile.id)
       if (questResult.completed) {
         chatAnnouncements.push(`${questResult.userName} выполнил квест! +${questResult.reward} ${pluralizationRu(questResult.reward ?? 0, ['монета', 'монеты', 'монет'])}`)
       }
-    }
 
-    // XP gain + watch time (non-critical — don't crash message on failure)
-    let levelResult: { leveledUp: boolean, newLevel?: number } = { leveledUp: false }
-    try {
-      const leveling = getLevelingService()
-      levelResult = await leveling.onMessage({
-        profileId: profile.id,
-        activeEditionId: profile.activeEditionId,
-        userName,
-        codename,
-        roomId: this.#roomId,
-        lastActionAt: viewer.lastSeenAt,
-        streamerViewerId: viewer.id,
-        addStreamerCoin: () => this.addStreamerCoin(),
-      })
-    } catch {
-      // Lock timeout or DB error — skip XP, don't block chat
-    }
-
-    if (levelResult.leveledUp && levelResult.newLevel) {
-      chatAnnouncements.push(`${userName} достиг уровня ${levelResult.newLevel}!`)
-    }
-
-    // Daily streak (global, per profile) — non-critical
-    try {
-      const streakOutcome = await processDailyStreak(profile.id, this.#roomId)
-      const greeting = formatStreakGreeting(userName, streakOutcome)
-      if (greeting) {
-        chatAnnouncements.push(greeting)
+      // XP gain + watch time (non-critical — don't crash message on failure)
+      try {
+        const leveling = getLevelingService()
+        levelResult = await leveling.onMessage({
+          profileId: profile.id,
+          activeEditionId: profile.activeEditionId,
+          userName,
+          codename,
+          roomId: this.#roomId,
+          lastActionAt: viewer.lastSeenAt,
+          streamerViewerId: viewer.id,
+          addStreamerCoin: () => this.addStreamerCoin(),
+        })
+      } catch {
+        // Lock timeout or DB error — skip XP, don't block chat
       }
-    } catch {
-      // Don't block chat on streak errors
+
+      if (levelResult.leveledUp && levelResult.newLevel) {
+        chatAnnouncements.push(`${userName} достиг уровня ${levelResult.newLevel}!`)
+      }
+
+      // Daily streak (global, per profile) — non-critical
+      try {
+        const streakOutcome = await processDailyStreak(profile.id, this.#roomId)
+        const greeting = formatStreakGreeting(userName, streakOutcome)
+        if (greeting) {
+          chatAnnouncements.push(greeting)
+        }
+      } catch {
+        // Don't block chat on streak errors
+      }
+
+      // Update last seen again after XP gain
+      await db.streamerViewer.updateLastSeen(viewer.id)
+
+      // Track viewer for streamer currency engagement
+      const engagementService = getEngagementService(this.#streamerId)
+      if (engagementService) {
+        engagementService.trackViewer(profile.id)
+      }
     }
 
-    // Update last seen + increment message count for this streamer
-    await db.streamerViewer.updateLastSeen(viewer.id)
-
-    // Refetch profile after XP gain (level may have changed)
+    // Refetch profile after potential XP gain (level may have changed)
     const updatedProfile = await db.profile.find(profile.id)
 
     // Stream Journey
     const isFirstThisStream = !this.#seenThisStream.has(userId)
     this.#seenThisStream.add(userId)
-
-    // Track viewer for streamer currency engagement
-    const engagementService = getEngagementService(this.#streamerId)
-    if (engagementService) {
-      engagementService.trackViewer(profile.id)
-    }
 
     sendGameMessage(this.#roomId, {
       event: 'newPlayerMessage',

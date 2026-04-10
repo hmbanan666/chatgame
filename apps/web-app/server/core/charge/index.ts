@@ -143,10 +143,19 @@ export async function initCharges() {
 
     // Controller may have already flipped to "streaming" BEFORE charge-init
     // attached the onStreamOnline handler above (happens on app restart mid-
-    // stream). Sync the session now so isLive and all derived state match.
-    if (controller.isStreaming && !session.isLive) {
+    // stream). The online handler will never fire for this case, so we run
+    // the same setup here manually. Two sub-cases:
+    //   - Resume: initStream() loaded an existing DB-live stream and set
+    //     session.isLive=true already. Don't call startStream() — that would
+    //     end the current stream and create a brand-new one, losing stats.
+    //   - Fresh: controller went online, but no DB-live stream yet. Call
+    //     startStream() to create the record.
+    // In both sub-cases the DA client and engagement service need starting.
+    if (controller.isStreaming) {
       try {
-        await session.startStream()
+        if (!session.isLive) {
+          await session.startStream()
+        }
         session.connectDonateClient()
         const startedAt = new Date(session.stats.streamStartedAt)
         getViewerQuestService(streamer.id, streamer.twitchId).setStreamStartedAt(startedAt)
