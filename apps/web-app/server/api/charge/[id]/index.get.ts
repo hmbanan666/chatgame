@@ -1,9 +1,12 @@
-import { chargeRooms } from '~~/server/core/charge'
+import { getChargeRoom } from '~~/server/core/charge'
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
+  if (!id) {
+    throw createError({ status: 400 })
+  }
 
-  const session = chargeRooms.find((room) => room.id === id)
+  const session = getChargeRoom(id)
   if (!session) {
     throw createError({
       status: 404,

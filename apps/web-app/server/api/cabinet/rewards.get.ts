@@ -1,4 +1,4 @@
-import { chargeRooms } from '../../core/charge'
+import { getChargeRoom } from '../../core/charge'
 import { getAllChannelRewards } from '../../utils/twitch/twitch.api'
 
 export default defineEventHandler(async (event) => {
@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
   const rewards = await getAllChannelRewards(profile.twitchId)
 
   // Mark which rewards are wagon actions (can be triggered from dashboard)
-  const room = chargeRooms.find((s) => s.id === profile.twitchId)
+  const room = getChargeRoom(profile.twitchId)
   const mappedIds = new Set(room?.rewardMappings.map((m) => m.twitchRewardId) ?? [])
 
   return rewards

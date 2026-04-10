@@ -1,7 +1,7 @@
 import type { WebSocketPeer } from '#shared/types/room'
 import type { WebSocketConnectAddon, WebSocketEvents, WebSocketMessage } from '@chatgame/types'
 import { createId } from '@paralleldrive/cuid2'
-import { chargeRooms } from '~~/server/core/charge'
+import { getChargeRoom } from '~~/server/core/charge'
 
 const logger = useLogger('ws')
 
@@ -248,7 +248,7 @@ function handleUpdateBiome(message: WebSocketMessage) {
     return
   }
 
-  const chargeRoom = chargeRooms.find((room) => room.id === data.roomId)
+  const chargeRoom = getChargeRoom(data.roomId)
   if (chargeRoom) {
     chargeRoom.lastActivityAt = Date.now()
     chargeRoom.wagonSpeed = (data as any).wagonSpeed ?? 0
@@ -284,7 +284,7 @@ function handleTreeDestroyed(message: WebSocketMessage) {
     return
   }
 
-  const chargeRoom = chargeRooms.find((room) => room.id === data.roomId)
+  const chargeRoom = getChargeRoom(data.roomId)
   if (chargeRoom) {
     chargeRoom.stats.treesChopped++
   }

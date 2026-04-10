@@ -1,7 +1,7 @@
 import type { RedemptionEvent } from './twitch.eventsub'
 import { sendGameMessage } from '~~/server/api/websocket'
 import { getNextAnnouncement } from '~~/server/core/announcements'
-import { chargeRooms } from '~~/server/core/charge'
+import { getChargeRoom } from '~~/server/core/charge'
 import { getViewerQuestService } from '~~/server/core/quest'
 import { getStreamByUserId, sendChatAnnouncement } from './twitch.api'
 import { TwitchChat } from './twitch.chat'
@@ -57,6 +57,10 @@ export class TwitchController {
 
   get userId() {
     return this.#userId
+  }
+
+  get channel() {
+    return this.#channel
   }
 
   get streamerId() {
@@ -178,7 +182,7 @@ export class TwitchController {
     this.#infoMessageId = setInterval(async () => {
       if (this.#isStreaming) {
         try {
-          const session = chargeRooms.find((r) => r.id === this.#userId) ?? null
+          const session = getChargeRoom(this.#userId) ?? null
           const questService = getViewerQuestService(this.#streamerId)
           const streamStart = new Date(session?.stats.streamStartedAt ?? Date.now())
           const streamMinutes = Math.floor((Date.now() - streamStart.getTime()) / 60_000)

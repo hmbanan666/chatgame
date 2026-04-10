@@ -197,7 +197,10 @@ export interface InventoryItemEdition {
 }
 
 export interface TwitchServiceStatus {
-  service: 'HMBANAN666_TWITCH' | 'COUPON_GENERATOR'
+  /** Twitch user id of the streamer */
+  twitchId: string
+  /** Twitch channel login (lowercased) */
+  channelName: string
   status: 'RUNNING' | 'STOPPED'
 }
 

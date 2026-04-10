@@ -4,7 +4,8 @@ import { getAllControllers } from '../../utils/twitch/twitch.controller'
 
 export default defineEventHandler<EventHandlerRequest, TwitchServiceStatus[]>(() => {
   return getAllControllers().map((controller) => ({
-    service: 'HMBANAN666_TWITCH' as const,
+    twitchId: controller.userId,
+    channelName: controller.channel,
     status: controller.status as 'RUNNING' | 'STOPPED',
   }))
 })

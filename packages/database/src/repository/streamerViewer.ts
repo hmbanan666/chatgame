@@ -103,4 +103,30 @@ export class StreamerViewerRepository {
       .orderBy(sql`${tables.streamerViewers.lastSeenAt} desc`)
       .limit(limit)
   }
+
+  /**
+   * Finds the streamer this viewer is currently watching — picks the
+   * streamerViewer row with the freshest lastSeenAt within the given window.
+   * Returns null if the viewer hasn't been seen on any stream recently.
+   */
+  static async findCurrentStreamerForViewer(profileId: string, withinMs = 10 * 60_000) {
+    const db = useDatabase()
+    const cutoff = new Date(Date.now() - withinMs)
+    const row = await db.query.streamerViewers.findFirst({
+      where: (t, { eq: e, and: a, gte }) => a(e(t.profileId, profileId), gte(t.lastSeenAt, cutoff)),
+      orderBy: (t, { desc }) => [desc(t.lastSeenAt)],
+    })
+    return row ?? null
+  }
+
+  /** Recent viewer names across all streamers — for the public landing demo. */
+  static findRecentNamesAcrossStreamers(limit = 20) {
+    const db = useDatabase()
+    return db
+      .selectDistinct({ name: tables.profiles.userName })
+      .from(tables.streamerViewers)
+      .innerJoin(tables.profiles, eq(tables.streamerViewers.profileId, tables.profiles.id))
+      .orderBy(sql`${tables.profiles.userName} asc`)
+      .limit(limit)
+  }
 }

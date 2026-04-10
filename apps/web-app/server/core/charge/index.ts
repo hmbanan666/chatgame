@@ -8,7 +8,30 @@ import { getOrCreateController } from '../../utils/twitch/twitch.controller'
 import { DonateController } from './donateClient'
 import { WAGON_ACTIONS, WagonSession } from './stream'
 
-export const chargeRooms: WagonSession[] = []
+/**
+ * Per-streamer wagon sessions keyed by session id (which equals streamer.twitchId).
+ * Always look up sessions by id — never iterate with a hardcoded index.
+ */
+const _chargeRooms = new Map<string, WagonSession>()
+
+export function getChargeRoom(id: string): WagonSession | undefined {
+  return _chargeRooms.get(id)
+}
+
+export function getAllChargeRooms(): WagonSession[] {
+  return Array.from(_chargeRooms.values())
+}
+
+export function registerChargeRoom(session: WagonSession) {
+  _chargeRooms.set(session.id, session)
+}
+
+export function destroyAllChargeRooms() {
+  for (const room of _chargeRooms.values()) {
+    room.destroy()
+  }
+  _chargeRooms.clear()
+}
 
 export async function initCharges() {
   const logger = useLogger('charge:init')
@@ -120,7 +143,7 @@ export async function initCharges() {
       destroyEngagementService(streamer.id)
     })
 
-    chargeRooms.push(session)
+    registerChargeRoom(session)
     logger.success(`Wagon session initialized for ${streamer.userName}`)
   }
 }

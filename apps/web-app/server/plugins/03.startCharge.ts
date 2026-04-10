@@ -1,5 +1,5 @@
 import { waitForMigration } from '@chatgame/database'
-import { chargeRooms, initCharges } from '../core/charge'
+import { destroyAllChargeRooms, initCharges } from '../core/charge'
 
 export default defineNitroPlugin(async (nitroApp) => {
   const logger = useLogger('plugin:charge')
@@ -19,8 +19,6 @@ export default defineNitroPlugin(async (nitroApp) => {
 
   nitroApp.hooks.hook('close', () => {
     logger.info('Shutting down wagon sessions...')
-    for (const room of chargeRooms) {
-      room.destroy()
-    }
+    destroyAllChargeRooms()
   })
 })

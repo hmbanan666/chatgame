@@ -311,7 +311,7 @@ useHead({
 
 const { authUrl } = useAuthUrl()
 const { data: twitchStatus } = await useFetch('/api/twitch/status')
-const isStreaming = computed(() => twitchStatus.value?.some((s) => s.service === 'HMBANAN666_TWITCH' && s.status === 'RUNNING') ?? false)
+const isStreaming = computed(() => twitchStatus.value?.some((s) => s.status === 'RUNNING') ?? false)
 
 const demoStage = ref<HTMLElement>()
 const demoGame = shallowRef<any>()

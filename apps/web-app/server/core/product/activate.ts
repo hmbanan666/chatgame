@@ -1,6 +1,6 @@
 import { createId } from '@paralleldrive/cuid2'
 import { sendAlertMessage } from '~~/server/api/websocket'
-import { chargeRooms } from '~~/server/core/charge'
+import { getChargeRoom } from '~~/server/core/charge'
 import { getLevelingService } from '~~/server/core/leveling/service'
 
 export async function activateProduct({ profileId, productId }: { profileId: string, productId: string }) {
@@ -36,20 +36,34 @@ export async function activateProduct({ profileId, productId }: { profileId: str
     }
   }
 
-  // XP and alert
+  // XP and alert. A purchase isn't tied to a specific stream, but we want the
+  // buyer to see their celebration moment. Find the stream they're currently
+  // watching (fresh streamerViewer activity within 10 min) and send the alert
+  // there. If they aren't watching anyone right now, silently grant XP.
   const profile = await db.profile.find(profileId)
-  const roomId = chargeRooms[0]?.id
-  if (profile && roomId) {
+  if (profile?.twitchId) {
     const xpEarned = Math.max(1, Math.floor(product.price / 5))
-    await getLevelingService().addXpForAction(profileId, xpEarned, roomId)
-    sendAlertMessage(roomId, {
-      type: 'PURCHASE',
-      data: {
-        userName: profile.userName ?? profileId,
-        coins: totalCoins,
-        price: product.price,
-        xpEarned,
-      },
-    })
+
+    const currentViewerRow = await db.streamerViewer.findCurrentStreamerForViewer(profile.id)
+    const currentStreamer = currentViewerRow
+      ? await db.profile.find(currentViewerRow.streamerId)
+      : null
+    const room = currentStreamer?.twitchId ? getChargeRoom(currentStreamer.twitchId) : null
+
+    if (room?.isLive) {
+      await getLevelingService().addXpForAction(profile.twitchId, xpEarned, room.id)
+      sendAlertMessage(room.id, {
+        type: 'PURCHASE',
+        data: {
+          userName: profile.userName ?? profileId,
+          coins: totalCoins,
+          price: product.price,
+          xpEarned,
+        },
+      })
+    } else {
+      // Not watching anyone live — just grant XP, no alert
+      await db.profile.addXp(profile.id, xpEarned)
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { chargeRooms } from '../../core/charge'
+import { getChargeRoom } from '../../core/charge'
 
 export default defineEventHandler(async (event) => {
   const session = await getUserSession(event)
@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Missing rewardId' })
   }
 
-  const room = chargeRooms.find((s) => s.id === profile.twitchId)
+  const room = getChargeRoom(profile.twitchId)
   if (!room) {
     throw createError({ statusCode: 503, message: 'Session not active' })
   }
