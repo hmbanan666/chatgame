@@ -205,7 +205,6 @@ export const inventoryItems = pgTable('inventory_item', {
 
 export const inventoryItemsRelations = relations(inventoryItems, ({ many }) => ({
   editions: many(inventoryItemEditions),
-  rewards: many(characterLevels),
 }))
 
 export const inventoryItemEditions = pgTable('inventory_item_edition', {
@@ -242,7 +241,6 @@ export const characters = pgTable('character', {
 
 export const charactersRelations = relations(characters, ({ many }) => ({
   editions: many(characterEditions),
-  levels: many(characterLevels),
 }))
 
 export const characterEditions = pgTable('character_edition', {
@@ -259,22 +257,6 @@ export const characterEditions = pgTable('character_edition', {
 export const characterEditionsRelations = relations(characterEditions, ({ one }) => ({
   profile: one(profiles, { fields: [characterEditions.profileId], references: [profiles.id] }),
   character: one(characters, { fields: [characterEditions.characterId], references: [characters.id] }),
-}))
-
-export const characterLevels = pgTable('character_level', {
-  id: cuid2('id').defaultRandom().primaryKey(),
-  createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-  level: integer('level').notNull(),
-  requiredXp: integer('required_xp').notNull(),
-  awardAmount: integer('award_amount').notNull().default(0),
-  inventoryItemId: text('inventory_item_id'),
-  characterId: text('character_id').notNull(),
-})
-
-export const characterLevelsRelations = relations(characterLevels, ({ one }) => ({
-  inventoryItem: one(inventoryItems, { fields: [characterLevels.inventoryItemId], references: [inventoryItems.id] }),
-  character: one(characters, { fields: [characterLevels.characterId], references: [characters.id] }),
 }))
 
 // ── Streamer Currency ───────────────────────────────────

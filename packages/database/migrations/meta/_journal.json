@@ -197,6 +197,13 @@
       "when": 1775811208415,
       "tag": "0027_pretty_cobalt_man",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1775815706950,
+      "tag": "0028_smooth_nebula",
+      "breakpoints": true
     }
   ]
 }

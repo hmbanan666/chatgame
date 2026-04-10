@@ -19,7 +19,6 @@ export type InventoryItemEdition = InferSelectModel<typeof tables.inventoryItemE
 
 export type Character = InferSelectModel<typeof tables.characters>
 export type CharacterEdition = InferSelectModel<typeof tables.characterEditions>
-export type CharacterLevel = InferSelectModel<typeof tables.characterLevels>
 
 export type Coupon = InferSelectModel<typeof tables.coupons>
 

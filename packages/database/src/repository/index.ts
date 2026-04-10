@@ -2,7 +2,6 @@ import { useDatabase } from '../database'
 import { BacklogItemRepository } from './backlogItem'
 import { CharacterRepository } from './character'
 import { CharacterEditionRepository } from './characterEdition'
-import { CharacterLevelRepository } from './characterLevel'
 import { CouponRepository } from './coupon'
 import { InventoryItemRepository } from './inventoryItem'
 import { InventoryItemEditionRepository } from './inventoryItemEdition'
@@ -29,7 +28,6 @@ class Repository {
   readonly sprite = SpriteRepository
   readonly character = CharacterRepository
   readonly characterEdition = CharacterEditionRepository
-  readonly characterLevel = CharacterLevelRepository
   readonly coupon = CouponRepository
   readonly redemption = RedemptionRepository
   readonly streamerViewer = StreamerViewerRepository

@@ -92,37 +92,6 @@ export interface CharacterEditionWithProfile extends CharacterEdition {
   character: Character
 }
 
-export interface CharacterLevel {
-  id: string
-  createdAt: Date
-  updatedAt: Date
-  level: number
-  requiredXp: number
-  awardAmount: number
-  inventoryItemId: string | null
-  characterId: string
-}
-
-export type CharacterLevelWithItem = CharacterLevel & {
-  inventoryItem: InventoryItem
-}
-
-export type CharacterEditionData = CharacterEdition & {
-  character: Character
-  levels: CharacterLevelWithItem[]
-  currentLevel: CharacterLevelWithItem | null
-  nextLevel: CharacterLevelWithItem | null
-  xpToNextLevel: number | null
-}
-
-export type CharacterWithLevels = Character & {
-  levels: CharacterLevelWithItem[]
-}
-
-export type CharacterEditionsOnProfileData = (CharacterEdition & {
-  character: CharacterWithLevels
-})[]
-
 export interface ActiveCharacter extends CharacterEditionWithCharacter {
   lastActionAt: Date
   token: string
