@@ -18,10 +18,6 @@ export function getChargeRoom(id: string): WagonSession | undefined {
   return _chargeRooms.get(id)
 }
 
-export function getAllChargeRooms(): WagonSession[] {
-  return Array.from(_chargeRooms.values())
-}
-
 export function registerChargeRoom(session: WagonSession) {
   _chargeRooms.set(session.id, session)
 }

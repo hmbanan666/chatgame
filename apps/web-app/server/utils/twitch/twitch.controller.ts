@@ -267,15 +267,6 @@ export function getController(streamerId: string): TwitchController | null {
   return _controllers.get(streamerId) ?? null
 }
 
-export function getControllerByTwitchId(twitchId: string): TwitchController | null {
-  for (const controller of _controllers.values()) {
-    if (controller.userId === twitchId) {
-      return controller
-    }
-  }
-  return null
-}
-
 export function getAllControllers(): TwitchController[] {
   return [..._controllers.values()]
 }

@@ -189,16 +189,6 @@ export class ProfileRepository {
     return topProfiles.findIndex((profile) => profile.id === profileId) + 1
   }
 
-  static async findAllStreamers(type: string) {
-    const db = useDatabase()
-    const result = await db.query.profiles.findMany({
-      with: { twitchTokens: true },
-    })
-    return result.filter(
-      (p) => p.twitchTokens?.some((t) => t.status === 'ACTIVE' && t.type === type),
-    )
-  }
-
   static activateStreamer(id: string) {
     const db = useDatabase()
     return db.update(tables.profiles)

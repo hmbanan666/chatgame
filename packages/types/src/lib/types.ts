@@ -168,13 +168,6 @@ export interface StreamEngagement {
   profileId: string
 }
 
-/** @deprecated Use StreamerViewer for per-streamer viewer data */
-export interface Player {
-  id: string
-  name: string
-  profileId: string
-}
-
 export interface InventoryItem {
   id: string
   createdAt: Date
