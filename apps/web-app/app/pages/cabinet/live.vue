@@ -19,6 +19,11 @@
             <span class="bg-white/10 text-site-highlight text-sm font-bold px-2 py-0.5">
               {{ activeViewerCard.level }}
             </span>
+            <CabinetEngagementBadge
+              v-if="activeViewerCard.engagement"
+              :engagement="activeViewerCard.engagement"
+              :show-label="false"
+            />
             <span
               v-if="activeViewerCard.donationTotal > 0"
               class="bg-amber-500/15 text-amber-400 text-sm font-bold px-2 py-0.5"
@@ -322,6 +327,10 @@
                 <span class="bg-white/10 text-site-highlight text-sm font-bold px-2 py-0.5">
                   {{ profileModal.level }}
                 </span>
+                <CabinetEngagementBadge
+                  v-if="profileModal.engagement"
+                  :engagement="profileModal.engagement"
+                />
               </div>
               <div class="text-right">
                 <span class="text-white/30 text-sm">{{ formatLastSeen(profileModal.lastSeenAt) }}</span>

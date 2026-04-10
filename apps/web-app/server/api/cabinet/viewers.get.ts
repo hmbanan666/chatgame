@@ -1,3 +1,5 @@
+import { calculateEngagementScore } from '#shared/engagement/score'
+
 export default defineEventHandler(async (event) => {
   const session = await getUserSession(event)
   if (!session?.user?.id) {
@@ -27,8 +29,18 @@ export default defineEventHandler(async (event) => {
   const filtered = rows.filter((r) => r.profileId !== profile.id)
   const filteredTotal = filtered.length < rows.length ? total - 1 : total
 
+  const withEngagement = filtered.map((r) => ({
+    ...r,
+    engagement: calculateEngagementScore({
+      watchTimeMin: r.watchTimeMin,
+      messagesCount: r.messagesCount,
+      firstSeenAt: r.createdAt,
+      lastSeenAt: r.lastSeenAt,
+    }),
+  }))
+
   return {
-    viewers: filtered,
+    viewers: withEngagement,
     total: filteredTotal,
     page,
     limit,

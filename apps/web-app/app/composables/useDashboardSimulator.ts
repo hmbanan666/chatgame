@@ -1,3 +1,6 @@
+import type { EngagementScore } from '#shared/engagement/score'
+
+import { calculateEngagementScore } from '#shared/engagement/score'
 import { getRandInteger } from '#shared/utils/random'
 
 const NAMES = ['kungfux010', 'sava5621', 'BezSovesty', 'pixel_ninja', 'stream_queen', 'mr_pickles', 'night_owl', 'code_wizard']
@@ -40,6 +43,7 @@ export interface ViewerCardData {
   donationTotal: number
   note: string
   profileId: string
+  engagement: EngagementScore
 }
 
 export interface DashboardEvent {
@@ -91,6 +95,10 @@ export function useDashboardSimulator() {
     const isDonor = getRandInteger(1, 100) <= 30
     const notes = ['', '', '', 'Зовут Игорь, любит Африку', 'Постоянный зритель, играет в GeoGuessr', '']
 
+    const watchTimeMin = getRandInteger(30, 3000)
+    const messagesCount = getRandInteger(0, 500)
+    const createdAt = new Date(Date.now() - getRandInteger(7, 365) * 86400_000)
+
     return {
       twitchId: `fake-${name}`,
       userName: name,
@@ -99,13 +107,19 @@ export function useDashboardSimulator() {
       xpRequired: getRandInteger(50, 200),
       coins: getRandInteger(0, 500),
       coupons: getRandInteger(0, 15),
-      watchTimeMin: getRandInteger(30, 3000),
-      createdAt: new Date(Date.now() - getRandInteger(7, 365) * 86400_000).toISOString(),
+      watchTimeMin,
+      createdAt: createdAt.toISOString(),
       lastSeenAt: lastSeen.toISOString(),
       charactersCount: getRandInteger(1, 5),
       donationTotal: isDonor ? getRandInteger(100, 5000) : 0,
       note: pick(notes),
       profileId: `fake-profile-${name}`,
+      engagement: calculateEngagementScore({
+        watchTimeMin,
+        messagesCount,
+        firstSeenAt: createdAt,
+        lastSeenAt: lastSeen,
+      }),
     }
   }
 

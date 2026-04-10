@@ -1,3 +1,4 @@
+import { calculateEngagementScore } from '#shared/engagement/score'
 import { getXpForLevel } from '#shared/utils/level'
 
 export default defineEventHandler(async (event) => {
@@ -32,6 +33,16 @@ export default defineEventHandler(async (event) => {
   const lastSeenAt = streamerViewer?.lastSeenAt ?? profile.updatedAt
   const requiredXp = getXpForLevel(profile.level + 1)
 
+  // Compute engagement score using per-streamer stats when available.
+  // Falls back to near-zero metrics for viewers that haven't been seen on
+  // this streamer yet (e.g. opening a card for someone from another chat).
+  const engagement = calculateEngagementScore({
+    watchTimeMin: streamerViewer?.watchTimeMin ?? 0,
+    messagesCount: streamerViewer?.messagesCount ?? 0,
+    firstSeenAt: streamerViewer?.createdAt ?? profile.createdAt,
+    lastSeenAt,
+  })
+
   return {
     twitchId: profile.twitchId,
     userName: profile.userName,
@@ -47,5 +58,6 @@ export default defineEventHandler(async (event) => {
     donationTotal,
     note: note?.text ?? '',
     profileId: profile.id,
+    engagement,
   }
 })

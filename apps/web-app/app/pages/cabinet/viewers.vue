@@ -46,6 +46,9 @@
             <th class="text-center px-4 py-3 hidden md:table-cell">
               Время
             </th>
+            <th class="text-center px-4 py-3 hidden lg:table-cell">
+              Активность
+            </th>
             <th class="text-right px-4 py-3">
               Последний визит
             </th>
@@ -74,6 +77,9 @@
             </td>
             <td class="text-center px-4 py-3 hidden md:table-cell text-white/60">
               {{ formatWatchTime(viewer.watchTimeMin) }}
+            </td>
+            <td class="text-center px-4 py-3 hidden lg:table-cell">
+              <CabinetEngagementBadge v-if="viewer.engagement" :engagement="viewer.engagement" />
             </td>
             <td class="text-right px-4 py-3 text-white/40 text-xs">
               {{ formatDate(viewer.lastSeenAt) }}
@@ -132,6 +138,8 @@
               </div>
             </div>
           </div>
+
+          <CabinetEngagementCard v-if="selectedViewer.engagement" :engagement="selectedViewer.engagement" />
 
           <div class="grid grid-cols-2 gap-4 text-sm">
             <div class="bg-[#141418] p-3 space-y-1 rounded-lg">
