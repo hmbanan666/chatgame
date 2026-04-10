@@ -18,38 +18,23 @@ export default defineEventHandler(async (event) => {
   }
 
   const { public: publicEnv } = useRuntimeConfig()
-
   const res = await obtainTwitchAccessToken(body.code, publicEnv.streamerRedirectUrl)
 
-  // Check if token already exists for this user
-  const existingToken = await db.oauthAccessToken.findByUserId(profile.twitchId, 'twitch')
+  const isFirstConnect = !(await db.oauthAccessToken.findByUserId(profile.twitchId, 'twitch'))
 
-  if (existingToken) {
-    // Update existing token (reconnect flow)
-    await db.oauthAccessToken.updateByUserId(profile.twitchId, 'twitch', {
-      accessToken: res.access_token,
-      refreshToken: res.refresh_token,
-      scope: res.scope,
-      expiresIn: res.expires_in,
-      obtainmentTimestamp: Date.now().toString(),
-    })
-  } else {
-    // Save new access token
-    const [twitchAccessToken] = await db.oauthAccessToken.create({
-      id: createId(),
-      provider: 'twitch',
-      userId: profile.twitchId,
-      accessToken: res.access_token,
-      refreshToken: res.refresh_token,
-      scope: res.scope,
-      expiresIn: res.expires_in,
-      obtainmentTimestamp: Date.now().toString(),
-    })
+  const tokenRow = await db.oauthAccessToken.upsertByUserId(profile.twitchId, 'twitch', {
+    accessToken: res.access_token,
+    refreshToken: res.refresh_token,
+    scope: res.scope,
+    expiresIn: res.expires_in,
+    obtainmentTimestamp: Date.now().toString(),
+  })
 
-    // Create addon token link
+  // First connect — link this token to the profile as an ADDON
+  if (isFirstConnect) {
     await db.twitchToken.create({
       id: createId(),
-      accessTokenId: twitchAccessToken!.id,
+      accessTokenId: tokenRow.id,
       profileId: profile.id,
       status: 'ACTIVE',
       type: 'ADDON',
