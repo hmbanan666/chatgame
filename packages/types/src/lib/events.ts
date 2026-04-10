@@ -16,6 +16,7 @@ export type Events
     | EventStreamerReward
     | EventCaravanArrived
     | EventExclusiveUnlock
+    | EventDailyStreakMilestone
 
 type EventNewPlayerMessage = {
   type: 'NEW_PLAYER_MESSAGE'
@@ -155,5 +156,15 @@ type EventCaravanArrived = {
     activeViewers: number
     viewers: { name: string, codename: string }[]
     travelTimeSec: number
+  }
+}
+
+type EventDailyStreakMilestone = {
+  type: 'DAILY_STREAK_MILESTONE'
+  data: {
+    userName: string
+    codename: string
+    streak: number
+    bonus: number
   }
 }

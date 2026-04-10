@@ -301,8 +301,11 @@ export class StreamJourneyGame extends Container implements Game {
   }
 
   private updateObjects() {
-    for (const object of [...this.children]) {
-      if (object.destroyed) {
+    // Reverse iteration — lets objects remove themselves in live() without
+    // shifting indices or allocating a snapshot of this.children each frame.
+    for (let i = this.children.length - 1; i >= 0; i--) {
+      const object = this.children[i]
+      if (!object || object.destroyed) {
         continue
       }
       object.animate()

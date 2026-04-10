@@ -112,6 +112,41 @@
             <Image src="/coin.png" class="size-5" />
           </PixelButton>
         </div>
+
+        <!-- Stream streak -->
+        <div class="bg-[#1e1e24] border border-white/5 rounded-lg p-4 flex items-center gap-4">
+          <div class="size-14 shrink-0 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
+            <Icon
+              name="lucide:flame"
+              class="size-8"
+              :class="hasActiveStreak ? 'text-orange-400' : 'text-white/30'"
+            />
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs text-white/50 uppercase tracking-wide">
+              Серия просмотров
+            </p>
+            <div class="flex items-baseline gap-2 mt-0.5">
+              <span class="text-2xl font-bold text-white">
+                {{ profile?.dailyStreak ?? 0 }}
+              </span>
+              <span class="text-sm text-white/60">
+                {{ pluralizationRu(profile?.dailyStreak ?? 0, ['трансляция', 'трансляции', 'трансляций']) }} подряд
+              </span>
+            </div>
+            <p class="text-xs text-white/40 mt-0.5">
+              <template v-if="claimedToday">
+                <Icon name="lucide:check-circle-2" class="inline size-3 text-emerald-400" /> Учтено
+              </template>
+              <template v-else>
+                Напиши в чат на стриме, чтобы продолжить
+              </template>
+              <template v-if="(profile?.dailyLongestStreak ?? 0) > 0">
+                · Лучший результат: {{ profile?.dailyLongestStreak }}
+              </template>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -481,6 +516,16 @@ const xpProgress = computed(() => {
   const percent = needed > 0 ? Math.min(100, Math.round((progress / needed) * 100)) : 0
   return { required, percent }
 })
+
+const DAILY_WINDOW_MS = 20 * 3_600_000
+const claimedToday = computed(() => {
+  const claimedAt = profile.value?.dailyClaimedAt
+  if (!claimedAt) {
+    return false
+  }
+  return Date.now() - new Date(claimedAt).getTime() < DAILY_WINDOW_MS
+})
+const hasActiveStreak = computed(() => (profile.value?.dailyStreak ?? 0) > 0 && claimedToday.value)
 
 const nextCharacterNudge = computed(() => {
   if (!profile.value || !characters.value) {

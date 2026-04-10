@@ -270,6 +270,17 @@ export class ProfileRepository {
       .where(eq(tables.profiles.id, id))
   }
 
+  static updateDailyStreak(id: string, data: {
+    dailyStreak: number
+    dailyLongestStreak: number
+    dailyClaimedAt: Date
+  }) {
+    const db = useDatabase()
+    return db.update(tables.profiles)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(tables.profiles.id, id))
+  }
+
   static async getTokensCount(type: string) {
     const db = useDatabase()
     const result = await db.select({ count: count() })

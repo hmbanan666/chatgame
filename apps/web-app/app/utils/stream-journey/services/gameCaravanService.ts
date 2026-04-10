@@ -1,10 +1,5 @@
 import type { Game } from '../types'
 
-const VILLAGE_NAMES = [
-  'Дубровка', 'Камнеград', 'Туманное', 'Зелёный Дол', 'Кристалловка',
-  'Берёзовка', 'Каменка', 'Вольный Стан', 'Тихий Омут', 'Медовая Поляна',
-]
-
 const CARGO_TYPES = [
   { name: 'Древесина', xpReward: 5 },
   { name: 'Кристаллы', xpReward: 8 },
@@ -38,14 +33,14 @@ export interface CaravanState {
 export class GameCaravanService {
   state: CaravanState
 
-  private villageIndex = 0
   private lastSentProgress = -1
   private savedSpeed = 20
 
   constructor(readonly game: Game) {
-    // Start paused at first village
+    // Start paused at the first village. Name is resolved lazily in update()
+    // once the chunk service has generated the initial village chunk.
     this.state = {
-      fromVillage: this.nextVillageName(),
+      fromVillage: '',
       toVillage: '',
       cargo: '',
       xpReward: 0,
@@ -63,6 +58,14 @@ export class GameCaravanService {
     }
 
     const c = this.state
+
+    // Lazy-resolve initial fromVillage once the chunk service has it
+    if (!c.fromVillage) {
+      const current = this.game.chunkService.getCurrentChunk()
+      if (current?.type === 'village') {
+        c.fromVillage = current.name
+      }
+    }
 
     if (c.isPaused) {
       // Stop wagon in village
@@ -87,20 +90,27 @@ export class GameCaravanService {
   }
 
   private depart(wagonX: number) {
-    // Restore wagon movement
+    // ChunkService is the single source of truth for village names. If the
+    // next village chunk hasn't been generated yet (steady-state generates
+    // one chunk per frame), extend the pause and retry on a later tick
+    // instead of falling back to a mismatched name.
+    const nextVillage = this.game.chunkService.getNextVillageChunk()
+    if (!nextVillage) {
+      this.state.pauseEndsAt = Date.now() + 500
+      return
+    }
+
     const wagon = this.game.wagonService.wagon
     if (wagon) {
       wagon.speedPerSecond = this.savedSpeed
     }
 
-    // Get next village from ChunkService
-    const nextVillage = this.game.chunkService.getNextVillageChunk()
-    const targetX = nextVillage ? (nextVillage.startX + nextVillage.endX) / 2 : wagonX + 15000
+    const targetX = (nextVillage.startX + nextVillage.endX) / 2
     const cargo = pick(CARGO_TYPES)
 
     this.state = {
       fromVillage: this.state.fromVillage,
-      toVillage: nextVillage?.name ?? this.nextVillageName(),
+      toVillage: nextVillage.name,
       cargo: cargo.name,
       xpReward: cargo.xpReward,
       startX: wagonX,
@@ -152,11 +162,5 @@ export class GameCaravanService {
       progress: this.progress,
       isPaused: this.state.isPaused,
     }
-  }
-
-  private nextVillageName(): string {
-    const name = VILLAGE_NAMES[this.villageIndex % VILLAGE_NAMES.length]!
-    this.villageIndex++
-    return name
   }
 }

@@ -26,9 +26,15 @@ export class GameChunkService {
 
   private initialized = false
 
-  private wheatStalks: Container[] = []
   /** All spawned objects per chunk — for cleanup */
-  private chunkObjects = new Map<string, { containers: Container[], npcs: NpcObject[], tickers: (() => void)[] }>()
+  private chunkObjects = new Map<string, {
+    containers: Container[]
+    npcs: NpcObject[]
+    /** Functions added via app.ticker.add — will be removed on chunk unload. */
+    tickers: (() => void)[]
+    /** Arbitrary disposal callbacks invoked on chunk unload (NOT added to ticker). */
+    cleanupFns: (() => void)[]
+  }>()
 
   /** Texture caches — generated once, reused across chunks */
   private bushTextureCache = new Map<string, import('pixi.js').Texture>()
@@ -42,28 +48,22 @@ export class GameChunkService {
   }
 
   update() {
+    const wagonX = this.game.wagonService.wagon?.x ?? 0
+
     if (!this.initialized) {
       this.initialized = true
       // Start in a village, like production
       this.generateChunk('village')
       this.forestsSinceVillage = 0
-    }
-    const wagonX = this.game.wagonService.wagon?.x ?? 0
-
-    // Generate chunks ahead: clearing → forest → forest → village → clearing → ...
-    while (this.nextX < wagonX + GENERATE_AHEAD) {
-      if (this.forestsSinceVillage >= this.forestsUntilVillage) {
-        this.generateChunk('village')
-        this.forestsSinceVillage = 0
-        this.forestsUntilVillage = FORESTS_BETWEEN_VILLAGES[getRandInteger(0, 1)]!
-      } else if (this.forestsSinceVillage === 0) {
-        // First chunk after village — clearing or field
-        this.generateChunk(getRandInteger(0, 1) === 0 ? 'clearing' : 'field')
-        this.forestsSinceVillage++
-      } else {
-        this.generateChunk('forest')
-        this.forestsSinceVillage++
+      // Bootstrap: fill all chunks the first ground draw needs — one-time cost.
+      while (this.nextX < wagonX + GENERATE_AHEAD) {
+        this.generateNextChunk()
       }
+    } else if (this.nextX < wagonX + GENERATE_AHEAD) {
+      // Steady state: at most one new chunk per frame. Villages/fields are
+      // heavy (lots of Graphics + texture baking) and would spike the frame
+      // if several generated at once. GENERATE_AHEAD gives plenty of buffer.
+      this.generateNextChunk()
     }
 
     // Remove old chunks + cleanup their objects
@@ -91,6 +91,20 @@ export class GameChunkService {
       return
     }
 
+    // Remove tickers FIRST so they stop mutating sprites we're about to destroy
+    for (const ticker of tracked.tickers) {
+      this.game.app.ticker.remove(ticker)
+    }
+
+    // Run arbitrary cleanup callbacks (e.g. kill active particle tickers)
+    for (const fn of tracked.cleanupFns) {
+      try {
+        fn()
+      } catch {
+        // Swallow — cleanup must be best-effort
+      }
+    }
+
     // Destroy containers (houses, signs, fire, benches, wheat walls)
     for (const c of tracked.containers) {
       if (!c.destroyed) {
@@ -103,11 +117,6 @@ export class GameChunkService {
       if (!npc.destroyed) {
         npc.destroy()
       }
-    }
-
-    // Remove tickers
-    for (const ticker of tracked.tickers) {
-      this.game.app.ticker.remove(ticker)
     }
 
     this.chunkObjects.delete(chunkId)
@@ -126,6 +135,11 @@ export class GameChunkService {
     this.chunkObjects.get(chunkId)?.tickers.push(ticker)
   }
 
+  /** Register a disposal callback — runs when the chunk is unloaded. */
+  private trackCleanup(chunkId: string, fn: () => void) {
+    this.chunkObjects.get(chunkId)?.cleanupFns.push(fn)
+  }
+
   getCurrentChunk(): WorldChunk | null {
     const wagonX = this.game.wagonService.wagon?.x ?? 0
     return this.chunks.find((c) => wagonX >= c.startX && wagonX < c.endX) ?? null
@@ -134,6 +148,22 @@ export class GameChunkService {
   getNextVillageChunk(): WorldChunk | null {
     const wagonX = this.game.wagonService.wagon?.x ?? 0
     return this.chunks.find((c) => c.type === 'village' && c.startX > wagonX) ?? null
+  }
+
+  /** Decides what to generate next based on the clearing/forest/village cycle. */
+  private generateNextChunk() {
+    if (this.forestsSinceVillage >= this.forestsUntilVillage) {
+      this.generateChunk('village')
+      this.forestsSinceVillage = 0
+      this.forestsUntilVillage = FORESTS_BETWEEN_VILLAGES[getRandInteger(0, 1)]!
+    } else if (this.forestsSinceVillage === 0) {
+      // First chunk after village — clearing or field
+      this.generateChunk(getRandInteger(0, 1) === 0 ? 'clearing' : 'field')
+      this.forestsSinceVillage++
+    } else {
+      this.generateChunk('forest')
+      this.forestsSinceVillage++
+    }
   }
 
   private generateChunk(type: ChunkType) {
@@ -155,7 +185,7 @@ export class GameChunkService {
     }
 
     this.chunks.push(chunk)
-    this.chunkObjects.set(chunk.id, { containers: [], npcs: [], tickers: [] })
+    this.chunkObjects.set(chunk.id, { containers: [], npcs: [], tickers: [], cleanupFns: [] })
     this.nextX = endX
 
     // Generate content
@@ -638,13 +668,12 @@ export class GameChunkService {
     this.trackTicker(chunk.id, smokeTickerFn)
 
     // Cleanup helper: remove all active puff tickers when chunk is destroyed
-    const puffCleanup = () => {
+    this.trackCleanup(chunk.id, () => {
       for (const tick of activePuffTickers) {
         this.game.app.ticker.remove(tick)
       }
       activePuffTickers.length = 0
-    }
-    this.trackTicker(chunk.id, puffCleanup)
+    })
 
     // ── Houses — far from center ─────────────────────
     const housePositions = [-500, -380, 380, 500]

@@ -33,15 +33,18 @@ export function usePlaygroundSimulator() {
     streamStartedAt: new Date().toISOString(),
   })
   const viewerCount = ref(randomInt(50, 200))
+  // Caravan state is driven by the real game's GameCaravanService via the
+  // playground page — not simulated locally, otherwise village names on the
+  // in-world sign and on the dashboard panel would diverge.
   const caravan = ref<CaravanState>({
-    fromVillage: 'Дубровка',
-    toVillage: 'Камнеград',
-    cargo: 'Древесина',
-    cargoIcon: 'lucide:tree-pine',
-    xpReward: 5,
+    fromVillage: '',
+    toVillage: '',
+    cargo: '',
+    cargoIcon: '',
+    xpReward: 0,
     distanceTraveled: 0,
-    distanceTotal: 400,
-    isPaused: false,
+    distanceTotal: 0,
+    isPaused: true,
     pauseEndsAt: null,
     departedAt: Date.now(),
   })
@@ -90,47 +93,6 @@ export function usePlaygroundSimulator() {
     // Fake tree chop
     if (getRandInteger(1, 100) <= 2) {
       stats.value.treesChopped++
-    }
-
-    // Caravan progress
-    const c = caravan.value
-    if (c.isPaused) {
-      if (c.pauseEndsAt && now >= c.pauseEndsAt) {
-        const villages = ['Дубровка', 'Камнеград', 'Туманное', 'Зелёный Дол', 'Кристалловка']
-        const cargos = ['Древесина', 'Кристаллы', 'Специи', 'Руда', 'Ткани']
-        let dest: string
-        do {
-          dest = pick(villages)
-        } while (dest === c.fromVillage)
-        caravan.value = {
-          fromVillage: c.fromVillage,
-          toVillage: dest,
-          cargo: pick(cargos),
-          cargoIcon: 'lucide:package',
-          xpReward: randomInt(3, 15),
-          distanceTraveled: 0,
-          distanceTotal: randomInt(300, 600),
-          isPaused: false,
-          pauseEndsAt: null,
-          departedAt: now,
-        }
-      }
-    } else if (!isStopped.value) {
-      c.distanceTraveled += speed.value
-      if (c.distanceTraveled >= c.distanceTotal) {
-        caravan.value = {
-          fromVillage: c.toVillage,
-          toVillage: '',
-          cargo: '',
-          cargoIcon: '',
-          xpReward: 0,
-          distanceTraveled: 0,
-          distanceTotal: 0,
-          isPaused: true,
-          pauseEndsAt: now + 15_000,
-          departedAt: now,
-        }
-      }
     }
 
     // Fluctuate viewers

@@ -1,6 +1,7 @@
 import { pluralizationRu } from '#shared/utils/pluralize'
 import { sendAlertMessage, sendGameMessage } from '~~/server/api/websocket'
 import { getEngagementService } from '~~/server/core/engagement'
+import { formatStreakGreeting, processDailyStreak } from '~~/server/core/leveling/dailyStreak'
 import { getLevelingService } from '~~/server/core/leveling/service'
 import { dictionary } from '~~/server/core/locale'
 import { getViewerQuestService } from '~~/server/core/quest'
@@ -115,6 +116,17 @@ export class TwitchService {
 
     if (levelResult.leveledUp && levelResult.newLevel) {
       chatAnnouncements.push(`${userName} достиг уровня ${levelResult.newLevel}!`)
+    }
+
+    // Daily streak (global, per profile) — non-critical
+    try {
+      const streakOutcome = await processDailyStreak(profile.id, this.#roomId)
+      const greeting = formatStreakGreeting(userName, streakOutcome)
+      if (greeting) {
+        chatAnnouncements.push(greeting)
+      }
+    } catch {
+      // Don't block chat on streak errors
     }
 
     // Update last seen + increment message count for this streamer

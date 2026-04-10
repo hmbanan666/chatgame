@@ -117,6 +117,7 @@ const alertButtons = [
   { type: 'RAID', label: 'Рейд', class: 'bg-indigo-600 hover:bg-indigo-500 text-white' },
   { type: 'PURCHASE', label: 'Покупка', class: 'bg-teal-600 hover:bg-teal-500 text-white' },
   { type: 'CARAVAN_ARRIVED', label: 'Караван', class: 'bg-emerald-600 hover:bg-emerald-500 text-white' },
+  { type: 'DAILY_STREAK_MILESTONE', label: 'Стрик milestone', class: 'bg-orange-600 hover:bg-orange-500 text-white' },
   { type: 'WAGON_FLIP', label: 'Сальто', class: 'bg-orange-600 hover:bg-orange-500 text-white' },
   { type: 'WAGON_REFUEL', label: 'Заправка', class: 'bg-orange-600 hover:bg-orange-500 text-white' },
   { type: 'WAGON_STEAL', label: 'Кража', class: 'bg-orange-600 hover:bg-orange-500 text-white' },
@@ -173,6 +174,11 @@ function triggerAlert(type: string) {
       const viewers = NAMES.slice(0, count).map((n) => ({ name: n, codename: pick(CODENAMES) }))
       return { id, type: 'CARAVAN_ARRIVED', data: { fromVillage: 'Дубровка', toVillage: 'Камнеград', cargo: 'Древесина', xpReward: getRandInteger(3, 15), activeViewers: viewers.length, viewers, travelTimeSec: getRandInteger(300, 600) } }
     },
+    DAILY_STREAK_MILESTONE: () => {
+      const streak = pick([7, 14, 30])
+      const bonus = streak === 7 ? 5 : streak === 14 ? 10 : 25
+      return { id, type: 'DAILY_STREAK_MILESTONE', data: { userName, codename, streak, bonus } }
+    },
     WAGON_FLIP: () => ({ id, type: 'WAGON_ACTION', data: { userName, codename, action: 'FLIP', actionTitle: 'Сальто вагона', actionDescription: 'Сальто!', xpEarned: getRandInteger(1, 5) } }),
     WAGON_REFUEL: () => ({ id, type: 'WAGON_ACTION', data: { userName, codename, action: 'REFUEL', actionTitle: 'Заправить вагон', actionDescription: 'Заправил вагон!', xpEarned: getRandInteger(1, 10) } }),
     WAGON_STEAL: () => ({ id, type: 'WAGON_ACTION', data: { userName, codename, action: 'STEAL_FUEL', actionTitle: 'Украсть топливо', actionDescription: 'Украл топливо!', xpEarned: getRandInteger(1, 10) } }),
@@ -213,10 +219,29 @@ watch(stage, async () => {
   stage.value.appendChild(game.value.app.canvas as HTMLCanvasElement)
 
   biomeInterval = setInterval(() => {
-    if (game.value) {
-      currentBiome.value = game.value.currentBiome
-      caravanProgress.value = game.value.caravanProgress
-      currentChunkName.value = game.value.currentChunkName
+    if (!game.value) {
+      return
+    }
+    currentBiome.value = game.value.currentBiome
+    caravanProgress.value = game.value.caravanProgress
+    currentChunkName.value = game.value.currentChunkName
+
+    // Mirror real caravan state from GameCaravanService into the dashboard
+    // so the in-world sign and the side panel always show the same name.
+    const cs = game.value.caravanService?.state
+    if (cs) {
+      caravan.value = {
+        fromVillage: cs.fromVillage,
+        toVillage: cs.toVillage,
+        cargo: cs.cargo,
+        cargoIcon: 'lucide:package',
+        xpReward: cs.xpReward,
+        distanceTraveled: caravanProgress.value * 100,
+        distanceTotal: 100,
+        isPaused: cs.isPaused,
+        pauseEndsAt: cs.pauseEndsAt,
+        departedAt: caravan.value.departedAt,
+      }
     }
   }, 1000)
 

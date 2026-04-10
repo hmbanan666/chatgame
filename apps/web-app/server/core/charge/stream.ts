@@ -5,7 +5,7 @@ import { sendAlertMessage, sendGameMessage } from '~~/server/api/websocket'
 import { getEngagementService } from '~~/server/core/engagement'
 import { getLevelingService } from '~~/server/core/leveling/service'
 import { getStreamInfo, sendChatAnnouncement, updateCustomReward } from '~~/server/utils/twitch/twitch.api'
-import { createNextRoute, createPausedState } from './caravan'
+import { createEmptyCaravanState } from './caravan'
 
 // ── Action Configs ──────────────────────────────────────
 
@@ -108,7 +108,9 @@ export class WagonSession {
     this.twitchChannelName = data.twitchChannelName
 
     this.donate?.onDonation(this.handleDonation.bind(this))
-    this.caravan = createPausedState('Дубровка')
+    // Caravan state is owned by the client — it lives on the in-world
+    // GameCaravanService and is mirrored here via updateCaravanFromClient().
+    this.caravan = createEmptyCaravanState()
 
     this.#initFuelTicker()
     this.#initEffectsTicker()
@@ -147,9 +149,6 @@ export class WagonSession {
 
       // Fuel drains based on wagon speed: faster wagon = more fuel
       this.fuel = Math.max(0, this.fuel - 0.05 * this.speed)
-
-      // Caravan distance tracking
-      this.#tickCaravan()
 
       // Fuel warnings + sync state to game client
       this.#checkFuelWarnings()
@@ -191,28 +190,6 @@ export class WagonSession {
   }
 
   // ── Caravan ─────────────────────────────────────────
-
-  #tickCaravan() {
-    const c = this.caravan
-
-    // If paused in village, check if pause ended
-    if (c.isPaused) {
-      if (c.pauseEndsAt && Date.now() >= c.pauseEndsAt) {
-        this.caravan = createNextRoute(c.fromVillage)
-        this.#logger.info(`Caravan departing ${this.caravan.fromVillage} → ${this.caravan.toVillage} (${this.caravan.cargo})`)
-        sendChatAnnouncement(this.twitchChannelId, `Караван выезжает из ${this.caravan.fromVillage}! Везём ${this.caravan.cargo} в ${this.caravan.toVillage}`)
-      }
-      return
-    }
-
-    // Track distance (1 unit per second at speed 1)
-    c.distanceTraveled += this.speed
-
-    // Check if arrived
-    if (c.distanceTraveled >= c.distanceTotal) {
-      this.#onCaravanArrived()
-    }
-  }
 
   async #onCaravanArrived() {
     const c = this.caravan
@@ -269,9 +246,9 @@ export class WagonSession {
       `Караван прибыл в ${c.toVillage}! ${activeViewers} зрителей получают +${c.xpReward} XP!`,
     )
 
-    // Reset and pause at village
+    // The client's next sync will flip isPaused=true with fromVillage=toVillage.
+    // Just reset the viewer tracking set here.
     this.#caravanActiveViewers.clear()
-    this.caravan = createPausedState(c.toVillage)
   }
 
   // ── Effects expiry ──────────────────────────────────
@@ -488,7 +465,8 @@ export class WagonSession {
     progress: number
     isPaused: boolean
   }) {
-    const wasTraveling = !this.caravan.isPaused
+    const wasPaused = this.caravan.isPaused
+    const wasTraveling = !wasPaused
     const nowPaused = data.isPaused
 
     // Update caravan display state
@@ -497,6 +475,7 @@ export class WagonSession {
     this.caravan.cargo = data.cargo
     this.caravan.xpReward = data.xpReward
     this.caravan.isPaused = data.isPaused
+    this.caravan.departedAt = wasPaused && !nowPaused ? Date.now() : this.caravan.departedAt
 
     if (data.isPaused) {
       this.caravan.distanceTraveled = 0
@@ -504,6 +483,15 @@ export class WagonSession {
     } else {
       this.caravan.distanceTraveled = data.progress * 100
       this.caravan.distanceTotal = 100
+    }
+
+    // Detect departure: was paused, now traveling
+    if (wasPaused && !nowPaused && data.fromVillage && data.toVillage) {
+      this.#logger.info(`Caravan departing ${data.fromVillage} → ${data.toVillage} (${data.cargo})`)
+      sendChatAnnouncement(
+        this.twitchChannelId,
+        `Караван выезжает из ${data.fromVillage}! Везём ${data.cargo} в ${data.toVillage}`,
+      )
     }
 
     // Detect arrival: was traveling, now paused

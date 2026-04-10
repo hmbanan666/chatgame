@@ -117,6 +117,26 @@
             </div>
           </template>
 
+          <template v-else-if="currentAlert.type === 'DAILY_STREAK_MILESTONE'">
+            <AlertHeader
+              icon="lucide:flame"
+              title="Серия просмотров"
+              :user-name="currentAlert.data.userName"
+            />
+
+            <AlertRewardBlock label="Подряд">
+              <span class="text-3xl font-black text-game-bright">{{ currentAlert.data.streak }}</span>
+              <span class="text-xl text-game-text ml-2">{{ pluralizationRu(currentAlert.data.streak, ['трансляция', 'трансляции', 'трансляций']) }}</span>
+            </AlertRewardBlock>
+
+            <div class="flex items-center justify-center gap-3 mt-3">
+              <span class="text-xl font-black text-game-bright">+{{ currentAlert.data.bonus }}</span>
+              <Image src="/coin.png" class="h-6 w-6 image-rendering-pixelated" />
+              <span class="text-game-muted">·</span>
+              <span class="text-base font-bold text-game-secondary-5">Спасибо что ты с нами!</span>
+            </div>
+          </template>
+
           <template v-else-if="currentAlert.type === 'COUPON_TAKEN'">
             <AlertHeader
               icon="lucide:ticket"
@@ -427,6 +447,7 @@ const ALERT_CONFIG = {
   CARAVAN_ARRIVED: { bursts: 10, burstDelay: 150, duration: 25000 },
   STREAMER_REWARD: { bursts: 4, burstDelay: 200, duration: 6000 },
   EXCLUSIVE_UNLOCK: { bursts: 20, burstDelay: 100, duration: 20000 },
+  DAILY_STREAK_MILESTONE: { bursts: 10, burstDelay: 150, duration: 10000 },
 } as const
 
 function spawnParticles(burstCount: number, burstDelay: number) {
