@@ -212,11 +212,9 @@ export class TwitchController {
             streamMinutes,
           })
 
+          // sendChatAnnouncement already mirrors into the dashboard as a
+          // systemMessage — no need to push it twice.
           await sendChatAnnouncement(this.#userId, infoMsg)
-          sendGameMessage(this.#userId, {
-            event: 'systemMessage',
-            data: { text: infoMsg },
-          })
         } catch (err) {
           logger.error(`[${this.#channel}] Info announcement failed`, err)
         }

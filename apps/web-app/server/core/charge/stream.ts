@@ -191,13 +191,18 @@ export class WagonSession {
 
   // ── Caravan ─────────────────────────────────────────
 
-  async #onCaravanArrived() {
-    const c = this.caravan
-    const travelTimeSec = Math.floor((Date.now() - c.departedAt) / 1000)
+  async #onCaravanArrived(snapshot: {
+    fromVillage: string
+    toVillage: string
+    cargo: string
+    xpReward: number
+    departedAt: number
+  }) {
+    const travelTimeSec = Math.floor((Date.now() - snapshot.departedAt) / 1000)
     const activeViewers = this.#caravanActiveViewers.size
     const twitchIds = [...this.#caravanActiveViewers]
 
-    this.#logger.info(`Caravan arrived at ${c.toVillage}! Cargo: ${c.cargo}, viewers: ${activeViewers}, travel: ${travelTimeSec}s`)
+    this.#logger.info(`Caravan arrived at ${snapshot.toVillage}! Cargo: ${snapshot.cargo}, viewers: ${activeViewers}, travel: ${travelTimeSec}s`)
 
     // Resolve viewer names + codenames
     const viewers: { name: string, codename: string }[] = []
@@ -220,9 +225,9 @@ export class WagonSession {
     }
 
     // Distribute XP to active viewers
-    if (c.xpReward > 0) {
+    if (snapshot.xpReward > 0) {
       for (const twitchId of twitchIds) {
-        getLevelingService().addXpForAction(twitchId, c.xpReward, this.id).catch(() => {})
+        getLevelingService().addXpForAction(twitchId, snapshot.xpReward, this.id).catch(() => {})
       }
     }
 
@@ -230,10 +235,10 @@ export class WagonSession {
     sendAlertMessage(this.id, {
       type: 'CARAVAN_ARRIVED',
       data: {
-        fromVillage: c.fromVillage,
-        toVillage: c.toVillage,
-        cargo: c.cargo,
-        xpReward: c.xpReward,
+        fromVillage: snapshot.fromVillage,
+        toVillage: snapshot.toVillage,
+        cargo: snapshot.cargo,
+        xpReward: snapshot.xpReward,
         activeViewers,
         viewers,
         travelTimeSec,
@@ -243,7 +248,7 @@ export class WagonSession {
     // Announce in chat
     sendChatAnnouncement(
       this.twitchChannelId,
-      `Караван прибыл в ${c.toVillage}! ${activeViewers} зрителей получают +${c.xpReward} XP!`,
+      `Караван прибыл в ${snapshot.toVillage}! ${activeViewers} зрителей получают +${snapshot.xpReward} XP!`,
     )
 
     // The client's next sync will flip isPaused=true with fromVillage=toVillage.
@@ -469,6 +474,18 @@ export class WagonSession {
     const wasTraveling = !wasPaused
     const nowPaused = data.isPaused
 
+    // Snapshot PREVIOUS state before overwriting. Needed for arrival: the
+    // client's arrive() clears toVillage and moves it into fromVillage, so
+    // by the time we process the sync the incoming data.toVillage is empty
+    // and #onCaravanArrived would announce "Караван прибыл в [пусто]".
+    const prev = {
+      fromVillage: this.caravan.fromVillage,
+      toVillage: this.caravan.toVillage,
+      cargo: this.caravan.cargo,
+      xpReward: this.caravan.xpReward,
+      departedAt: this.caravan.departedAt,
+    }
+
     // Update caravan display state
     this.caravan.fromVillage = data.fromVillage
     this.caravan.toVillage = data.toVillage
@@ -494,9 +511,13 @@ export class WagonSession {
       )
     }
 
-    // Detect arrival: was traveling, now paused
-    if (wasTraveling && nowPaused && data.fromVillage) {
-      this.#onCaravanArrived()
+    // Detect arrival: was traveling, now paused. Extra guards — the
+    // previous toVillage must be non-empty (otherwise it's a phantom
+    // transition from a fresh-loaded client), and the client's new
+    // fromVillage should match the previous toVillage (client's arrive()
+    // invariant). This catches false arrivals on page reload.
+    if (wasTraveling && nowPaused && prev.toVillage && data.fromVillage === prev.toVillage) {
+      this.#onCaravanArrived(prev)
     }
   }
 
