@@ -19,9 +19,9 @@
           <div class="flex items-center gap-2">
             <span
               class="size-2.5 rounded-full"
-              :class="data.twitchStatus === 'CONNECTED' ? 'bg-green-500' : 'bg-red-500'"
+              :class="data.twitchStatus === 'RUNNING' ? 'bg-green-500' : 'bg-white/20'"
             />
-            <span class="text-lg font-semibold">{{ data.twitchStatus === 'CONNECTED' ? 'Подключён' : 'Отключён' }}</span>
+            <span class="text-lg font-semibold">{{ data.twitchStatus === 'RUNNING' ? 'В эфире' : 'Ожидает стрим' }}</span>
           </div>
         </div>
 

@@ -16,6 +16,16 @@
         </h2>
         <div v-if="overview.streamer" class="space-y-3">
           <div class="flex items-center justify-between">
+            <span class="text-white/50">Статус</span>
+            <div class="flex items-center gap-2">
+              <span
+                class="size-2 rounded-full"
+                :class="overview.twitchStatus === 'RUNNING' ? 'bg-green-500' : 'bg-white/20'"
+              />
+              <span class="text-sm">{{ overview.twitchStatus === 'RUNNING' ? 'В эфире' : 'Ожидает стрим' }}</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between">
             <span class="text-white/50">Канал</span>
             <span class="font-semibold">{{ overview.streamer.twitchChannelName }}</span>
           </div>
@@ -23,24 +33,15 @@
             <span class="text-white/50">Channel ID</span>
             <code class="text-xs text-white/40 bg-[#0f0f14] px-2 py-1 rounded">{{ overview.streamer.twitchChannelId }}</code>
           </div>
-          <div class="flex items-center justify-between">
-            <span class="text-white/50">Бот</span>
-            <div class="flex items-center gap-2">
-              <span
-                class="size-2 rounded-full"
-                :class="overview.twitchStatus === 'CONNECTED' ? 'bg-green-500' : 'bg-red-500'"
-              />
-              <span class="text-sm">{{ overview.twitchStatus === 'CONNECTED' ? 'Подключён' : 'Отключён' }}</span>
-            </div>
-          </div>
-          <a
+          <PixelButton
             v-if="reconnectUrl"
-            :href="reconnectUrl"
-            class="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-[#6441a5] hover:bg-[#7b5cbf] text-white text-sm font-semibold rounded-lg transition-colors"
+            :to="reconnectUrl"
+            external
+            color="twitch"
+            icon="lucide:refresh-cw"
           >
-            <Icon name="lucide:refresh-cw" class="size-4" />
             Переподключить Twitch
-          </a>
+          </PixelButton>
         </div>
         <div v-else class="text-white/40">
           Не настроен
@@ -53,53 +54,59 @@
           DonationAlerts
         </h2>
         <p class="text-white/40 text-sm">
-          Подключите DonationAlerts, чтобы донаты зрителей влияли на вашего вагона и сессию стрима.
+          После подключения донаты зрителей будут заправлять вагон топливом, начислять монеты донатеру и показывать алерт на стриме.
         </p>
 
-        <div class="flex items-center justify-between">
-          <span class="text-white/50">Статус</span>
-          <div class="flex items-center gap-2">
-            <span
-              class="size-2 rounded-full"
-              :class="overview.streamer?.donationAlertsUserId ? 'bg-green-500' : 'bg-white/20'"
-            />
-            <span class="text-sm">{{ overview.streamer?.donationAlertsUserId ? 'Подключён' : 'Не подключён' }}</span>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-white/50">Статус</span>
+            <div class="flex items-center gap-2">
+              <span
+                class="size-2 rounded-full"
+                :class="overview.streamer?.donationAlertsUserId ? 'bg-green-500' : 'bg-white/20'"
+              />
+              <span class="text-sm">{{ overview.streamer?.donationAlertsUserId ? 'Подключён' : 'Не подключён' }}</span>
+            </div>
+          </div>
+
+          <div v-if="overview.streamer?.donationAlertsUserId" class="flex items-center justify-between">
+            <span class="text-white/50">DA User ID</span>
+            <code class="text-xs text-white/40 bg-[#0f0f14] px-2 py-1 rounded">{{ overview.streamer.donationAlertsUserId }}</code>
           </div>
         </div>
 
-        <div v-if="overview.streamer?.donationAlertsUserId" class="flex items-center justify-between">
-          <span class="text-white/50">DA User ID</span>
-          <code class="text-xs text-white/40 bg-[#0f0f14] px-2 py-1 rounded">{{ overview.streamer.donationAlertsUserId }}</code>
-        </div>
-
-        <div class="flex items-center gap-3 pt-2">
-          <a
+        <div class="flex items-center gap-4 pt-1">
+          <PixelButton
             v-if="daAuthUrl"
-            :href="daAuthUrl"
-            class="inline-flex items-center gap-2 px-4 py-2 bg-[#fe3a3a] hover:bg-[#ff5555] text-white text-sm font-semibold rounded-lg transition-colors"
+            :to="daAuthUrl"
+            external
+            color="accent"
+            :icon="overview.streamer?.donationAlertsUserId ? 'lucide:refresh-cw' : 'lucide:link'"
           >
-            <Icon name="lucide:link" class="size-4" />
-            {{ overview.streamer?.donationAlertsUserId ? 'Переподключить DonationAlerts' : 'Подключить DonationAlerts' }}
-          </a>
-          <UButton
+            {{ overview.streamer?.donationAlertsUserId ? 'Переподключить' : 'Подключить' }}
+          </PixelButton>
+          <button
             v-if="overview.streamer?.donationAlertsUserId"
-            :loading="disconnectPending"
-            variant="outline"
-            color="error"
+            type="button"
+            :disabled="disconnectPending"
+            class="text-xs text-white/30 hover:text-white/60 underline underline-offset-2 disabled:opacity-50"
             @click="disconnectDa"
           >
-            Отключить
-          </UButton>
+            {{ disconnectPending ? 'отключаем...' : 'отключить' }}
+          </button>
         </div>
-      </section>
 
-      <!-- Danger zone -->
-      <section class="bg-[#1e1e24] border border-red-500/20 rounded-lg p-6 space-y-4">
-        <h2 class="font-pixel text-lg font-bold text-red-400">
-          Опасная зона
-        </h2>
-        <p class="text-white/40 text-sm">
-          Отключение бота остановит все игровые механики на канале.
+        <p v-if="!overview.streamer?.donationAlertsUserId" class="text-xs text-white/30">
+          Нет аккаунта на DonationAlerts?
+          <a
+            href="https://www.donationalerts.com/"
+            target="_blank"
+            rel="noopener"
+            class="text-white/50 hover:text-white underline underline-offset-2"
+          >
+            Зарегистрируйтесь
+          </a>
+          — это бесплатно, займёт пару минут. Потом вернитесь сюда и нажмите «Подключить».
         </p>
       </section>
     </template>
