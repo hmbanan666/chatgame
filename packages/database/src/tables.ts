@@ -190,9 +190,42 @@ export const streamerViewers = pgTable('streamer_viewer', {
   unique('streamer_viewer_streamer_profile').on(t.streamerId, t.profileId),
 ])
 
-export const streamerViewersRelations = relations(streamerViewers, ({ one }) => ({
+export const streamerViewersRelations = relations(streamerViewers, ({ one, many }) => ({
   streamer: one(profiles, { fields: [streamerViewers.streamerId], references: [profiles.id], relationName: 'streamerViewerAsStreamer' }),
   profile: one(profiles, { fields: [streamerViewers.profileId], references: [profiles.id], relationName: 'streamerViewerAsViewer' }),
+  tagLinks: many(streamerViewerTags),
+}))
+
+// ── Streamer Tags (CRM labels) ──────────────────────────
+
+export const streamerTags = pgTable('streamer_tag', {
+  id: cuid2('id').defaultRandom().primaryKey(),
+  createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+  streamerId: text('streamer_id').notNull(),
+  name: text('name').notNull(),
+  color: text('color').notNull().default('gray'),
+}, (t) => [
+  unique('streamer_tag_streamer_name').on(t.streamerId, t.name),
+])
+
+export const streamerTagsRelations = relations(streamerTags, ({ one, many }) => ({
+  streamer: one(profiles, { fields: [streamerTags.streamerId], references: [profiles.id] }),
+  viewerLinks: many(streamerViewerTags),
+}))
+
+export const streamerViewerTags = pgTable('streamer_viewer_tag', {
+  id: cuid2('id').defaultRandom().primaryKey(),
+  createdAt: timestamp('created_at', { precision: 3, withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+  streamerViewerId: text('streamer_viewer_id').notNull(),
+  tagId: text('tag_id').notNull(),
+}, (t) => [
+  unique('streamer_viewer_tag_unique').on(t.streamerViewerId, t.tagId),
+])
+
+export const streamerViewerTagsRelations = relations(streamerViewerTags, ({ one }) => ({
+  streamerViewer: one(streamerViewers, { fields: [streamerViewerTags.streamerViewerId], references: [streamerViewers.id] }),
+  tag: one(streamerTags, { fields: [streamerViewerTags.tagId], references: [streamerTags.id] }),
 }))
 
 // ── Inventory ────────────────────────────────────────────

@@ -25,6 +25,14 @@
       />
     </div>
 
+    <!-- Tag filter bar + management -->
+    <CabinetTagFilterBar
+      :tags="tags"
+      :filter="tagFilter"
+      @update:filter="tagFilter = $event"
+      @tags-changed="onTagsChanged"
+    />
+
     <!-- Table -->
     <div v-if="pending" class="text-white/40">
       Загрузка...
@@ -62,9 +70,19 @@
             @click="selectedViewer = viewer"
           >
             <td class="px-4 py-3">
-              <div class="flex items-center gap-3">
+              <div class="flex items-center gap-3 flex-wrap">
                 <Icon name="lucide:user" class="size-6 text-white/20 shrink-0" />
                 <span class="font-medium">{{ viewer.userName }}</span>
+                <CabinetTagChip
+                  v-for="tag in resolveTags(viewer.tagIds).slice(0, 3)"
+                  :key="tag.id"
+                  :tag="tag"
+                  size="xs"
+                />
+                <span
+                  v-if="resolveTags(viewer.tagIds).length > 3"
+                  class="text-xs text-white/30"
+                >+{{ resolveTags(viewer.tagIds).length - 3 }}</span>
               </div>
             </td>
             <td class="text-center px-4 py-3 hidden sm:table-cell">
@@ -140,6 +158,12 @@
           </div>
 
           <CabinetEngagementCard v-if="selectedViewer.engagement" :engagement="selectedViewer.engagement" />
+
+          <CabinetTagPicker
+            :model-value="selectedViewerTagIds"
+            :tags="tags"
+            @update:model-value="updateViewerTags"
+          />
 
           <div class="grid grid-cols-2 gap-4 text-sm">
             <div class="bg-[#141418] p-3 space-y-1 rounded-lg">
@@ -233,38 +257,82 @@ const sortOptions = [
   { label: 'Время просмотра', value: 'watchTimeMin' },
 ]
 const page = ref(1)
+const tagFilter = ref<string | null>(null)
 
 const debouncedSearch = refDebounced(search, 400)
 
-const { data, pending } = useFetch('/api/cabinet/viewers', {
+// Tag catalog
+const { data: tagsData, refresh: refreshTags } = useFetch<{ tags: { id: string, name: string, color: string }[] }>('/api/cabinet/tags')
+const tags = computed(() => tagsData.value?.tags ?? [])
+const tagsById = computed(() => new Map(tags.value.map((t) => [t.id, t])))
+
+const { data, pending, refresh: refreshViewers } = useFetch('/api/cabinet/viewers', {
   query: computed(() => ({
     search: debouncedSearch.value || undefined,
     sortBy: sortBy.value,
+    tagId: tagFilter.value || undefined,
     page: page.value,
   })),
-  watch: [debouncedSearch, sortBy, page],
+  watch: [debouncedSearch, sortBy, page, tagFilter],
 })
+
+function resolveTags(tagIds: string[] | undefined) {
+  if (!tagIds?.length) {
+    return []
+  }
+  return tagIds.map((id) => tagsById.value.get(id)).filter((t): t is NonNullable<typeof t> => !!t)
+}
+
+async function onTagsChanged() {
+  await refreshTags()
+  await refreshViewers()
+}
 
 const selectedViewer = ref<any>(null)
 const slideoverOpen = ref(false)
 const viewerNote = ref('')
 const noteSaving = ref(false)
+const selectedViewerTagIds = ref<string[]>([])
 
 watch(selectedViewer, async (v) => {
   if (v) {
     slideoverOpen.value = true
-    // Load note for this viewer
+    // Load note + fresh tag ids for this viewer
     viewerNote.value = ''
+    selectedViewerTagIds.value = v.tagIds ?? []
     try {
       const data = await $fetch<any>('/api/dashboard/viewer', {
         query: { twitchId: v.twitchId },
       })
       viewerNote.value = data?.note ?? ''
+      if (Array.isArray(data?.tagIds)) {
+        selectedViewerTagIds.value = data.tagIds
+      }
     } catch {
       // skip
     }
   }
 })
+
+async function updateViewerTags(nextTagIds: string[]) {
+  if (!selectedViewer.value) {
+    return
+  }
+  const profileId = selectedViewer.value.profileId
+  selectedViewerTagIds.value = nextTagIds
+  try {
+    await $fetch(`/api/cabinet/viewers/${profileId}/tags`, {
+      method: 'PUT',
+      body: { tagIds: nextTagIds },
+    })
+    // Update the row in the list so chips reflect immediately
+    if (selectedViewer.value) {
+      selectedViewer.value.tagIds = nextTagIds
+    }
+  } catch {
+    // revert on failure
+  }
+}
 
 async function saveNoteNow() {
   if (!selectedViewer.value) {

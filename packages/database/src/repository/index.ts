@@ -17,7 +17,9 @@ import { StreamEngagementRepository } from './streamEngagement'
 import { StreamerCurrencyRepository } from './streamerCurrency'
 import { StreamerCurrencyBalanceRepository } from './streamerCurrencyBalance'
 import { StreamerNoteRepository } from './streamerNote'
+import { StreamerTagRepository } from './streamerTag'
 import { StreamerViewerRepository } from './streamerViewer'
+import { StreamerViewerTagRepository } from './streamerViewerTag'
 import { TransactionRepository } from './transaction'
 import { TwitchTokenRepository } from './twitchToken'
 import { WidgetTokenRepository } from './widgetToken'
@@ -31,6 +33,8 @@ class Repository {
   readonly coupon = CouponRepository
   readonly redemption = RedemptionRepository
   readonly streamerViewer = StreamerViewerRepository
+  readonly streamerViewerTag = StreamerViewerTagRepository
+  readonly streamerTag = StreamerTagRepository
   readonly stream = StreamRepository
   readonly streamEngagement = StreamEngagementRepository
   readonly streamerCurrency = StreamerCurrencyRepository

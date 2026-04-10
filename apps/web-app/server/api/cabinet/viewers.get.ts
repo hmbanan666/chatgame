@@ -14,6 +14,7 @@ export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const search = (query.search as string) || undefined
   const sortBy = (query.sortBy as 'lastSeenAt' | 'messagesCount' | 'watchTimeMin') || 'lastSeenAt'
+  const tagId = (query.tagId as string) || undefined
   const page = Math.max(1, Number(query.page) || 1)
   const limit = Math.min(100, Math.max(1, Number(query.limit) || 50))
   const offset = (page - 1) * limit
@@ -21,6 +22,7 @@ export default defineEventHandler(async (event) => {
   const { rows, total } = await db.streamerViewer.findViewersByStreamer(profile.id, {
     search,
     sortBy,
+    tagId,
     limit,
     offset,
   })
@@ -29,8 +31,12 @@ export default defineEventHandler(async (event) => {
   const filtered = rows.filter((r) => r.profileId !== profile.id)
   const filteredTotal = filtered.length < rows.length ? total - 1 : total
 
-  const withEngagement = filtered.map((r) => ({
+  // Batch-load tag ids for visible viewers
+  const tagsByViewer = await db.streamerViewerTag.findTagsByViewerIds(filtered.map((r) => r.id))
+
+  const enriched = filtered.map((r) => ({
     ...r,
+    tagIds: tagsByViewer.get(r.id) ?? [],
     engagement: calculateEngagementScore({
       watchTimeMin: r.watchTimeMin,
       messagesCount: r.messagesCount,
@@ -40,7 +46,7 @@ export default defineEventHandler(async (event) => {
   }))
 
   return {
-    viewers: withEngagement,
+    viewers: enriched,
     total: filteredTotal,
     page,
     limit,

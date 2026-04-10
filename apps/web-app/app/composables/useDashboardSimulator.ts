@@ -44,6 +44,7 @@ export interface ViewerCardData {
   note: string
   profileId: string
   engagement: EngagementScore
+  tagIds: string[]
 }
 
 export interface DashboardEvent {
@@ -120,6 +121,7 @@ export function useDashboardSimulator() {
         firstSeenAt: createdAt,
         lastSeenAt: lastSeen,
       }),
+      tagIds: [],
     }
   }
 

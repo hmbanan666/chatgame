@@ -30,6 +30,10 @@ export default defineEventHandler(async (event) => {
     db.streamerNote.findByStreamerAndProfile(streamerProfile.id, profile.id),
   ])
 
+  const tagIds = streamerViewer
+    ? await db.streamerViewerTag.findByViewer(streamerViewer.id)
+    : []
+
   const lastSeenAt = streamerViewer?.lastSeenAt ?? profile.updatedAt
   const requiredXp = getXpForLevel(profile.level + 1)
 
@@ -59,5 +63,6 @@ export default defineEventHandler(async (event) => {
     note: note?.text ?? '',
     profileId: profile.id,
     engagement,
+    tagIds,
   }
 })

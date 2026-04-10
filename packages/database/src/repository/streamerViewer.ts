@@ -50,18 +50,22 @@ export class StreamerViewerRepository {
   static async findViewersByStreamer(streamerId: string, options: {
     search?: string
     sortBy?: 'lastSeenAt' | 'messagesCount' | 'watchTimeMin'
+    tagId?: string
     limit?: number
     offset?: number
   } = {}) {
     const db = useDatabase()
-    const { search, sortBy = 'lastSeenAt', limit = 50, offset = 0 } = options
+    const { search, sortBy = 'lastSeenAt', tagId, limit = 50, offset = 0 } = options
 
     const conditions = [eq(tables.streamerViewers.streamerId, streamerId)]
     if (search) {
       conditions.push(sql`lower(${tables.profiles.userName}) like ${`%${search.toLowerCase()}%`}`)
     }
+    if (tagId) {
+      conditions.push(eq(tables.streamerViewerTags.tagId, tagId))
+    }
 
-    const rows = await db
+    const baseQuery = db
       .select({
         id: tables.streamerViewers.id,
         lastSeenAt: tables.streamerViewers.lastSeenAt,
@@ -79,15 +83,23 @@ export class StreamerViewerRepository {
       })
       .from(tables.streamerViewers)
       .innerJoin(tables.profiles, eq(tables.streamerViewers.profileId, tables.profiles.id))
+
+    const rows = await (tagId
+      ? baseQuery.innerJoin(tables.streamerViewerTags, eq(tables.streamerViewerTags.streamerViewerId, tables.streamerViewers.id))
+      : baseQuery)
       .where(and(...conditions))
       .orderBy(sql`${tables.streamerViewers[sortBy]} desc`)
       .limit(limit)
       .offset(offset)
 
-    const totalResult = await db
+    const totalQuery = db
       .select({ count: count() })
       .from(tables.streamerViewers)
       .innerJoin(tables.profiles, eq(tables.streamerViewers.profileId, tables.profiles.id))
+
+    const totalResult = await (tagId
+      ? totalQuery.innerJoin(tables.streamerViewerTags, eq(tables.streamerViewerTags.streamerViewerId, tables.streamerViewers.id))
+      : totalQuery)
       .where(and(...conditions))
 
     return { rows, total: totalResult[0]?.count ?? 0 }

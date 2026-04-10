@@ -12,6 +12,8 @@ export type TwitchToken = InferSelectModel<typeof tables.twitchTokens>
 export type OAuthAccessToken = InferSelectModel<typeof tables.oauthAccessTokens>
 
 export type StreamerViewer = InferSelectModel<typeof tables.streamerViewers>
+export type StreamerTag = InferSelectModel<typeof tables.streamerTags>
+export type StreamerViewerTag = InferSelectModel<typeof tables.streamerViewerTags>
 export type WidgetToken = InferSelectModel<typeof tables.widgetTokens>
 
 export type InventoryItem = InferSelectModel<typeof tables.inventoryItems>

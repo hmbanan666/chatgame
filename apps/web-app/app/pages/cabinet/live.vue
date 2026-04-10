@@ -12,7 +12,7 @@
         </div>
 
         <div class="px-4 py-3 space-y-2.5">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
             <span class="font-bold text-base" :style="{ color: nameColor(activeViewerCard.userName) }">
               {{ activeViewerCard.userName }}
             </span>
@@ -23,6 +23,12 @@
               v-if="activeViewerCard.engagement"
               :engagement="activeViewerCard.engagement"
               :show-label="false"
+            />
+            <CabinetTagChip
+              v-for="tag in resolveLiveTags(activeViewerCard.tagIds).slice(0, 2)"
+              :key="tag.id"
+              :tag="tag"
+              size="xs"
             />
             <span
               v-if="activeViewerCard.donationTotal > 0"
@@ -320,7 +326,7 @@
           <div class="px-5 py-4 space-y-4">
             <!-- Header -->
             <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 flex-wrap">
                 <span class="font-bold text-lg" :style="{ color: nameColor(profileModal.userName) }">
                   {{ profileModal.userName }}
                 </span>
@@ -338,6 +344,19 @@
                   с {{ new Date(profileModal.createdAt).toLocaleDateString('ru') }}
                 </div>
               </div>
+            </div>
+
+            <!-- Tags row -->
+            <div
+              v-if="resolveLiveTags(profileModal.tagIds).length"
+              class="flex flex-wrap gap-1"
+            >
+              <CabinetTagChip
+                v-for="tag in resolveLiveTags(profileModal.tagIds)"
+                :key="tag.id"
+                :tag="tag"
+                size="xs"
+              />
             </div>
 
             <!-- XP bar -->
@@ -459,6 +478,25 @@ if (user.value?.id && !isDemo) {
   if (myProfile.value) {
     streamerCoins.value = myProfile.value.coins ?? 0
   }
+}
+
+// Tag catalog — used to render chips on activeViewerCard and profileModal
+interface LiveTag { id: string, name: string, color: string }
+const liveTags = ref<LiveTag[]>([])
+if (!isDemo) {
+  try {
+    const res = await $fetch<{ tags: LiveTag[] }>('/api/cabinet/tags')
+    liveTags.value = res.tags ?? []
+  } catch {
+    // skip
+  }
+}
+const liveTagsById = computed(() => new Map(liveTags.value.map((t) => [t.id, t])))
+function resolveLiveTags(tagIds: string[] | undefined) {
+  if (!tagIds?.length) {
+    return []
+  }
+  return tagIds.map((id) => liveTagsById.value.get(id)).filter((t): t is LiveTag => !!t)
 }
 
 if (!roomId) {
