@@ -14,24 +14,24 @@ packages:
 
 catalogs:
   dev:
-    '@antfu/eslint-config': ^8.1.1
-    '@iconify-json/lucide': ^1.2.102
-    '@iconify-json/simple-icons': ^1.2.77
-    '@nuxtjs/i18n': ^10.2.4
+    '@antfu/eslint-config': ^8.2.0
+    '@iconify-json/lucide': ^1.2.104
+    '@iconify-json/simple-icons': ^1.2.80
+    '@nuxtjs/i18n': ^10.3.0
     bumpp: ^11.0.1
-    dotenv: ^17.4.1
+    dotenv: ^17.4.2
     drizzle-kit: ^0.31.10
-    eslint: ^10.2.0
+    eslint: ^10.2.1
     husky: ^9.1.7
     nano-staged: ^1.0.2
     nuxt: ^4.4.2
     nuxt-auth-utils: ^0.5.29
-    tailwindcss: ^4.2.2
+    tailwindcss: ^4.2.4
     tailwindcss-motion: ^1.1.1
-    typescript: ^6.0.2
-    vue-tsc: ^3.2.6
+    typescript: ^6.0.3
+    vue-tsc: ^3.2.7
   integrations:
-    '@nuxt/ui': ^4.6.1
+    '@nuxt/ui': ^4.7.0
     '@paralleldrive/cuid2': ^3.3.0
     '@vueuse/components': ^14.2.1
     '@vueuse/core': ^14.2.1
@@ -39,13 +39,13 @@ catalogs:
     drizzle-cuid2: ^2.2.0
     drizzle-orm: ^0.45.1
     pg: ^8.20.0
-    pixi.js: ^8.17.1
+    pixi.js: ^8.18.1
     zod: ^4.3.6
   test:
-    '@vitest/browser': ^4.1.4
-    '@vitest/coverage-v8': ^4.1.4
+    '@vitest/browser': ^4.1.5
+    '@vitest/coverage-v8': ^4.1.5
     playwright: ^1.59.1
-    vitest: ^4.1.4
+    vitest: ^4.1.5
     vitest-browser-vue: ^2.1.0
   types:
     '@types/node': ^25.6.0
