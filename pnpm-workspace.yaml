@@ -14,7 +14,7 @@ packages:
 
 catalogs:
   dev:
-    '@antfu/eslint-config': ^8.1.1
+    '@antfu/eslint-config': ^9.5.1
     '@iconify-json/lucide': ^1.2.102
     '@iconify-json/simple-icons': ^1.2.77
     '@nuxtjs/i18n': ^10.2.4
